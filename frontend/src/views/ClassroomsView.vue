@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { getClassroomsByBuilding, type Classroom } from '@/api/classroom'
-import { Cell, CellGroup, Tag } from 'vant'
+import { Cell, CellGroup, Tag, showToast } from 'vant'
 
 const route = useRoute()
 const buildingId = Number(route.params.buildingId)
@@ -11,9 +11,16 @@ const classrooms = ref<Classroom[]>([])
 const loadClassrooms = async () => {
   try {
     const res = await getClassroomsByBuilding(buildingId)
-    classrooms.value = res.data
+    // Safely handle empty or undefined response data
+    classrooms.value = res.data || []
   } catch (error) {
     console.error('Failed to load classrooms:', error)
+    // Show user-friendly error notification using Vant Toast
+    showToast({
+      message: '加载教室列表失败，请稍后重试',
+      position: 'bottom',
+      duration: 2000
+    })
   }
 }
 

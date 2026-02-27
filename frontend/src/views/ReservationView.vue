@@ -1,8 +1,24 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import {  Cell, CellGroup } from 'vant'
+import { ref, onMounted } from 'vue'
+import { NavBar, Cell, CellGroup, Tabs, Tab } from 'vant'
+import { getClassroomList, type Classroom } from '@/api/classroom'
 
 const activeTab = ref(0)
+const classrooms = ref<Classroom[]>([])
+
+const loadClassrooms = async () => {
+  try {
+    const res = await getClassroomList()
+    console.log('API Response:', res)
+    classrooms.value = res.data
+  } catch (error) {
+    console.error('Failed to load classrooms:', error)
+  }
+}
+
+onMounted(() => {
+  loadClassrooms()
+})
 </script>
 
 <template>
@@ -12,18 +28,35 @@ const activeTab = ref(0)
     <van-tabs v-model:active="activeTab" sticky>
       <van-tab title="普通教室">
         <CellGroup>
-          <Cell title="教学楼A-101" label="今日14:00-16:00 可预约" is-link />
-          <Cell title="教学楼A-102" label="今日16:00-18:00 可预约" is-link />
+          <Cell
+            v-for="classroom in classrooms"
+            :key="classroom.id"
+            :title="`${classroom.name}`"
+            :label="`楼层: ${classroom.floor} | 容量: ${classroom.capacity}`"
+            is-link
+          />
         </CellGroup>
       </van-tab>
       <van-tab title="研讨室">
         <CellGroup>
-          <Cell title="研讨室B-201" label="今日13:00-15:00 可预约" is-link />
+          <Cell
+            v-for="classroom in classrooms"
+            :key="classroom.id"
+            :title="`${classroom.name}`"
+            :label="`楼层: ${classroom.floor} | 容量: ${classroom.capacity}`"
+            is-link
+          />
         </CellGroup>
       </van-tab>
       <van-tab title="图书馆座位">
         <CellGroup>
-          <Cell title="图书馆3楼研修间" label="今日15:00-17:00 可预约" is-link />
+          <Cell
+            v-for="classroom in classrooms"
+            :key="classroom.id"
+            :title="`${classroom.name}`"
+            :label="`楼层: ${classroom.floor} | 容量: ${classroom.capacity}`"
+            is-link
+          />
         </CellGroup>
       </van-tab>
     </van-tabs>

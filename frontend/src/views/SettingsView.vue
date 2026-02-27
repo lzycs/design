@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { NavBar, Cell, CellGroup, Switch } from 'vant'
+
 
 const notificationsEnabled = ref(true)
 const darkModeEnabled = ref(false)

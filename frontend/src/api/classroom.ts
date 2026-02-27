@@ -4,25 +4,53 @@ export interface Classroom {
   id?: number
   buildingId?: number
   name: string
+  roomNumber?: string
   floor?: number
+  type?: number
   capacity?: number
-  type?: string
-  status?: string
-  description?: string
+  equipment?: string
+  latitude?: number
+  longitude?: number
+  checkinRadius?: number
+  status?: number
+  realTimeStatus?: number
+  environmentScore?: number
+  totalReviews?: number
+  createTime?: string
+  updateTime?: string
+  deleted?: number
+}
+
+export interface Result<T> {
+  code: number
+  message: string
+  data: T
 }
 
 export const getClassroomList = () => {
-  return request.get<Classroom[]>('/classroom/list')
+  return request.get<Result<Classroom[]>>('/classroom/list')
 }
 
 export const getClassroomsByBuilding = (buildingId: number) => {
-  return request.get<Classroom[]>(`/classroom/building/${buildingId}`)
+  return request.get<Result<Classroom[]>>(`/classroom/building/${buildingId}`)
 }
 
-export const getAvailableClassrooms = () => {
-  return request.get<Classroom[]>('/classroom/available')
+export const getAvailableClassrooms = (type?: number) => {
+  return request.get<Result<Classroom[]>>('/classroom/available', { params: { type } })
 }
 
 export const getClassroomById = (id: number) => {
-  return request.get<Classroom>(`/classroom/${id}`)
+  return request.get<Result<Classroom>>(`/classroom/${id}`)
+}
+
+export const saveClassroom = (classroom: Classroom) => {
+  return request.post<Result<boolean>>('/classroom', classroom)
+}
+
+export const updateClassroom = (classroom: Classroom) => {
+  return request.put<Result<boolean>>('/classroom', classroom)
+}
+
+export const deleteClassroom = (id: number) => {
+  return request.delete<Result<boolean>>(`/classroom/${id}`)
 }
