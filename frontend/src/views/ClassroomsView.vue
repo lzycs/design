@@ -1,0 +1,86 @@
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import { getClassroomsByBuilding, type Classroom } from '@/api/classroom'
+import { Cell, CellGroup, Tag } from 'vant'
+
+const route = useRoute()
+const buildingId = Number(route.params.buildingId)
+const classrooms = ref<Classroom[]>([])
+
+const loadClassrooms = async () => {
+  try {
+    const res = await getClassroomsByBuilding(buildingId)
+    classrooms.value = res.data
+  } catch (error) {
+    console.error('Failed to load classrooms:', error)
+  }
+}
+
+const getStatusColor = (status?: string) => {
+  switch (status) {
+    case 'AVAILABLE':
+      return 'success'
+    case 'OCCUPIED':
+      return 'danger'
+    case 'RESERVED':
+      return 'warning'
+    case 'MAINTENANCE':
+      return 'default'
+    default:
+      return 'primary'
+  }
+}
+
+const getStatusText = (status?: string) => {
+  switch (status) {
+    case 'AVAILABLE':
+      return '空闲'
+    case 'OCCUPIED':
+      return '占用'
+    case 'RESERVED':
+      return '已预约'
+    case 'MAINTENANCE':
+      return '维修中'
+    default:
+      return status || '未知'
+  }
+}
+
+onMounted(() => {
+  loadClassrooms()
+})
+</script>
+
+<template>
+  <div class="classrooms">
+    <van-nav-bar title="教室列表" />
+    
+    <CellGroup>
+      <Cell
+        v-for="classroom in classrooms"
+        :key="classroom.id"
+        :title="classroom.name"
+        :label="`楼层: ${classroom.floor} | 容量: ${classroom.capacity}`"
+        is-link
+      >
+        <template #right-icon>
+          <Tag :type="getStatusColor(classroom.status)">
+            {{ getStatusText(classroom.status) }}
+          </Tag>
+        </template>
+      </Cell>
+    </CellGroup>
+  </div>
+</template>
+
+<style scoped>
+.classrooms {
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+.classrooms > div:first-child {
+  margin-bottom: 16px;
+}
+</style>
