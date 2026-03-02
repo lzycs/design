@@ -24,6 +24,11 @@ spring:
           max-idle: 8
           min-idle: 0
 
+  sql:
+    init:
+      schema-locations: classpath:sql/init.sql
+      mode: always
+
   servlet:
     multipart:
       max-file-size: 10MB

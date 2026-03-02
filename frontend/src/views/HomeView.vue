@@ -10,7 +10,7 @@ const buildings = ref<Building[]>([])
 const loadBuildings = async () => {
   try {
     const res = await getBuildingList()
-    buildings.value = res.data
+    buildings.value = res.data ?? []
   } catch (error) {
     console.error('Failed to load buildings:', error)
   }

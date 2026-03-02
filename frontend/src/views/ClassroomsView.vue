@@ -24,33 +24,29 @@ const loadClassrooms = async () => {
   }
 }
 
-const getStatusColor = (status?: string) => {
+const getStatusColor = (status?: number) => {
   switch (status) {
-    case 'AVAILABLE':
-      return 'success'
-    case 'OCCUPIED':
-      return 'danger'
-    case 'RESERVED':
-      return 'warning'
-    case 'MAINTENANCE':
-      return 'default'
+    case 1:
+      return 'success' // 正常
+    case 2:
+      return 'warning' // 维修中
+    case 0:
+      return 'danger' // 停用
     default:
       return 'primary'
   }
 }
 
-const getStatusText = (status?: string) => {
+const getStatusText = (status?: number) => {
   switch (status) {
-    case 'AVAILABLE':
-      return '空闲'
-    case 'OCCUPIED':
-      return '占用'
-    case 'RESERVED':
-      return '已预约'
-    case 'MAINTENANCE':
+    case 1:
+      return '正常'
+    case 2:
       return '维修中'
+    case 0:
+      return '停用'
     default:
-      return status || '未知'
+      return '未知'
   }
 }
 

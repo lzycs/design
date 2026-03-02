@@ -20,7 +20,10 @@ public class ClassroomService extends ServiceImpl<ClassroomMapper, Classroom> {
 
     public List<Classroom> getAvailableClassrooms(Integer type) {
         LambdaQueryWrapper<Classroom> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Classroom::getStatus, 1);
+        wrapper.eq(Classroom::getStatus, 1)
+                .and(w -> w.isNull(Classroom::getRealTimeStatus)
+                        .or()
+                        .eq(Classroom::getRealTimeStatus, 0));
         if (type != null) {
             wrapper.eq(Classroom::getType, type);
         }

@@ -28,29 +28,29 @@ export interface Result<T> {
 }
 
 export const getClassroomList = () => {
-  return request.get<Result<Classroom[]>>('/classroom/list')
+  return request.get<any, Result<Classroom[]>>('/classroom/list')
 }
 
 export const getClassroomsByBuilding = (buildingId: number) => {
-  return request.get<Result<Classroom[]>>(`/classroom/building/${buildingId}`)
+  return request.get<any, Result<Classroom[]>>(`/classroom/building/${buildingId}`)
 }
 
 export const getAvailableClassrooms = (type?: number) => {
-  return request.get<Result<Classroom[]>>('/classroom/available', { params: { type } })
+  return request.get<any, Result<Classroom[]>>('/classroom/available', { params: { type } })
 }
 
 export const getClassroomById = (id: number) => {
-  return request.get<Result<Classroom>>(`/classroom/${id}`)
+  return request.get<any, Result<Classroom>>(`/classroom/${id}`)
 }
 
 export const saveClassroom = (classroom: Classroom) => {
-  return request.post<Result<boolean>>('/classroom', classroom)
+  return request.post<any, Result<boolean>>('/classroom', classroom)
 }
 
 export const updateClassroom = (classroom: Classroom) => {
-  return request.put<Result<boolean>>('/classroom', classroom)
+  return request.put<any, Result<boolean>>('/classroom', classroom)
 }
 
 export const deleteClassroom = (id: number) => {
-  return request.delete<Result<boolean>>(`/classroom/${id}`)
+  return request.delete<any, Result<boolean>>(`/classroom/${id}`)
 }

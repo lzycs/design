@@ -3,10 +3,12 @@ import request from '@/utils/request'
 export interface Building {
   id?: number
   name: string
-  location?: string
-  floors?: number
+  address?: string
+  floorCount?: number
   description?: string
-  active?: boolean
+  latitude?: number
+  longitude?: number
+  status?: number
 }
 
 export interface Result<T> {
@@ -16,21 +18,21 @@ export interface Result<T> {
 }
 
 export const getBuildingList = () => {
-  return request.get<Result<Building[]>>('/building/list')
+  return request.get<unknown, Result<Building[]>>('/building/list')
 }
 
 export const getBuildingById = (id: number) => {
-  return request.get<Building>(`/building/${id}`)
+  return request.get<unknown, Result<Building>>(`/building/${id}`)
 }
 
 export const saveBuilding = (building: Building) => {
-  return request.post<boolean>('/building', building)
+  return request.post<unknown, Result<boolean>>('/building', building)
 }
 
 export const updateBuilding = (building: Building) => {
-  return request.put<boolean>('/building', building)
+  return request.put<unknown, Result<boolean>>('/building', building)
 }
 
 export const deleteBuilding = (id: number) => {
-  return request.delete<boolean>(`/building/${id}`)
+  return request.delete<unknown, Result<boolean>>(`/building/${id}`)
 }
