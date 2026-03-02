@@ -23,8 +23,8 @@ CREATE TABLE IF NOT EXISTS `user` (
     INDEX idx_student_id (`student_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
 
--- 教学楼表
-CREATE TABLE IF NOT EXISTS `teaching_building` (
+-- 教学楼表（与后端 Building 实体的 building 表对应）
+CREATE TABLE IF NOT EXISTS `building` (
     `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '教学楼ID',
     `name` VARCHAR(100) NOT NULL COMMENT '教学楼名称 (如：第一教学楼)',
     `address` VARCHAR(255) COMMENT '地址',
@@ -35,7 +35,8 @@ CREATE TABLE IF NOT EXISTS `teaching_building` (
     `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态: 0-停用, 1-启用',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '删除标记: 0-未删除, 1-已删除'
+    `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '删除标记: 0-未删除, 1-已删除',
+    UNIQUE KEY uk_building_name (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='教学楼表';
 
 -- 图书馆表
@@ -51,7 +52,8 @@ CREATE TABLE IF NOT EXISTS `library` (
     `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态: 0-停用, 1-启用',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '删除标记: 0-未删除, 1-已删除'
+    `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '删除标记: 0-未删除, 1-已删除',
+    UNIQUE KEY uk_library_name (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图书馆表';
 
 -- 教室表 (仅属于教学楼)
@@ -64,6 +66,8 @@ CREATE TABLE IF NOT EXISTS `classroom` (
     `type` TINYINT NOT NULL COMMENT '类型: 1-普通教室, 2-研讨室/会议室',
     `capacity` INT NOT NULL COMMENT '容纳人数',
     `equipment` TEXT COMMENT '设备信息(JSON格式)',
+    `latitude` DECIMAL(10, 6) COMMENT '纬度',
+    `longitude` DECIMAL(10, 6) COMMENT '经度',
     `checkin_radius` INT NOT NULL DEFAULT 50 COMMENT '签到半径(米)',
     `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态: 0-停用, 1-正常, 2-维修中',
     `real_time_status` TINYINT COMMENT '实时状态: 0-空闲, 1-使用中, 2-已预约',
@@ -72,9 +76,10 @@ CREATE TABLE IF NOT EXISTS `classroom` (
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '删除标记: 0-未删除, 1-已删除',
+    UNIQUE KEY uk_classroom_room (`building_id`, `room_number`),
     INDEX idx_building_id (`building_id`),
     INDEX idx_status (`status`),
-    FOREIGN KEY (`building_id`) REFERENCES `teaching_building`(`id`)
+    FOREIGN KEY (`building_id`) REFERENCES `building`(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='教室表';
 
 -- 图书馆座位表
@@ -288,7 +293,7 @@ INSERT IGNORE INTO `user` (`username`, `password`, `real_name`, `student_id`, `e
 ('admin', '$2a$10$exampleHash', '管理员', NULL, 'admin@system.com', '13800138000', 3, 1);
 
 -- 插入教学楼数据
-INSERT IGNORE INTO `teaching_building` (`name`, `address`, `floor_count`, `description`, `latitude`, `longitude`) VALUES
+INSERT IGNORE INTO `building` (`name`, `address`, `floor_count`, `description`, `latitude`, `longitude`) VALUES
 ('第一教学楼', '学校东区主路1号', 5, '主教学楼，设施较新。', 39.904989, 116.405285),
 ('第二教学楼', '学校西区科技路2号', 6, '以理工科实验室为主。', 39.905500, 116.406000);
 
