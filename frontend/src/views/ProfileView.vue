@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { showToast, Dialog } from 'vant'
+import { showToast, showConfirmDialog } from 'vant'
 import request from '@/utils/request'
 
 interface User {
@@ -181,7 +181,7 @@ const handleRegister = async () => {
 }
 
 const handleLogout = async () => {
-  const confirm = await Dialog.confirm({
+  const confirm = await showConfirmDialog({
     title: '退出登录',
     message: '确认要退出当前账号吗？'
   }).catch(() => false)
