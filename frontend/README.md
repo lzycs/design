@@ -1,73 +1,51 @@
-# frontend
+# 前端项目（Vue 3 + Vite + Vant）
 
-This template should help get you started developing with Vue 3 in Vite.
+## 启动方式
 
-## Recommended IDE Setup
-
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
-
-## Recommended Browser Setup
-
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
-
-## Type Support for `.vue` Imports in TS
-
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
+进入 `frontend/` 目录后执行：
 
 ```sh
 npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
 npm run dev
 ```
 
-### Type-Check, Compile and Minify for Production
+## 路由说明
 
-```sh
-npm run build
-```
+底部 TabBar：
+- `/`：首页
+- `/reservation`：预约
+- `/profile`：我的（个人中心入口页）
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
+个人中心（“我的”）相关路由：
+- `/profile`：个人中心导航页（竖向卡片导航 + 底部“退出登录”按钮）
+- `/profile/info`：我的信息（基本信息详情页）
+- `/profile/reservations`：我的预约
+- `/profile/repairs`：我的报修
+- `/profile/reviews`：我的评价
+- `/profile/teams`：我的团队
+- `/profile/plans`：学习计划
 
-```sh
-npm run test:unit
-```
+## “我的”页面说明
 
-### Run End-to-End Tests with [Playwright](https://playwright.dev)
+### 页面结构
 
-```sh
-# Install browsers for the first run
-npx playwright install
+`/profile` 只作为导航入口，点击各菜单项后跳转到对应页面展示内容，不使用弹窗承载列表。
 
-# When testing on CI, must build the project first
-npm run build
+### 退出登录
 
-# Runs the end-to-end tests
-npm run test:e2e
-# Runs the tests only on Chromium
-npm run test:e2e -- --project=chromium
-# Runs the tests of a specific file
-npm run test:e2e -- tests/example.spec.ts
-# Runs the tests in debug mode
-npm run test:e2e -- --debug
-```
+退出登录按钮位于 `/profile` 页面底部，逻辑保持不变：
+- 清理本地 `localStorage.currentUser`
+- 清空页面内状态并回到未登录态
 
-### Lint with [ESLint](https://eslint.org/)
+## 相关文件
 
-```sh
-npm run lint
-```
+- 路由：`src/router/index.ts`
+- 个人中心入口：`src/views/ProfileView.vue`
+- 个人中心子页面：
+  - `src/views/ProfileInfoView.vue`
+  - `src/views/ProfileReservationView.vue`
+  - `src/views/ProfileRepairView.vue`
+  - `src/views/ProfileReviewView.vue`
+  - `src/views/ProfileTeamView.vue`
+  - `src/views/ProfilePlanView.vue`
+

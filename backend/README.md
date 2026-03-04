@@ -121,6 +121,25 @@ spring:
 - `GET /api/reservation/user/{userId}` - 获取用户预约列表
 - `GET /api/reservation/classroom/{classroomId}?date=2024-01-01` - 获取教室某日期的预约
 
+### 个人中心（“我的”）相关
+
+为配合前端“我的”页面改为多子页面跳转，并支持点击列表项查看详情，补充了以下详情接口：
+
+- **预约**
+  - `GET /api/reservation/{id}` - 获取预约详情
+- **报修**
+  - `GET /api/repair/user/{userId}` - 获取用户报修列表
+  - `GET /api/repair/{id}` - 获取报修详情
+- **评价**
+  - `GET /api/review/user/{userId}` - 获取用户评价列表
+  - `GET /api/review/{id}` - 获取评价详情
+- **团队**
+  - `GET /api/team/user/{userId}` - 获取用户团队列表
+  - `GET /api/team/request/{id}` - 获取团队详情（TeamRequest）
+- **学习计划**
+  - `GET /api/study-plan/user/{userId}` - 获取用户学习计划列表
+  - `GET /api/study-plan/{id}` - 获取学习计划详情
+
 ## 初始测试数据
 
 脚本中已包含以下测试用户：

@@ -287,10 +287,10 @@ CREATE TABLE IF NOT EXISTS `notification` (
 
 -- 插入用户数据
 INSERT IGNORE INTO `user` (`username`, `password`, `real_name`, `student_id`, `email`, `phone`, `role`, `status`) VALUES
-('zhangsan', '$2a$10$exampleHash', '张三', '20220001', 'zhangsan@example.com', '13800138001', 1, 1),
-('lisi', '$2a$10$exampleHash', '李四', '20220002', 'lisi@example.com', '13800138002', 1, 1),
-('wanglaoshi', '$2a$10$exampleHash', '王老师', NULL, 'wang@edu.com', '13800138003', 2, 1),
-('admin', '$2a$10$exampleHash', '管理员', NULL, 'admin@system.com', '13800138000', 3, 1);
+('zhangsan', '123456', '张三', '20220001', 'zhangsan@example.com', '13800138001', 1, 1),
+('lisi', '123456', '李四', '20220002', 'lisi@example.com', '13800138002', 1, 1),
+('wanglaoshi', '123456', '王老师', NULL, 'wang@edu.com', '13800138003', 2, 1),
+('admin', '123456', '管理员', NULL, 'admin@system.com', '13800138000', 3, 1);
 
 -- 插入教学楼数据
 INSERT IGNORE INTO `building` (`name`, `address`, `floor_count`, `description`, `latitude`, `longitude`) VALUES

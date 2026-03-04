@@ -15,7 +15,20 @@ public class Reservation {
 
     private Long userId;
 
+    /**
+     * 资源类型: 1-教室, 2-图书馆座位
+     */
+    private Integer resourceType;
+
+    /**
+     * 教室ID (当resource_type=1时)
+     */
     private Long classroomId;
+
+    /**
+     * 图书馆座位ID (当resource_type=2时)
+     */
+    private Long librarySeatId;
 
     private LocalDate reservationDate;
 
@@ -27,6 +40,9 @@ public class Reservation {
 
     private String purpose;
 
+    /**
+     * 状态: 1-待签到, 2-已签到, 3-已完成, 4-已取消, 5-已违约
+     */
     private Integer status;
 
     private String qrcode;
