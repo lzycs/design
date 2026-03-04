@@ -16,6 +16,11 @@ public class StudyPlanController {
     @Autowired
     private StudyPlanService studyPlanService;
 
+    @GetMapping("/{id}")
+    public Result<StudyPlan> getById(@PathVariable Long id) {
+        return Result.success(studyPlanService.getById(id));
+    }
+
     @GetMapping("/user/{userId}")
     public Result<List<StudyPlan>> getUserPlans(@PathVariable Long userId) {
         return Result.success(studyPlanService.getUserPlans(userId));

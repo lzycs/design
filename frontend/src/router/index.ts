@@ -24,6 +24,36 @@ const router = createRouter({
       name: 'profile',
       component: () => import('../views/ProfileView.vue'),
     },
+    {
+      path: '/profile/info',
+      name: 'profile-info',
+      component: () => import('../views/ProfileInfoView.vue'),
+    },
+    {
+      path: '/profile/reservations',
+      name: 'profile-reservations',
+      component: () => import('../views/ProfileReservationView.vue'),
+    },
+    {
+      path: '/profile/repairs',
+      name: 'profile-repairs',
+      component: () => import('../views/ProfileRepairView.vue'),
+    },
+    {
+      path: '/profile/reviews',
+      name: 'profile-reviews',
+      component: () => import('../views/ProfileReviewView.vue'),
+    },
+    {
+      path: '/profile/teams',
+      name: 'profile-teams',
+      component: () => import('../views/ProfileTeamView.vue'),
+    },
+    {
+      path: '/profile/plans',
+      name: 'profile-plans',
+      component: () => import('../views/ProfilePlanView.vue'),
+    },
   ],
 })
 

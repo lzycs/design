@@ -16,6 +16,11 @@ public class RepairController {
     @Autowired
     private RepairService repairService;
 
+    @GetMapping("/{id}")
+    public Result<Repair> getById(@PathVariable Long id) {
+        return Result.success(repairService.getById(id));
+    }
+
     @GetMapping("/user/{userId}")
     public Result<List<Repair>> getUserRepairs(@PathVariable Long userId) {
         return Result.success(repairService.getUserRepairs(userId));

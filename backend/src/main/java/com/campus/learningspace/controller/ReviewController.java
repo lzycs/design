@@ -16,6 +16,11 @@ public class ReviewController {
     @Autowired
     private ReviewService reviewService;
 
+    @GetMapping("/{id}")
+    public Result<Review> getById(@PathVariable Long id) {
+        return Result.success(reviewService.getById(id));
+    }
+
     @GetMapping("/user/{userId}")
     public Result<List<Review>> getUserReviews(@PathVariable Long userId) {
         return Result.success(reviewService.getUserReviews(userId));

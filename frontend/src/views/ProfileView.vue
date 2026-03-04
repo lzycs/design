@@ -66,15 +66,8 @@ interface StudyPlan {
 const activeTab = ref<'login' | 'register'>('login')
 const loading = ref(false)
 const dataLoading = ref(false)
-const infoTab = ref(0)
 
 const storedUser = ref<User | null>(null)
-
-const reservations = ref<Reservation[]>([])
-const repairs = ref<Repair[]>([])
-const reviews = ref<Review[]>([])
-const teams = ref<TeamRequest[]>([])
-const plans = ref<StudyPlan[]>([])
 
 const loginForm = ref({
   username: '',
@@ -113,21 +106,15 @@ const loadUserData = async () => {
   dataLoading.value = true
   try {
     const userId = storedUser.value.id
-    const [resvRes, repairRes, reviewRes, teamRes, planRes] = await Promise.all([
+    await Promise.all([
       request.get(`/reservation/user/${userId}`),
       request.get(`/repair/user/${userId}`),
       request.get(`/review/user/${userId}`),
       request.get(`/team/user/${userId}`),
       request.get(`/study-plan/user/${userId}`)
     ])
-    reservations.value = resvRes.data ?? []
-    repairs.value = repairRes.data ?? []
-    reviews.value = reviewRes.data ?? []
-    teams.value = teamRes.data ?? []
-    plans.value = planRes.data ?? []
   } catch (e) {
     console.error(e)
-    showToast('加载个人数据失败，请稍后重试')
   } finally {
     dataLoading.value = false
   }
@@ -187,11 +174,6 @@ const handleLogout = async () => {
   }).catch(() => false)
   if (!confirm) return
   storedUser.value = null
-  reservations.value = []
-  repairs.value = []
-  reviews.value = []
-  teams.value = []
-  plans.value = []
   localStorage.removeItem('currentUser')
   showToast('已退出登录')
 }
@@ -209,71 +191,58 @@ onMounted(async () => {
     <van-nav-bar title="个人中心" />
 
     <template v-if="isLoggedIn">
-      <van-cell-group inset>
-        <van-cell title="用户名" :value="storedUser?.username" />
-        <van-cell title="姓名" :value="storedUser?.realName || '未填写'" />
-        <van-cell title="学号" :value="storedUser?.studentId || '未填写'" />
-        <van-cell title="邮箱" :value="storedUser?.email || '未填写'" />
-        <van-cell title="手机号" :value="storedUser?.phone || '未填写'" />
-      </van-cell-group>
+      <div class="profile-main">
+        <div class="profile-card">
+          <div
+            class="menu-item menu-item-info"
+            @click="$router.push('/profile/info')"
+          >
+            <div class="menu-icon-dot" />
+            <div class="menu-text">我的信息</div>
+          </div>
 
-      <van-tabs v-model:active="infoTab" class="info-tabs">
-        <van-tab title="我的预约">
-          <van-empty v-if="!dataLoading && reservations.length === 0" description="暂无预约记录" />
-          <van-list v-else :finished="true">
-            <van-cell
-              v-for="item in reservations"
-              :key="item.id"
-              :title="`${item.reservationDate || ''} ${item.startTime || ''}-${item.endTime || ''}`"
-              :label="item.purpose || '自习/讨论'"
-            />
-          </van-list>
-        </van-tab>
-        <van-tab title="我的报修">
-          <van-empty v-if="!dataLoading && repairs.length === 0" description="暂无报修记录" />
-          <van-list v-else :finished="true">
-            <van-cell
-              v-for="item in repairs"
-              :key="item.id"
-              :title="item.title"
-              :label="item.description"
-            />
-          </van-list>
-        </van-tab>
-        <van-tab title="我的评价">
-          <van-empty v-if="!dataLoading && reviews.length === 0" description="暂无评价记录" />
-          <van-list v-else :finished="true">
-            <van-cell
-              v-for="item in reviews"
-              :key="item.id"
-              :title="`评分: ${item.score ?? '-' }`"
-              :label="item.content"
-            />
-          </van-list>
-        </van-tab>
-        <van-tab title="我的团队">
-          <van-empty v-if="!dataLoading && teams.length === 0" description="暂无团队" />
-          <van-list v-else :finished="true">
-            <van-cell
-              v-for="item in teams"
-              :key="item.id"
-              :title="item.title"
-              :label="`${item.currentCount || 0}/${item.expectedCount || 0} 人 | 标签: ${item.tags || '无'}`"
-            />
-          </van-list>
-        </van-tab>
-        <van-tab title="学习计划">
-          <van-empty v-if="!dataLoading && plans.length === 0" description="暂无学习计划" />
-          <van-list v-else :finished="true">
-            <van-cell
-              v-for="item in plans"
-              :key="item.id"
-              :title="item.title"
-              :label="`${item.planDate || ''} ${item.startTime || ''}-${item.endTime || ''}`"
-            />
-          </van-list>
-        </van-tab>
-      </van-tabs>
+          <div
+            class="menu-item"
+            @click="$router.push('/profile/reservations')"
+          >
+            <van-icon name="calendar-o" class="menu-icon" />
+            <div class="menu-text">我的预约</div>
+          </div>
+
+          <div
+            class="menu-item"
+            @click="$router.push('/profile/repairs')"
+          >
+            <van-icon name="todo-list-o" class="menu-icon" />
+            <div class="menu-text">我的报修</div>
+          </div>
+
+          <div
+            class="menu-item"
+            @click="$router.push('/profile/reviews')"
+          >
+            <van-icon name="star-o" class="menu-icon" />
+            <div class="menu-text">我的评价</div>
+          </div>
+
+          <div
+            class="menu-item"
+            @click="$router.push('/profile/teams')"
+          >
+            <van-icon name="friends-o" class="menu-icon" />
+            <div class="menu-text">我的团队</div>
+          </div>
+
+          <div
+            class="menu-item"
+            @click="$router.push('/profile/plans')"
+          >
+            <van-icon name="cluster-o" class="menu-icon" />
+            <div class="menu-text">学习计划</div>
+          </div>
+        </div>
+
+      </div>
 
       <div class="profile-actions">
         <van-button type="primary" block @click="handleLogout">退出登录</van-button>
@@ -337,8 +306,52 @@ onMounted(async () => {
   min-height: 100vh;
 }
 
-.info-tabs {
-  margin-top: 16px;
+.profile-main {
+  padding: 16px;
+}
+
+.profile-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(15, 35, 95, 0.06);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  padding: 14px 18px;
+  font-size: 14px;
+  color: #1f2933;
+  border-bottom: 1px solid #f0f2f5;
+  background: #ffffff;
+}
+
+.menu-item:last-child {
+  border-bottom: none;
+}
+
+.menu-item.active {
+  background: linear-gradient(90deg, #f5f9ff, #ffffff);
+}
+
+.menu-icon-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: #e5efff;
+  margin-right: 10px;
+}
+
+.menu-icon {
+  font-size: 18px;
+  color: #4b7cff;
+  margin-right: 10px;
+}
+
+.menu-text {
+  flex: 1;
 }
 
 .form {
@@ -350,6 +363,6 @@ onMounted(async () => {
 }
 
 .profile-actions {
-  padding: 16px;
+  padding: 0 16px 24px;
 }
 </style>

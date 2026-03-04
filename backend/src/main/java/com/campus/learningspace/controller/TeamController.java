@@ -23,6 +23,11 @@ public class TeamController {
     @Autowired
     private TeamMemberService teamMemberService;
 
+    @GetMapping("/request/{id}")
+    public Result<TeamRequest> getRequestById(@PathVariable Long id) {
+        return Result.success(teamRequestService.getById(id));
+    }
+
     @GetMapping("/requests/active")
     public Result<List<TeamRequest>> getActiveRequests() {
         return Result.success(teamRequestService.getActiveRequests());
