@@ -3,7 +3,15 @@ import { ref, computed, onMounted } from 'vue'
 import { showToast, showConfirmDialog } from 'vant'
 import { getAvailableClassrooms, type Classroom } from '@/api/classroom'
 import { getLibraryList, type Library } from '@/api/library'
-import { createReservation, type ReservationPayload, getUserReservations, type Reservation } from '@/api/reservation'
+import {
+  createReservation,
+  type ReservationPayload,
+  getUserReservations,
+  type Reservation,
+  updateReservation,
+  getClassroomSlots,
+  type ClassroomSlotStatus
+} from '@/api/reservation'
 import { getSeatsByLibraryAndFloor, type LibrarySeat } from '@/api/librarySeat'
 
 const statusTab = ref<'booking' | 'pending' | 'checked' | 'cancelled'>('booking')
@@ -15,6 +23,8 @@ const seminarRooms = ref<Classroom[]>([])
 const libraries = ref<Library[]>([])
 
 const reservations = ref<Reservation[]>([])
+const classroomSlots = ref<Record<number, ClassroomSlotStatus[]>>({})
+const selectedSlotLabelByClassroom = ref<Record<number, string | null>>({})
 
 const loading = ref(false)
 const seatModalShow = ref(false)
@@ -108,7 +118,7 @@ const loadAll = async () => {
     normalClassrooms.value = normal
     seminarRooms.value = seminar
     libraries.value = libraryList
-    await loadUserReservations()
+    await Promise.all([reloadSlotsForCurrentDate(), loadUserReservations()])
   } catch (e) {
     console.error(e)
     normalClassrooms.value = []
@@ -132,6 +142,45 @@ const getCurrentDateString = () => {
     .padStart(2, '0')}`}`
 }
 
+const reloadSlotsForCurrentDate = async () => {
+  const dateStr = getCurrentDateString()
+  const allClassrooms = [...normalClassrooms.value, ...seminarRooms.value]
+  const record: Record<number, ClassroomSlotStatus[]> = {}
+  await Promise.all(
+    allClassrooms
+      .filter((c) => c.id)
+      .map(async (c) => {
+        try {
+          const res = await getClassroomSlots(c.id!, dateStr)
+          const maybeData = (res as unknown as { data?: unknown }).data
+          if (Array.isArray(maybeData)) {
+            // 根据 label 去重，避免出现重复时间段
+            const list = maybeData as ClassroomSlotStatus[]
+            const map = new Map<string, ClassroomSlotStatus>()
+            list.forEach((s) => {
+              if (!map.has(s.label)) {
+                map.set(s.label, s)
+              }
+            })
+            record[c.id!] = Array.from(map.values())
+          } else if (maybeData && Array.isArray((maybeData as { data?: unknown }).data)) {
+            const list = (maybeData as { data: ClassroomSlotStatus[] }).data
+            const map = new Map<string, ClassroomSlotStatus>()
+            list.forEach((s) => {
+              if (!map.has(s.label)) {
+                map.set(s.label, s)
+              }
+            })
+            record[c.id!] = Array.from(map.values())
+          }
+        } catch (e) {
+          console.error('load classroom slots failed', e)
+        }
+      })
+  )
+  classroomSlots.value = record
+}
+
 const buildReservationPayload = (
   params: Omit<ReservationPayload, 'userId' | 'reservationDate' | 'duration'>
 ): ReservationPayload | null => {
@@ -139,10 +188,14 @@ const buildReservationPayload = (
     showToast('请先登录后再预约')
     return null
   }
-  const start = params.startTime
-  const end = params.endTime
-  const [sh, sm] = start.split(':').map(Number)
-  const [eh, em] = end.split(':').map(Number)
+  const start = params.startTime ?? ''
+  const end = params.endTime ?? ''
+  const [shStr = '0', smStr = '0'] = start.split(':')
+  const [ehStr = '0', emStr = '0'] = end.split(':')
+  const sh = Number(shStr)
+  const sm = Number(smStr)
+  const eh = Number(ehStr)
+  const em = Number(emStr)
   const duration = (eh * 60 + em) - (sh * 60 + sm)
   return {
     ...params,
@@ -166,14 +219,31 @@ const submitReservation = async (payload: ReservationPayload | null) => {
 }
 
 const handleQuickReserveClassroom = async (classroom: Classroom) => {
+  const id = classroom.id!
+  const slots = classroomSlots.value[id] || []
+  const label = selectedSlotLabelByClassroom.value[id]
+  const selected = slots.find((s) => s.label === label && s.status === 'available')
+  if (!selected) {
+    showToast('请先选择一个可预约的时间段')
+    return
+  }
   const payload = buildReservationPayload({
     resourceType: 1,
-    classroomId: classroom.id!,
-    startTime: '14:00',
-    endTime: '16:00',
+    classroomId: id,
+    startTime: selected.startTime,
+    endTime: selected.endTime,
     purpose: '教室自习/研讨'
   })
   await submitReservation(payload)
+}
+
+const toggleSlotSelect = (classroom: Classroom, slot: ClassroomSlotStatus) => {
+  if (slot.status !== 'available' || !classroom.id) return
+  const current = selectedSlotLabelByClassroom.value[classroom.id] || null
+  selectedSlotLabelByClassroom.value = {
+    ...selectedSlotLabelByClassroom.value,
+    [classroom.id]: current === slot.label ? null : slot.label
+  }
 }
 
 const openSeatModal = (library: Library, floor: number) => {
@@ -232,7 +302,8 @@ const cancelReservation = async (item: Reservation) => {
   }).catch(() => false)
   if (!ok) return
   try {
-    await createReservation({ ...(item as any), status: 4 })
+    const updated: Reservation = { ...item, status: 4 }
+    await updateReservation(updated)
     showToast('已取消预约')
     await loadUserReservations()
   } catch (e) {
@@ -250,7 +321,7 @@ onMounted(() => {
   <div class="reservation">
     <van-nav-bar title="预约中心" />
 
-    <div class="page">
+    <div class="page" v-if="isLoggedIn">
       <div class="page-title">预约中心</div>
 
       <div class="status-tag-bar">
@@ -289,7 +360,12 @@ onMounted(() => {
           <div
             class="date-tag-item"
             :class="{ active: dateTab === 'today' }"
-            @click="dateTab = 'today'"
+            @click="
+              () => {
+                dateTab = 'today'
+                reloadSlotsForCurrentDate()
+              }
+            "
           >
             <div>今天</div>
             <div>{{ todayText }}</div>
@@ -297,7 +373,12 @@ onMounted(() => {
           <div
             class="date-tag-item"
             :class="{ active: dateTab === 'tomorrow' }"
-            @click="dateTab = 'tomorrow'"
+            @click="
+              () => {
+                dateTab = 'tomorrow'
+                reloadSlotsForCurrentDate()
+              }
+            "
           >
             <div>明天</div>
             <div>{{ tomorrowText }}</div>
@@ -305,7 +386,12 @@ onMounted(() => {
           <div
             class="date-tag-item"
             :class="{ active: dateTab === 'dayAfter' }"
-            @click="dateTab = 'dayAfter'"
+            @click="
+              () => {
+                dateTab = 'dayAfter'
+                reloadSlotsForCurrentDate()
+              }
+            "
           >
             <div>后天</div>
             <div>{{ dayAfterText }}</div>
@@ -349,6 +435,21 @@ onMounted(() => {
             <div class="classroom-desc">
               {{ room.floor }}层 ｜ 容量 {{ room.capacity || '-' }} 人
             </div>
+            <div class="classroom-time">
+              <div
+                v-for="slot in classroomSlots[room.id!] || []"
+                :key="slot.label"
+                class="time-slot"
+                :class="{
+                  available: slot.status === 'available',
+                  occupied: slot.status === 'occupied',
+                  selected: selectedSlotLabelByClassroom[room.id!] === slot.label
+                }"
+                @click="toggleSlotSelect(room, slot)"
+              >
+                {{ slot.label }}
+              </div>
+            </div>
             <div class="classroom-footer">
               <div class="classroom-capacity">教室预约</div>
               <button class="btn btn-small" @click="handleQuickReserveClassroom(room)">
@@ -373,6 +474,21 @@ onMounted(() => {
             </div>
             <div class="classroom-desc">
               {{ room.floor }}层 ｜ 容量 {{ room.capacity || '-' }} 人
+            </div>
+            <div class="classroom-time">
+              <div
+                v-for="slot in classroomSlots[room.id!] || []"
+                :key="slot.label"
+                class="time-slot"
+                :class="{
+                  available: slot.status === 'available',
+                  occupied: slot.status === 'occupied',
+                  selected: selectedSlotLabelByClassroom[room.id!] === slot.label
+                }"
+                @click="toggleSlotSelect(room, slot)"
+              >
+                {{ slot.label }}
+              </div>
             </div>
             <div class="classroom-footer">
               <div class="classroom-capacity">研讨室预约</div>
@@ -477,6 +593,10 @@ onMounted(() => {
         </div>
         <div v-else class="empty-text">暂无已取消预约</div>
       </div>
+    </div>
+
+    <div v-else class="not-login">
+      请先登录后再进行预约和查看记录。
     </div>
 
     <van-popup
@@ -606,6 +726,36 @@ onMounted(() => {
   margin-bottom: 12px;
 }
 
+.classroom-time {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.time-slot {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  background-color: #f5f7fa;
+  color: #333;
+}
+
+.time-slot.available {
+  background-color: #ecf5ff;
+  color: #4a90e2;
+}
+
+.time-slot.occupied {
+  background-color: #e5e7eb;
+  color: #9ca3af;
+}
+
+.time-slot.selected {
+  background-color: #4a90e2;
+  color: #ffffff;
+}
+
 .classroom-footer {
   display: flex;
   justify-content: space-between;
@@ -699,6 +849,13 @@ onMounted(() => {
 
 .empty-text {
   margin-top: 24px;
+  text-align: center;
+  font-size: 14px;
+  color: #909399;
+}
+
+.not-login {
+  padding: 40px 16px;
   text-align: center;
   font-size: 14px;
   color: #909399;

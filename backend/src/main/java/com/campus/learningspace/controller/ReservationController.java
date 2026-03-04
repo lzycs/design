@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/reservation")
@@ -28,6 +29,16 @@ public class ReservationController {
             @PathVariable Long classroomId,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
         return Result.success(reservationService.getClassroomReservations(classroomId, date));
+    }
+
+    /**
+     * 获取某教室在指定日期的标准时间段预约状态（可用于前端时间段展示）
+     */
+    @GetMapping("/classroom/{classroomId}/slots")
+    public Result<List<Map<String, Object>>> getClassroomSlotStatuses(
+            @PathVariable Long classroomId,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
+        return Result.success(reservationService.getClassroomSlotStatuses(classroomId, date));
     }
 
     @GetMapping("/{id}")

@@ -33,3 +33,20 @@ export const getUserReservations = (userId: number) => {
   return request.get<any, Result<Reservation[]>>(`/reservation/user/${userId}`)
 }
 
+export interface ClassroomSlotStatus {
+  label: string
+  startTime: string
+  endTime: string
+  status: 'available' | 'occupied'
+}
+
+export const getClassroomSlots = (classroomId: number, date: string) => {
+  return request.get<any, Result<ClassroomSlotStatus[]>>('/reservation/classroom/' + classroomId + '/slots', {
+    params: { date }
+  })
+}
+
+export const updateReservation = (reservation: Reservation) => {
+  return request.put<any, Result<boolean>>('/reservation', reservation)
+}
+

@@ -106,6 +106,17 @@ CREATE TABLE IF NOT EXISTS `library_seat` (
     FOREIGN KEY (`library_id`) REFERENCES `library`(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图书馆座位表';
 
+-- 标准时间段表（用于前端展示每个教室的可预约时间段）
+CREATE TABLE IF NOT EXISTS `time_slot` (
+    `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '时间段ID',
+    `label` VARCHAR(50) NOT NULL COMMENT '时间段标签，如 8:00-10:00',
+    `start_time` TIME NOT NULL COMMENT '开始时间',
+    `end_time` TIME NOT NULL COMMENT '结束时间',
+    `sort_order` INT NOT NULL DEFAULT 0 COMMENT '排序号',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='标准预约时间段表';
+
 -- 课程表 (课程安排在教学楼的教室中)
 CREATE TABLE IF NOT EXISTS `course` (
     `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '课程ID',
@@ -336,6 +347,14 @@ INSERT IGNORE INTO `library_seat` (`library_id`, `seat_label`, `floor`, `row_num
 INSERT IGNORE INTO `course` (`classroom_id`, `course_name`, `teacher_name`, `week_day`, `start_time`, `end_time`, `start_week`, `end_week`) VALUES
 (1, '高等数学', '王老师', 2, '08:00:00', '09:40:00', 1, 16),
 (3, '小组讨论-数据结构', '李老师', 4, '10:00:00', '11:40:00', 1, 8);
+
+-- 插入标准时间段数据
+INSERT IGNORE INTO `time_slot` (`label`, `start_time`, `end_time`, `sort_order`) VALUES
+('8:00-10:00', '08:00:00', '10:00:00', 1),
+('10:00-12:00', '10:00:00', '12:00:00', 2),
+('12:00-14:00', '12:00:00', '14:00:00', 3),
+('14:00-16:00', '14:00:00', '16:00:00', 4),
+('16:00-18:00', '16:00:00', '18:00:00', 5);
 
 -- 插入预约记录 (预约教室)
 INSERT IGNORE INTO `reservation` (`user_id`, `resource_type`, `classroom_id`, `reservation_date`, `start_time`, `end_time`, `duration`, `purpose`, `status`) VALUES
