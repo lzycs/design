@@ -20,10 +20,9 @@ public class ClassroomService extends ServiceImpl<ClassroomMapper, Classroom> {
 
     public List<Classroom> getAvailableClassrooms(Integer type) {
         LambdaQueryWrapper<Classroom> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Classroom::getStatus, 1)
-                .and(w -> w.isNull(Classroom::getRealTimeStatus)
-                        .or()
-                        .eq(Classroom::getRealTimeStatus, 0));
+        // 为了让直接在数据库中新建的教室默认都能在前端展示，
+        // 这里只按状态为“正常”过滤，不再依赖 realTimeStatus 字段。
+        wrapper.eq(Classroom::getStatus, 1);
         if (type != null) {
             wrapper.eq(Classroom::getType, type);
         }

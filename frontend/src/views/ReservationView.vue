@@ -210,7 +210,7 @@ const submitReservation = async (payload: ReservationPayload | null) => {
   try {
     await createReservation(payload)
     showToast('预约成功')
-    await loadUserReservations()
+    await Promise.all([loadUserReservations(), reloadSlotsForCurrentDate()])
     statusTab.value = 'pending'
   } catch (e) {
     console.error(e)
@@ -305,7 +305,7 @@ const cancelReservation = async (item: Reservation) => {
     const updated: Reservation = { ...item, status: 4 }
     await updateReservation(updated)
     showToast('已取消预约')
-    await loadUserReservations()
+    await Promise.all([loadUserReservations(), reloadSlotsForCurrentDate()])
   } catch (e) {
     console.error(e)
     showToast('取消失败，请稍后重试')
