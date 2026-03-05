@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { showToast, showConfirmDialog } from 'vant'
 import { getAvailableClassrooms, type Classroom } from '@/api/classroom'
 import { getLibraryList, type Library } from '@/api/library'
@@ -14,6 +15,8 @@ import {
 } from '@/api/reservation'
 import { getSeatsByLibraryAndFloor, type LibrarySeat } from '@/api/librarySeat'
 
+const router = useRouter()
+
 const statusTab = ref<'booking' | 'pending' | 'checked' | 'cancelled'>('booking')
 const dateTab = ref<'today' | 'tomorrow' | 'dayAfter'>('today')
 const areaTab = ref<'classroom' | 'seminar' | 'library'>('classroom')
@@ -24,7 +27,6 @@ const libraries = ref<Library[]>([])
 
 const reservations = ref<Reservation[]>([])
 const classroomSlots = ref<Record<number, ClassroomSlotStatus[]>>({})
-const selectedSlotLabelByClassroom = ref<Record<number, string | null>>({})
 
 const loading = ref(false)
 const seatModalShow = ref(false)
@@ -218,33 +220,7 @@ const submitReservation = async (payload: ReservationPayload | null) => {
   }
 }
 
-const handleQuickReserveClassroom = async (classroom: Classroom) => {
-  const id = classroom.id!
-  const slots = classroomSlots.value[id] || []
-  const label = selectedSlotLabelByClassroom.value[id]
-  const selected = slots.find((s) => s.label === label && s.status === 'available')
-  if (!selected) {
-    showToast('请先选择一个可预约的时间段')
-    return
-  }
-  const payload = buildReservationPayload({
-    resourceType: 1,
-    classroomId: id,
-    startTime: selected.startTime,
-    endTime: selected.endTime,
-    purpose: '教室自习/研讨'
-  })
-  await submitReservation(payload)
-}
-
-const toggleSlotSelect = (classroom: Classroom, slot: ClassroomSlotStatus) => {
-  if (slot.status !== 'available' || !classroom.id) return
-  const current = selectedSlotLabelByClassroom.value[classroom.id] || null
-  selectedSlotLabelByClassroom.value = {
-    ...selectedSlotLabelByClassroom.value,
-    [classroom.id]: current === slot.label ? null : slot.label
-  }
-}
+// 预约页目前只作为教室详情入口使用，保留选中状态和具体预约逻辑在详情页中处理。
 
 const openSeatModal = (library: Library, floor: number) => {
   seatLibraryId.value = library.id ?? null
@@ -310,6 +286,11 @@ const cancelReservation = async (item: Reservation) => {
     console.error(e)
     showToast('取消失败，请稍后重试')
   }
+}
+
+const goToClassroomDetail = (room: Classroom) => {
+  if (!room.id) return
+  router.push(`/reservation/classroom/${room.id}`)
 }
 
 onMounted(() => {
@@ -423,38 +404,36 @@ onMounted(() => {
         </div>
 
         <div v-if="areaTab === 'classroom'">
-          <div
-            v-for="room in normalClassrooms"
-            :key="room.id"
-            class="classroom-item"
-          >
-            <div class="classroom-header">
-              <div class="classroom-name">{{ room.name }}</div>
-              <div class="classroom-status">空闲</div>
-            </div>
-            <div class="classroom-desc">
-              {{ room.floor }}层 ｜ 容量 {{ room.capacity || '-' }} 人
-            </div>
-            <div class="classroom-time">
-              <div
-                v-for="slot in classroomSlots[room.id!] || []"
-                :key="slot.label"
-                class="time-slot"
-                :class="{
-                  available: slot.status === 'available',
-                  occupied: slot.status === 'occupied',
-                  selected: selectedSlotLabelByClassroom[room.id!] === slot.label
-                }"
-                @click="toggleSlotSelect(room, slot)"
-              >
-                {{ slot.label }}
+          <div class="card state-card">
+            <div
+              v-for="room in normalClassrooms"
+              :key="room.id"
+              class="state-item list-item"
+              @click="goToClassroomDetail(room)"
+            >
+              <div class="state-left list-left">
+                <div
+                  class="state-tag"
+                  :class="{
+                    'tag-free': (classroomSlots[room.id!] || []).some((s) => s.status === 'available'),
+                    'tag-booked': (classroomSlots[room.id!] || []).every((s) => s.status === 'occupied')
+                  }"
+                >
+                  {{
+                    (classroomSlots[room.id!] || []).some((s) => s.status === 'available') ? '空闲' : '约满'
+                  }}
+                </div>
+                <div class="state-info list-info">
+                  <h3>{{ room.name }}</h3>
+                  <p>
+                    {{ room.floor }}层 |
+                    容量 {{ room.capacity || '-' }} 人
+                  </p>
+                </div>
               </div>
-            </div>
-            <div class="classroom-footer">
-              <div class="classroom-capacity">教室预约</div>
-              <button class="btn btn-small" @click="handleQuickReserveClassroom(room)">
-                立即预约
-              </button>
+              <div class="state-right list-right">
+                <i class="icon iconfont icon-arrow-right" />
+              </div>
             </div>
           </div>
           <div v-if="!loading && normalClassrooms.length === 0" class="empty-text">
@@ -463,38 +442,36 @@ onMounted(() => {
         </div>
 
         <div v-else-if="areaTab === 'seminar'">
-          <div
-            v-for="room in seminarRooms"
-            :key="room.id"
-            class="classroom-item"
-          >
-            <div class="classroom-header">
-              <div class="classroom-name">{{ room.name }}</div>
-              <div class="classroom-status">空闲</div>
-            </div>
-            <div class="classroom-desc">
-              {{ room.floor }}层 ｜ 容量 {{ room.capacity || '-' }} 人
-            </div>
-            <div class="classroom-time">
-              <div
-                v-for="slot in classroomSlots[room.id!] || []"
-                :key="slot.label"
-                class="time-slot"
-                :class="{
-                  available: slot.status === 'available',
-                  occupied: slot.status === 'occupied',
-                  selected: selectedSlotLabelByClassroom[room.id!] === slot.label
-                }"
-                @click="toggleSlotSelect(room, slot)"
-              >
-                {{ slot.label }}
+          <div class="card state-card">
+            <div
+              v-for="room in seminarRooms"
+              :key="room.id"
+              class="state-item list-item"
+              @click="goToClassroomDetail(room)"
+            >
+              <div class="state-left list-left">
+                <div
+                  class="state-tag"
+                  :class="{
+                    'tag-free': (classroomSlots[room.id!] || []).some((s) => s.status === 'available'),
+                    'tag-booked': (classroomSlots[room.id!] || []).every((s) => s.status === 'occupied')
+                  }"
+                >
+                  {{
+                    (classroomSlots[room.id!] || []).some((s) => s.status === 'available') ? '空闲' : '约满'
+                  }}
+                </div>
+                <div class="state-info list-info">
+                  <h3>{{ room.name }}</h3>
+                  <p>
+                    {{ room.floor }}层 |
+                    容量 {{ room.capacity || '-' }} 人
+                  </p>
+                </div>
               </div>
-            </div>
-            <div class="classroom-footer">
-              <div class="classroom-capacity">研讨室预约</div>
-              <button class="btn btn-small" @click="handleQuickReserveClassroom(room)">
-                立即预约
-              </button>
+              <div class="state-right list-right">
+                <i class="icon iconfont icon-arrow-right" />
+              </div>
             </div>
           </div>
           <div v-if="!loading && seminarRooms.length === 0" class="empty-text">
@@ -697,6 +674,55 @@ onMounted(() => {
   background-color: #ffffff;
   margin-bottom: 12px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.state-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 8px 0;
+}
+
+.state-item {
+  cursor: pointer;
+}
+
+.state-left {
+  display: flex;
+  align-items: center;
+}
+
+.state-info h3 {
+  font-size: 16px;
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+.state-info p {
+  font-size: 12px;
+  color: #909399;
+  margin-top: 4px;
+}
+
+.state-tag {
+  width: 48px;
+  height: 24px;
+  border-radius: 12px;
+  font-size: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #ffffff;
+  margin-right: 12px;
+}
+
+.tag-free {
+  background-color: #4a90e2;
+}
+
+.tag-booked {
+  background-color: #f7d060;
+  color: #1a1a1a;
 }
 
 .classroom-header {

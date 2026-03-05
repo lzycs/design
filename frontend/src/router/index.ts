@@ -20,6 +20,11 @@ const router = createRouter({
       component: () => import('../views/ReservationView.vue'),
     },
     {
+      path: '/reservation/classroom/:id',
+      name: 'classroom-detail',
+      component: () => import('../views/ClassroomDetailView.vue'),
+    },
+    {
       path: '/profile',
       name: 'profile',
       component: () => import('../views/ProfileView.vue'),
