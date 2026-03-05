@@ -10,14 +10,11 @@ CREATE TABLE IF NOT EXISTS `user` (
     `password` VARCHAR(255) NOT NULL COMMENT '密码',
     `real_name` VARCHAR(100) NOT NULL COMMENT '真实姓名',
     `student_id` VARCHAR(50) UNIQUE COMMENT '学号',
-    `college` VARCHAR(100) COMMENT '学院/部门',
     `email` VARCHAR(255) COMMENT '邮箱',
     `phone` VARCHAR(50) COMMENT '手机号',
     `role` TINYINT NOT NULL DEFAULT 1 COMMENT '角色: 1-学生, 2-教师, 3-管理员, 4-后勤人员',
     `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态: 0-禁用, 1-正常',
     `weekly_reservation_count` INT NOT NULL DEFAULT 0 COMMENT '本周预约次数',
-    `weekly_reservation_limit` INT NOT NULL DEFAULT 4 COMMENT '每周预约上限',
-    `single_reservation_max_hours` INT NOT NULL DEFAULT 4 COMMENT '单次最长预约时长(小时)',
     `violation_count` INT NOT NULL DEFAULT 0 COMMENT '违约次数',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -25,37 +22,6 @@ CREATE TABLE IF NOT EXISTS `user` (
     INDEX idx_username (`username`),
     INDEX idx_student_id (`student_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
-
--- 兼容旧库：补齐 user 表新增字段（避免 schema 已存在时插入报错）
-SET @col_cnt := (
-    SELECT COUNT(*)
-    FROM information_schema.COLUMNS
-    WHERE TABLE_SCHEMA = DATABASE()
-      AND TABLE_NAME = 'user'
-      AND COLUMN_NAME = 'college'
-);
-SET @sql := IF(@col_cnt = 0, 'ALTER TABLE `user` ADD COLUMN `college` VARCHAR(100) COMMENT ''学院/部门'' AFTER `student_id`', 'SELECT 1');
-PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
-
-SET @col_cnt := (
-    SELECT COUNT(*)
-    FROM information_schema.COLUMNS
-    WHERE TABLE_SCHEMA = DATABASE()
-      AND TABLE_NAME = 'user'
-      AND COLUMN_NAME = 'weekly_reservation_limit'
-);
-SET @sql := IF(@col_cnt = 0, 'ALTER TABLE `user` ADD COLUMN `weekly_reservation_limit` INT NOT NULL DEFAULT 4 COMMENT ''每周预约上限'' AFTER `weekly_reservation_count`', 'SELECT 1');
-PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
-
-SET @col_cnt := (
-    SELECT COUNT(*)
-    FROM information_schema.COLUMNS
-    WHERE TABLE_SCHEMA = DATABASE()
-      AND TABLE_NAME = 'user'
-      AND COLUMN_NAME = 'single_reservation_max_hours'
-);
-SET @sql := IF(@col_cnt = 0, 'ALTER TABLE `user` ADD COLUMN `single_reservation_max_hours` INT NOT NULL DEFAULT 4 COMMENT ''单次最长预约时长(小时)'' AFTER `weekly_reservation_limit`', 'SELECT 1');
-PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 -- 教学楼表（与后端 Building 实体的 building 表对应）
 CREATE TABLE IF NOT EXISTS `building` (
@@ -250,21 +216,6 @@ CREATE TABLE IF NOT EXISTS `review` (
     FOREIGN KEY (`reservation_id`) REFERENCES `reservation`(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='评价表';
 
--- 教室收藏表（用于“我的收藏”）
-CREATE TABLE IF NOT EXISTS `classroom_favorite` (
-    `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '收藏ID',
-    `user_id` BIGINT NOT NULL COMMENT '用户ID',
-    `classroom_id` BIGINT NOT NULL COMMENT '教室ID',
-    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '删除标记: 0-未删除, 1-已删除',
-    UNIQUE KEY uk_user_classroom_deleted (`user_id`, `classroom_id`, `deleted`),
-    INDEX idx_user_id (`user_id`),
-    INDEX idx_classroom_id (`classroom_id`),
-    FOREIGN KEY (`user_id`) REFERENCES `user`(`id`),
-    FOREIGN KEY (`classroom_id`) REFERENCES `classroom`(`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='教室收藏表';
-
 -- 教室反馈表（用于反馈页：环境评分、设备评分、评价内容等）
 CREATE TABLE IF NOT EXISTS `classroom_feedback` (
     `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '反馈ID',
@@ -374,11 +325,11 @@ CREATE TABLE IF NOT EXISTS `notification` (
 -- ----------------------------
 
 -- 插入用户数据
-INSERT IGNORE INTO `user` (`username`, `password`, `real_name`, `student_id`, `college`, `email`, `phone`, `role`, `status`, `weekly_reservation_limit`, `single_reservation_max_hours`) VALUES
-('zhangsan', '123456', '张三', '20230001', '计算机学院', 'zhangsan@example.com', '13800138001', 1, 1, 4, 4),
-('lisi', '123456', '李四', '20230002', '信息学院', 'lisi@example.com', '13800138002', 1, 1, 4, 4),
-('wanglaoshi', '123456', '王老师', NULL, '计算机学院', 'wang@edu.com', '13800138003', 2, 1, 4, 4),
-('admin', '123456', '管理员', NULL, '系统管理员', 'admin@system.com', '13800138000', 3, 1, 4, 4);
+INSERT IGNORE INTO `user` (`username`, `password`, `real_name`, `student_id`, `email`, `phone`, `role`, `status`) VALUES
+('zhangsan', '123456', '张三', '20220001', 'zhangsan@example.com', '13800138001', 1, 1),
+('lisi', '123456', '李四', '20220002', 'lisi@example.com', '13800138002', 1, 1),
+('wanglaoshi', '123456', '王老师', NULL, 'wang@edu.com', '13800138003', 2, 1),
+('admin', '123456', '管理员', NULL, 'admin@system.com', '13800138000', 3, 1);
 
 -- 插入教学楼数据
 INSERT IGNORE INTO `building` (`name`, `address`, `floor_count`, `description`, `latitude`, `longitude`) VALUES
@@ -448,11 +399,6 @@ INSERT IGNORE INTO `repair` (`user_id`, `resource_type`, `classroom_id`, `title`
 -- 插入评价
 INSERT IGNORE INTO `review` (`user_id`, `resource_type`, `classroom_id`, `reservation_id`, `score`, `content`, `tags`) VALUES
 (1, 1, 3, 1, 5, '研讨室很安静，设备齐全，适合小组讨论。', '["安静", "设备好"]');
-
--- 插入收藏
-INSERT IGNORE INTO `classroom_favorite` (`user_id`, `classroom_id`, `deleted`) VALUES
-(1, 1, 0),
-(1, 3, 0);
 
 -- 插入组队需求
 INSERT IGNORE INTO `team_request` (`user_id`, `title`, `description`, `expected_count`, `current_count`) VALUES

@@ -69,6 +69,12 @@ const dataLoading = ref(false)
 
 const storedUser = ref<User | null>(null)
 
+const reservations = ref<Reservation[]>([])
+const repairs = ref<Repair[]>([])
+const reviews = ref<Review[]>([])
+const teams = ref<TeamRequest[]>([])
+const studyPlans = ref<StudyPlan[]>([])
+
 const loginForm = ref({
   username: '',
   password: ''
@@ -106,13 +112,18 @@ const loadUserData = async () => {
   dataLoading.value = true
   try {
     const userId = storedUser.value.id
-    await Promise.all([
+    const [reservationRes, repairRes, reviewRes, teamRes, planRes] = await Promise.all([
       request.get(`/reservation/user/${userId}`),
       request.get(`/repair/user/${userId}`),
       request.get(`/review/user/${userId}`),
       request.get(`/team/user/${userId}`),
       request.get(`/study-plan/user/${userId}`)
     ])
+    reservations.value = reservationRes.data ?? []
+    repairs.value = repairRes.data ?? []
+    reviews.value = reviewRes.data ?? []
+    teams.value = teamRes.data ?? []
+    studyPlans.value = planRes.data ?? []
   } catch (e) {
     console.error(e)
   } finally {
@@ -188,115 +199,135 @@ onMounted(async () => {
 
 <template>
   <div class="profile">
-    <van-nav-bar title="个人中心" />
-
-    <template v-if="isLoggedIn">
-      <div class="profile-main">
-        <div class="profile-card">
-          <div
-            class="menu-item menu-item-info"
-            @click="$router.push('/profile/info')"
-          >
-            <div class="menu-icon-dot" />
-            <div class="menu-text">我的信息</div>
-          </div>
-
-          <div
-            class="menu-item"
-            @click="$router.push('/profile/reservations')"
-          >
-            <van-icon name="calendar-o" class="menu-icon" />
-            <div class="menu-text">我的预约</div>
-          </div>
-
-          <div
-            class="menu-item"
-            @click="$router.push('/profile/repairs')"
-          >
-            <van-icon name="todo-list-o" class="menu-icon" />
-            <div class="menu-text">我的报修</div>
-          </div>
-
-          <div
-            class="menu-item"
-            @click="$router.push('/profile/reviews')"
-          >
-            <van-icon name="star-o" class="menu-icon" />
-            <div class="menu-text">我的评价</div>
-          </div>
-
-          <div
-            class="menu-item"
-            @click="$router.push('/profile/teams')"
-          >
-            <van-icon name="friends-o" class="menu-icon" />
-            <div class="menu-text">我的团队</div>
-          </div>
-
-          <div
-            class="menu-item"
-            @click="$router.push('/profile/plans')"
-          >
-            <van-icon name="cluster-o" class="menu-icon" />
-            <div class="menu-text">学习计划</div>
+    <div class="my-page">
+      <template v-if="isLoggedIn">
+        <div class="user-header">
+          <div class="user-info">
+            <div class="user-name">{{ storedUser?.realName || storedUser?.username }}</div>
+            <div class="user-id">
+              学号/工号：{{ storedUser?.studentId || '未填写' }}
+            </div>
           </div>
         </div>
 
-      </div>
-
-      <div class="profile-actions">
-        <van-button type="primary" block @click="handleLogout">退出登录</van-button>
-      </div>
-    </template>
-
-    <template v-else>
-      <van-tabs v-model:active="activeTab">
-        <van-tab title="登录" name="login">
-          <div class="form">
-            <van-field v-model="loginForm.username" label="用户名" placeholder="请输入用户名" />
-            <van-field
-              v-model="loginForm.password"
-              label="密码"
-              type="password"
-              placeholder="请输入密码"
-            />
-            <van-button
-              type="primary"
-              block
-              class="form-button"
-              :loading="loading"
-              @click="handleLogin"
+        <div class="function-menu">
+          <div class="menu-group">
+            <div
+              class="menu-item"
+              @click="$router.push('/profile/reservations')"
             >
-              登录
-            </van-button>
-          </div>
-        </van-tab>
-        <van-tab title="注册" name="register">
-          <div class="form">
-            <van-field v-model="registerForm.username" label="用户名" placeholder="请输入用户名" />
-            <van-field
-              v-model="registerForm.password"
-              label="密码"
-              type="password"
-              placeholder="请输入密码"
-            />
-            <van-field v-model="registerForm.realName" label="姓名" placeholder="请输入姓名" />
-            <van-field v-model="registerForm.studentId" label="学号" placeholder="请输入学号" />
-            <van-field v-model="registerForm.email" label="邮箱" placeholder="请输入邮箱" />
-            <van-field v-model="registerForm.phone" label="手机号" placeholder="请输入手机号" />
-            <van-button
-              type="primary"
-              block
-              class="form-button"
-              :loading="loading"
-              @click="handleRegister"
+              <div class="menu-left">
+                <div class="menu-icon">
+                  <van-icon name="calendar-o" />
+                </div>
+                <div class="menu-text">我的预约</div>
+              </div>
+              <div class="menu-right">
+                <van-icon name="arrow" class="menu-arrow" />
+              </div>
+            </div>
+
+            <div
+              class="menu-item"
+              @click="$router.push('/profile/reviews')"
             >
-              注册并登录
-            </van-button>
+              <div class="menu-left">
+                <div class="menu-icon">
+                  <van-icon name="star-o" />
+                </div>
+                <div class="menu-text">我的评价</div>
+              </div>
+              <div class="menu-right">
+                <van-icon name="arrow" class="menu-arrow" />
+              </div>
+            </div>
+
+            <div
+              class="menu-item"
+              @click="$router.push('/profile/repairs')"
+            >
+              <div class="menu-left">
+                <div class="menu-icon">
+                  <van-icon name="setting-o" />
+                </div>
+                <div class="menu-text">我的报修</div>
+              </div>
+              <div class="menu-right">
+                <van-icon name="arrow" class="menu-arrow" />
+              </div>
+            </div>
+
+            <div
+              class="menu-item"
+              @click="$router.push('/profile/teams')"
+            >
+              <div class="menu-left">
+                <div class="menu-icon">
+                  <van-icon name="friends-o" />
+                </div>
+                <div class="menu-text">我的协作</div>
+              </div>
+              <div class="menu-right">
+                <van-icon name="arrow" class="menu-arrow" />
+              </div>
+            </div>
           </div>
-        </van-tab>
-      </van-tabs>
-    </template>
+        </div>
+
+        <div class="profile-actions">
+          <van-button type="primary" block @click="handleLogout">退出登录</van-button>
+        </div>
+      </template>
+
+      <template v-else>
+        <van-tabs v-model:active="activeTab">
+          <van-tab title="登录" name="login">
+            <div class="form">
+              <van-field v-model="loginForm.username" label="用户名" placeholder="请输入用户名" />
+              <van-field
+                v-model="loginForm.password"
+                label="密码"
+                type="password"
+                placeholder="请输入密码"
+              />
+              <van-button
+                type="primary"
+                block
+                class="form-button"
+                :loading="loading"
+                @click="handleLogin"
+              >
+                登录
+              </van-button>
+            </div>
+          </van-tab>
+          <van-tab title="注册" name="register">
+            <div class="form">
+              <van-field v-model="registerForm.username" label="用户名" placeholder="请输入用户名" />
+              <van-field
+                v-model="registerForm.password"
+                label="密码"
+                type="password"
+                placeholder="请输入密码"
+              />
+              <van-field v-model="registerForm.realName" label="姓名" placeholder="请输入姓名" />
+              <van-field v-model="registerForm.studentId" label="学号" placeholder="请输入学号" />
+              <van-field v-model="registerForm.email" label="邮箱" placeholder="请输入邮箱" />
+              <van-field v-model="registerForm.phone" label="手机号" placeholder="请输入手机号" />
+              <van-button
+                type="primary"
+                block
+                class="form-button"
+                :loading="loading"
+                @click="handleRegister"
+              >
+                注册并登录
+              </van-button>
+            </div>
+          </van-tab>
+        </van-tabs>
+      </template>
+    </div>
   </div>
 </template>
 
@@ -306,52 +337,110 @@ onMounted(async () => {
   min-height: 100vh;
 }
 
-.profile-main {
-  padding: 16px;
+.my-page {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f5f7fa;
+  padding-bottom: 72px;
 }
 
-.profile-card {
+.user-header {
+  width: 100%;
+  height: 160px;
+  background: linear-gradient(135deg, #4a90e2 0%, #5c6bc0 100%);
+  border-radius: 0 0 24px 24px;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  color: #ffffff;
+}
+
+.user-info {
+  flex: 1;
+}
+
+.user-name {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.user-id {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.function-menu {
+  padding: 20px;
+}
+
+.menu-group {
   background-color: #ffffff;
   border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(15, 35, 95, 0.06);
-  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   margin-bottom: 16px;
 }
 
 .menu-item {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  padding: 14px 18px;
-  font-size: 14px;
-  color: #1f2933;
-  border-bottom: 1px solid #f0f2f5;
-  background: #ffffff;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f5f7fa;
 }
 
 .menu-item:last-child {
   border-bottom: none;
 }
 
-.menu-item.active {
-  background: linear-gradient(90deg, #f5f9ff, #ffffff);
-}
-
-.menu-icon-dot {
-  width: 20px;
-  height: 20px;
-  border-radius: 999px;
-  background: #e5efff;
-  margin-right: 10px;
+.menu-left {
+  display: flex;
+  align-items: center;
 }
 
 .menu-icon {
-  font-size: 18px;
-  color: #4b7cff;
-  margin-right: 10px;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background-color: #ecf5ff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 12px;
+}
+
+.menu-icon :deep(.van-icon) {
+  font-size: 16px;
+  color: #4a90e2;
 }
 
 .menu-text {
-  flex: 1;
+  font-size: 16px;
+  color: #1a1a1a;
+  font-weight: 500;
+}
+
+.menu-right {
+  display: flex;
+  align-items: center;
+}
+
+.menu-badge {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #f56c6c;
+  color: #ffffff;
+  font-size: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 8px;
+}
+
+.menu-arrow :deep(.van-icon) {
+  font-size: 16px;
+  color: #909399;
 }
 
 .form {
