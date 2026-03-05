@@ -2,7 +2,6 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getBuildingList, type Building } from '@/api/building'
-import { Cell, CellGroup, Tag } from 'vant'
 
 const router = useRouter()
 const buildings = ref<Building[]>([])
@@ -20,6 +19,14 @@ const goToClassrooms = (buildingId: number) => {
   router.push(`/classrooms/${buildingId}`)
 }
 
+const goReservation = () => {
+  router.push('/reservation')
+}
+
+const goMine = () => {
+  router.push('/profile')
+}
+
 onMounted(() => {
   loadBuildings()
 })
@@ -27,54 +34,248 @@ onMounted(() => {
 
 <template>
   <div class="home">
-    <van-nav-bar title="校园资源中心" />
-    
-    <div class="core-functions">
-      <van-grid column-num="2" :border="false">
-        <van-grid-item icon="map-o" text="实时状态查询" background-color="#93C5FD" />
-        <van-grid-item icon="calendar-o" text="在线预约预订" background-color="#1E40AF" />
-        <van-grid-item icon="tools-o" text="设施报修反馈" background-color="#F97316" />
-        <van-grid-item icon="team-o" text="小组协作匹配" background-color="#86EFAC" />
-      </van-grid>
-    </div>
+    <div class="home-page">
+      <!-- 顶部 Banner -->
+      <div class="banner">
+        <h1>校园学习空间预约系统</h1>
+        <p>便捷预约，高效学习</p>
+        <div class="banner-avatar">
+          <van-icon name="user-circle-o" class="avatar-icon" />
+        </div>
+      </div>
 
-    <div class="popular-reservations">
-      <h2>热门预约</h2>
-      <CellGroup>
-        <Cell
-          v-for="building in buildings"
-          :key="building.id"
-          :title="building.name"
-          :label="`今日14:00-16:00 可预约`"
-          is-link
-          @click="goToClassrooms(building.id!)"
-        >
-          <template #right-icon>
-            <Tag type="danger">🔥高热度</Tag>
-          </template>
-        </Cell>
-      </CellGroup>
+      <!-- 功能入口 -->
+      <div class="function-grid">
+        <div class="function-item" @click="goReservation">
+          <van-icon name="calendar-o" class="func-icon" />
+          <p>在线预约</p>
+        </div>
+        <div class="function-item">
+          <van-icon name="setting-o" class="func-icon" />
+          <p>设施保修</p>
+        </div>
+        <div class="function-item">
+          <van-icon name="friends-o" class="func-icon" />
+          <p>组队匹配</p>
+        </div>
+        <div class="function-item">
+          <van-icon name="notes-o" class="func-icon" />
+          <p>共享计划</p>
+        </div>
+      </div>
+
+      <!-- 教学楼导航 -->
+      <div class="building-nav">
+        <div class="module-title">
+          <van-icon name="home-o" class="module-icon" />
+          <span>教学楼导航</span>
+        </div>
+        <div class="building-list">
+          <div
+            v-for="(building, index) in buildings"
+            :key="building.id"
+            class="building-item"
+            @click="goToClassrooms(building.id!)"
+          >
+            <div class="building-number">{{ index + 1 }}</div>
+            <div class="building-name">{{ building.name }}</div>
+            <div class="building-status">
+              {{ building.status === 1 ? '可预约' : '部分维护' }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 底部 TabBar（仅样式，路由逻辑由 App.vue 控制） -->
+      <div class="tab-bar">
+        <div class="tab-item active">
+          <van-icon name="home-o" />
+          <span>首页</span>
+        </div>
+        <div class="tab-item" @click="goReservation">
+          <van-icon name="calendar-o" />
+          <span>预约</span>
+        </div>
+        <div class="tab-item" @click="goMine">
+          <van-icon name="user-o" />
+          <span>我的</span>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
 .home {
-  flex: 1;
   background-color: #f5f5f5;
+  min-height: 100vh;
 }
 
-.core-functions {
-  padding: 16px;
+.home-page {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  padding-bottom: 72px;
 }
 
-.popular-reservations {
-  padding: 16px;
+.banner {
+  width: 100%;
+  height: 180px;
+  background: linear-gradient(135deg, #4a90e2 0%, #5c6bc0 100%);
+  border-radius: 0 0 24px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #ffffff;
+  padding: 20px;
+  position: relative;
 }
 
-.popular-reservations h2 {
+.banner h1 {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.banner p {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.banner-avatar {
+  position: absolute;
+  bottom: -30px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-icon {
+  font-size: 32px;
+  color: #4a90e2;
+}
+
+.function-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  padding: 40px 20px 20px;
+}
+
+.function-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #ffffff;
+  padding: 16px 8px;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.func-icon {
+  font-size: 28px;
+  color: #4a90e2;
+  margin-bottom: 8px;
+}
+
+.function-item p {
+  font-size: 14px;
+  color: #333333;
+  font-weight: 500;
+}
+
+.building-nav {
+  margin: 20px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 20px;
+}
+
+.module-title {
+  font-size: 18px;
+  color: #1a1a1a;
+  font-weight: 600;
   margin-bottom: 16px;
-  font-size: 16px;
-  font-weight: bold;
+  display: flex;
+  align-items: center;
+}
+
+.module-icon {
+  font-size: 20px;
+  color: #4a90e2;
+  margin-right: 8px;
+}
+
+.building-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.building-item {
+  padding: 16px;
+  border-radius: 12px;
+  background-color: #f5f7fa;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.building-number {
+  font-size: 24px;
+  font-weight: 600;
+  color: #4a90e2;
+  margin-bottom: 4px;
+}
+
+.building-name {
+  font-size: 14px;
+  color: #333333;
+}
+
+.building-status {
+  font-size: 12px;
+  color: #67c23a;
+  margin-top: 4px;
+}
+
+.tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  max-width: 375px;
+  height: 56px;
+  background-color: #ffffff;
+  border-top: 1px solid #f5f5f5;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #909399;
+  font-size: 12px;
+}
+
+.tab-item :deep(.van-icon) {
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+.tab-item.active {
+  color: #4a90e2;
 }
 </style>
