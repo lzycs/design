@@ -3,8 +3,10 @@ package com.campus.learningspace.controller;
 import com.campus.learningspace.common.Result;
 import com.campus.learningspace.entity.TeamMember;
 import com.campus.learningspace.entity.TeamRequest;
+import com.campus.learningspace.entity.TeamMessage;
 import com.campus.learningspace.service.TeamMemberService;
 import com.campus.learningspace.service.TeamRequestService;
+import com.campus.learningspace.service.TeamMessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +24,9 @@ public class TeamController {
 
     @Autowired
     private TeamMemberService teamMemberService;
+
+    @Autowired
+    private TeamMessageService teamMessageService;
 
     @GetMapping("/request/{id}")
     public Result<TeamRequest> getRequestById(@PathVariable Long id) {
@@ -72,6 +77,28 @@ public class TeamController {
         }
         List<TeamRequest> requests = teamRequestService.listByIds(requestIds);
         return Result.success(requests);
+    }
+
+    @GetMapping("/request/{requestId}/messages")
+    public Result<List<TeamMessage>> getMessages(@PathVariable Long requestId,
+                                                 @RequestParam(required = false) Integer limit) {
+        return Result.success(teamMessageService.getMessagesByTeam(requestId, limit));
+    }
+
+    @PostMapping("/request/{requestId}/messages")
+    public Result<TeamMessage> sendMessage(@PathVariable Long requestId, @RequestBody TeamMessage message) {
+        message.setId(null);
+        message.setTeamRequestId(requestId);
+        if (message.getType() == null) {
+            message.setType(1);
+        }
+        teamMessageService.save(message);
+        return Result.success(message);
+    }
+
+    @GetMapping("/request/{requestId}/members")
+    public Result<List<TeamMember>> getMembers(@PathVariable Long requestId) {
+        return Result.success(teamMemberService.getTeamMembers(requestId));
     }
 }
 

@@ -20,6 +20,16 @@ const router = createRouter({
       component: () => import('../views/ReservationView.vue'),
     },
     {
+      path: '/collaboration',
+      name: 'collaboration',
+      component: () => import('../views/CollaborationView.vue'),
+    },
+    {
+      path: '/team-chat/:id',
+      name: 'team-chat',
+      component: () => import('../views/TeamChatView.vue'),
+    },
+    {
       path: '/reservation/classroom/:id',
       name: 'classroom-detail',
       component: () => import('../views/ClassroomDetailView.vue'),

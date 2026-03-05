@@ -67,6 +67,14 @@ const openTeamDetail = async (item: TeamRequest) => {
   }
 }
 
+const goChat = () => {
+  if (!teamDetail.value?.id) return
+  router.push({
+    path: `/team-chat/${teamDetail.value.id}`,
+    query: { title: teamDetail.value.title },
+  })
+}
+
 onMounted(async () => {
   loadFromStorage()
   if (storedUser.value?.id) {
@@ -116,6 +124,7 @@ onMounted(async () => {
         <div class="detail-row">标签：{{ teamDetail.tags || '无' }}</div>
         <div class="detail-row">状态：{{ teamDetail.status }}</div>
         <div class="detail-row">创建时间：{{ teamDetail.createTime }}</div>
+        <button class="chat-btn" @click="goChat">进入小组聊天</button>
       </div>
     </van-popup>
   </div>
@@ -161,6 +170,18 @@ onMounted(async () => {
   font-size: 14px;
   color: #374151;
   margin-bottom: 8px;
+}
+
+.chat-btn {
+  width: 100%;
+  margin-top: 12px;
+  height: 40px;
+  border-radius: 8px;
+  border: none;
+  background-color: #4a90e2;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
 }
 </style>
 

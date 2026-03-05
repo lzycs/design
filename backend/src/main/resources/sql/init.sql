@@ -279,6 +279,25 @@ CREATE TABLE IF NOT EXISTS `team_member` (
     FOREIGN KEY (`user_id`) REFERENCES `user`(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='组队成员表';
 
+-- 组队消息表（用于小组聊天记录）
+CREATE TABLE IF NOT EXISTS `team_message` (
+    `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '消息ID',
+    `team_request_id` BIGINT NOT NULL COMMENT '组队需求ID',
+    `sender_id` BIGINT NOT NULL COMMENT '发送者用户ID',
+    `sender_name` VARCHAR(100) COMMENT '发送者名称（冗余）',
+    `type` TINYINT NOT NULL DEFAULT 1 COMMENT '消息类型: 1-文本, 2-文件',
+    `content` TEXT COMMENT '消息内容或文件URL',
+    `file_name` VARCHAR(255) COMMENT '文件名',
+    `file_size` BIGINT COMMENT '文件大小（字节）',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '删除标记: 0-未删除, 1-已删除',
+    INDEX idx_team_request_id (`team_request_id`),
+    INDEX idx_sender_id (`sender_id`),
+    FOREIGN KEY (`team_request_id`) REFERENCES `team_request`(`id`),
+    FOREIGN KEY (`sender_id`) REFERENCES `user`(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='组队消息表';
+
 -- 学习计划表
 CREATE TABLE IF NOT EXISTS `study_plan` (
     `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '计划ID',
@@ -401,12 +420,30 @@ INSERT IGNORE INTO `review` (`user_id`, `resource_type`, `classroom_id`, `reserv
 (1, 1, 3, 1, 5, '研讨室很安静，设备齐全，适合小组讨论。', '["安静", "设备好"]');
 
 -- 插入组队需求
-INSERT IGNORE INTO `team_request` (`user_id`, `title`, `description`, `expected_count`, `current_count`) VALUES
-(1, '寻找数据结构课程学习伙伴', '希望找2-3位同学一起学习和完成数据结构作业。', 3, 1);
+INSERT IGNORE INTO `team_request` (`user_id`, `title`, `description`, `tags`, `expected_count`, `current_count`) VALUES
+(1, '寻找数据结构课程学习伙伴', '希望找2-3位同学一起学习和完成数据结构作业。', '["学习协作","数据结构"]', 3, 1),
+(1, '期末高等数学刷题小组', '一起刷真题、总结错题，冲刺高数期末考试。', '["考试复习","高数"]', 4, 2),
+(2, 'Java项目开发组队', '基于SpringBoot的课程项目开发，欢迎有Java基础的同学加入。', '["项目开发","Java"]', 4, 1),
+(2, '25考研公共课自习搭子', '每天晚上自习室互相监督打卡，主攻政治+英语。', '["考研自习","公共课"]', 5, 2),
+(3, '英语口语练习角', '每周两次线下口语角，提升英语口语表达。', '["语言学习","英语口语"]', 3, 1);
 
 -- 插入组队成员
 INSERT IGNORE INTO `team_member` (`team_request_id`, `user_id`, `role`) VALUES
-(1, 1, 1);
+(1, 1, 1),
+(2, 1, 1),
+(2, 2, 2),
+(3, 2, 1),
+(4, 1, 2),
+(4, 2, 1),
+(5, 3, 1);
+
+-- 插入小组聊天消息（以“Java项目开发组队”为例，假设其ID为3）
+INSERT IGNORE INTO `team_message` (`team_request_id`, `sender_id`, `sender_name`, `type`, `content`)
+VALUES
+(3, 2, '李四', 1, '大家好，本周三下午3点研讨室讨论项目需求，记得准时参加！'),
+(3, 2, '李四', 1, '我整理了一些SpringBoot的学习资料，等下发给大家'),
+(3, 2, '李四', 2, 'SpringBoot教程.pdf'),
+(3, 1, '张三', 1, '收到！我这边负责前端部分，已经开始搭建框架了');
 
 -- 插入学习计划
 INSERT IGNORE INTO `study_plan` (`team_request_id`, `user_id`, `reservation_id`, `title`, `plan_date`, `start_time`, `end_time`) VALUES

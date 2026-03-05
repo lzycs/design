@@ -23,6 +23,14 @@ const goReservation = () => {
   router.push('/reservation')
 }
 
+const goFeedback = () => {
+  router.push('/feedback')
+}
+
+const goCollaboration = () => {
+  router.push('/collaboration')
+}
+
 const goMine = () => {
   router.push('/profile')
 }
@@ -50,11 +58,11 @@ onMounted(() => {
           <van-icon name="calendar-o" class="func-icon" />
           <p>在线预约</p>
         </div>
-        <div class="function-item">
+        <div class="function-item" @click="goFeedback">
           <van-icon name="setting-o" class="func-icon" />
           <p>反馈评价</p>
         </div>
-        <div class="function-item">
+        <div class="function-item" @click="goCollaboration">
           <van-icon name="friends-o" class="func-icon" />
           <p>组队匹配</p>
         </div>
@@ -95,6 +103,10 @@ onMounted(() => {
         <div class="tab-item" @click="goReservation">
           <van-icon name="calendar-o" />
           <span>预约</span>
+        </div>
+        <div class="tab-item" @click="goCollaboration">
+          <van-icon name="friends-o" />
+          <span>协作</span>
         </div>
         <div class="tab-item" @click="goMine">
           <van-icon name="user-o" />

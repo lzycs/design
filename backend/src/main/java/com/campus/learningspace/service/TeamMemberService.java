@@ -16,5 +16,11 @@ public class TeamMemberService extends ServiceImpl<TeamMemberMapper, TeamMember>
         wrapper.eq(TeamMember::getUserId, userId);
         return list(wrapper);
     }
+
+    public List<TeamMember> getTeamMembers(Long teamRequestId) {
+        LambdaQueryWrapper<TeamMember> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(TeamMember::getTeamRequestId, teamRequestId);
+        return list(wrapper);
+    }
 }
 
