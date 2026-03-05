@@ -46,6 +46,14 @@ public class ReservationController {
         return Result.success(reservationService.getById(id));
     }
 
+    /**
+     * 扫码签到：前端模拟扫码成功后调用该接口，将预约状态更新为已签到
+     */
+    @PostMapping("/{id}/checkin")
+    public Result<Boolean> checkin(@PathVariable Long id) {
+        return Result.success(reservationService.checkin(id));
+    }
+
     @PostMapping
     public Result<Boolean> save(@RequestBody Reservation reservation) {
         return Result.success(reservationService.save(reservation));

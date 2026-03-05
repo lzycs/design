@@ -11,7 +11,8 @@ import {
   type Reservation,
   updateReservation,
   getClassroomSlots,
-  type ClassroomSlotStatus
+  type ClassroomSlotStatus,
+  checkinReservation
 } from '@/api/reservation'
 import { getSeatsByLibraryAndFloor, type LibrarySeat } from '@/api/librarySeat'
 
@@ -34,6 +35,10 @@ const seatFloor = ref(1)
 const seatLibraryId = ref<number | null>(null)
 const seatList = ref<LibrarySeat[]>([])
 const selectedSeatId = ref<number | null>(null)
+
+const showScan = ref(false)
+const scanningReservation = ref<Reservation | null>(null)
+let scanTimer: number | null = null
 
 const storedUser = ref<{ id: number } | null>(null)
 
@@ -293,6 +298,45 @@ const goToClassroomDetail = (room: Classroom) => {
   router.push(`/reservation/classroom/${room.id}`)
 }
 
+const startScan = (item: Reservation) => {
+  if (!item.id) return
+  scanningReservation.value = item
+  showScan.value = true
+  if (scanTimer !== null) {
+    clearTimeout(scanTimer)
+  }
+  scanTimer = window.setTimeout(async () => {
+    await finishScan()
+  }, 1000)
+}
+
+const cancelScan = () => {
+  showScan.value = false
+  scanningReservation.value = null
+  if (scanTimer !== null) {
+    clearTimeout(scanTimer)
+    scanTimer = null
+  }
+}
+
+const finishScan = async () => {
+  if (!scanningReservation.value?.id) {
+    cancelScan()
+    return
+  }
+  try {
+    await checkinReservation(scanningReservation.value.id)
+    showToast('签到成功')
+    await Promise.all([loadUserReservations(), reloadSlotsForCurrentDate()])
+    statusTab.value = 'checked'
+  } catch (e) {
+    console.error(e)
+    showToast('签到失败，请稍后重试')
+  } finally {
+    cancelScan()
+  }
+}
+
 onMounted(() => {
   loadAll()
 })
@@ -509,21 +553,40 @@ onMounted(() => {
       </div>
 
       <div v-else-if="statusTab === 'pending'">
-        <div class="card" v-if="pendingReservations.length">
+        <div v-if="pendingReservations.length">
           <div
             v-for="item in pendingReservations"
             :key="item.id"
-            class="list-item"
+            class="booking-item"
           >
-            <div class="list-left">
-              <div class="status-tag status-yellow">待签到</div>
-              <div class="list-info">
-                <h3>预约ID {{ item.id }}</h3>
-                <p>{{ item.reservationDate }} {{ item.startTime }}-{{ item.endTime }}</p>
+            <div class="booking-header">
+              <div class="booking-info">
+                <div class="booking-title">
+                  {{ item.resourceType === 1 ? '教室预约' : '图书馆预约' }} #{{ item.id }}
+                </div>
+                <div class="booking-subtitle">
+                  {{ item.reservationDate }} {{ item.startTime }}-{{ item.endTime }}
+                </div>
+              </div>
+              <div class="booking-status status-pending">待签到</div>
+            </div>
+            <div class="booking-detail">
+              <div class="detail-row">
+                <span class="detail-label">预约日期：</span>
+                <span>{{ item.reservationDate }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">预约时段：</span>
+                <span>{{ item.startTime }}-{{ item.endTime }}</span>
               </div>
             </div>
-            <div class="list-right">
-              <button class="btn btn-small" @click="cancelReservation(item)">取消预约</button>
+            <div class="booking-actions">
+              <button class="action-btn btn-secondary scan-btn" @click.stop="startScan(item)">
+                扫码签到
+              </button>
+              <button class="action-btn btn-danger cancel-btn" @click.stop="cancelReservation(item)">
+                取消预约
+              </button>
             </div>
           </div>
         </div>
@@ -531,21 +594,41 @@ onMounted(() => {
       </div>
 
       <div v-else-if="statusTab === 'checked'">
-        <div class="card" v-if="checkedReservations.length">
+        <div v-if="checkedReservations.length">
           <div
             v-for="item in checkedReservations"
             :key="item.id"
-            class="list-item"
+            class="booking-item"
           >
-            <div class="list-left">
-              <div class="status-tag status-green">已签到</div>
-              <div class="list-info">
-                <h3>预约ID {{ item.id }}</h3>
-                <p>{{ item.reservationDate }} {{ item.startTime }}-{{ item.endTime }}</p>
+            <div class="booking-header">
+              <div class="booking-info">
+                <div class="booking-title">
+                  {{ item.resourceType === 1 ? '教室预约' : '图书馆预约' }} #{{ item.id }}
+                </div>
+                <div class="booking-subtitle">
+                  {{ item.reservationDate }} {{ item.startTime }}-{{ item.endTime }}
+                </div>
+              </div>
+              <div class="booking-status status-checked">已签到</div>
+            </div>
+            <div class="booking-detail">
+              <div class="detail-row">
+                <span class="detail-label">预约日期：</span>
+                <span>{{ item.reservationDate }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">预约时段：</span>
+                <span>{{ item.startTime }}-{{ item.endTime }}</span>
+              </div>
+              <div class="detail-row" v-if="(item as any).checkinTime">
+                <span class="detail-label">签到时间：</span>
+                <span>{{ (item as any).checkinTime }}</span>
               </div>
             </div>
-            <div class="list-right">
-              <button class="btn btn-small btn-yellow">评价</button>
+            <div class="booking-actions">
+              <button class="action-btn btn-secondary">
+                查看详情
+              </button>
             </div>
           </div>
         </div>
@@ -553,18 +636,37 @@ onMounted(() => {
       </div>
 
       <div v-else>
-        <div class="card" v-if="cancelledReservations.length">
+        <div v-if="cancelledReservations.length">
           <div
             v-for="item in cancelledReservations"
             :key="item.id"
-            class="list-item"
+            class="booking-item"
           >
-            <div class="list-left">
-              <div class="status-tag status-gray">已取消</div>
-              <div class="list-info">
-                <h3>预约ID {{ item.id }}</h3>
-                <p>{{ item.reservationDate }} {{ item.startTime }}-{{ item.endTime }}</p>
+            <div class="booking-header">
+              <div class="booking-info">
+                <div class="booking-title">
+                  {{ item.resourceType === 1 ? '教室预约' : '图书馆预约' }} #{{ item.id }}
+                </div>
+                <div class="booking-subtitle">
+                  {{ item.reservationDate }} {{ item.startTime }}-{{ item.endTime }}
+                </div>
               </div>
+              <div class="booking-status status-cancelled">已取消</div>
+            </div>
+            <div class="booking-detail">
+              <div class="detail-row">
+                <span class="detail-label">预约日期：</span>
+                <span>{{ item.reservationDate }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">预约时段：</span>
+                <span>{{ item.startTime }}-{{ item.endTime }}</span>
+              </div>
+            </div>
+            <div class="booking-actions">
+              <button class="action-btn btn-secondary">
+                重新预约
+              </button>
             </div>
           </div>
         </div>
@@ -620,6 +722,16 @@ onMounted(() => {
         <button class="btn" :disabled="!selectedSeatId" @click="confirmSeatReservation">
           立即预约
         </button>
+      </div>
+    </van-popup>
+
+    <van-popup v-model:show="showScan" round :style="{ width: '80%' }">
+      <div class="scan-modal-inner">
+        <div class="scan-box">
+          <div class="scan-line" />
+        </div>
+        <div class="scan-tips">请扫描教室门口的签到二维码</div>
+        <button class="scan-cancel-btn" @click="cancelScan">取消扫码</button>
       </div>
     </van-popup>
   </div>
@@ -871,6 +983,143 @@ onMounted(() => {
 
 .status-gray {
   background-color: #909399;
+}
+
+.booking-item {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.booking-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.booking-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+}
+
+.booking-subtitle {
+  font-size: 12px;
+  color: #909399;
+}
+
+.booking-status {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.status-pending {
+  background-color: #fef7e0;
+  color: #e6a23c;
+}
+
+.status-checked {
+  background-color: #f0f9ff;
+  color: #4a90e2;
+}
+
+.status-cancelled {
+  background-color: #f9f0f5;
+  color: #9061f9;
+}
+
+.booking-detail {
+  margin: 8px 0 12px;
+  font-size: 14px;
+  color: #666666;
+}
+
+.detail-row {
+  margin-bottom: 4px;
+}
+
+.detail-label {
+  color: #909399;
+  margin-right: 4px;
+}
+
+.booking-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  border-top: 1px solid #f5f7fa;
+  padding-top: 8px;
+}
+
+.action-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: none;
+  font-size: 13px;
+}
+
+.btn-secondary {
+  background-color: #f5f7fa;
+  color: #666666;
+}
+
+.btn-danger {
+  background-color: #f56c6c;
+  color: #ffffff;
+}
+
+.scan-modal-inner {
+  padding: 16px;
+  text-align: center;
+}
+
+.scan-box {
+  width: 240px;
+  height: 240px;
+  border-radius: 16px;
+  border: 2px solid #4a90e2;
+  margin: 0 auto 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.scan-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #4a90e2;
+  animation: scanMove 2s linear infinite;
+}
+
+@keyframes scanMove {
+  0% {
+    top: 0;
+  }
+  100% {
+    top: 100%;
+  }
+}
+
+.scan-tips {
+  font-size: 14px;
+  color: #333333;
+  margin-bottom: 12px;
+}
+
+.scan-cancel-btn {
+  padding: 6px 16px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background-color: #f5f7fa;
+  font-size: 13px;
+  color: #666666;
 }
 
 .empty-text {

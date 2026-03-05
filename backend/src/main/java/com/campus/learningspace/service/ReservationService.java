@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
@@ -70,5 +71,23 @@ public class ReservationService extends ServiceImpl<ReservationMapper, Reservati
             wrapper.ne(Reservation::getId, excludeReservationId);
         }
         return count(wrapper) > 0;
+    }
+
+    /**
+     * 扫码签到：将预约状态设置为已签到，并记录签到时间
+     */
+    public boolean checkin(Long id) {
+        Reservation reservation = getById(id);
+        if (reservation == null) {
+            return false;
+        }
+        // 仅待签到状态允许签到
+        Integer status = reservation.getStatus();
+        if (status != null && status != 1) {
+            return false;
+        }
+        reservation.setStatus(2); // 已签到
+        reservation.setCheckinTime(LocalDateTime.now());
+        return updateById(reservation);
     }
 }

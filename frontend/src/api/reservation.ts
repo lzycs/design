@@ -17,6 +17,7 @@ export interface Reservation extends ReservationPayload {
   status?: number
   qrcode?: string
   createTime?: string
+  checkinTime?: string
 }
 
 export interface Result<T> {
@@ -48,5 +49,9 @@ export const getClassroomSlots = (classroomId: number, date: string) => {
 
 export const updateReservation = (reservation: Reservation) => {
   return request.put<any, Result<boolean>>('/reservation', reservation)
+}
+
+export const checkinReservation = (id: number) => {
+  return request.post<any, Result<boolean>>(`/reservation/${id}/checkin`)
 }
 
