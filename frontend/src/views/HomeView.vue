@@ -52,7 +52,7 @@ onMounted(() => {
         </div>
         <div class="function-item">
           <van-icon name="setting-o" class="func-icon" />
-          <p>设施保修</p>
+          <p>反馈评价</p>
         </div>
         <div class="function-item">
           <van-icon name="friends-o" class="func-icon" />

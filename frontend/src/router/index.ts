@@ -59,6 +59,11 @@ const router = createRouter({
       name: 'profile-plans',
       component: () => import('../views/ProfilePlanView.vue'),
     },
+    {
+      path: '/feedback',
+      name: 'feedback',
+      component: () => import('../views/FeedbackView.vue'),
+    },
   ],
 })
 

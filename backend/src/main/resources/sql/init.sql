@@ -192,7 +192,7 @@ CREATE TABLE IF NOT EXISTS `repair` (
     FOREIGN KEY (`handler_id`) REFERENCES `user`(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='报修工单表';
 
--- 评价表 (可评价教室或图书馆座位)
+-- 评价表 (可评价教室或图书馆座位) - 供“我的评价”等通用场景使用
 CREATE TABLE IF NOT EXISTS `review` (
     `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '评价ID',
     `user_id` BIGINT NOT NULL COMMENT '用户ID',
@@ -215,6 +215,34 @@ CREATE TABLE IF NOT EXISTS `review` (
     FOREIGN KEY (`library_seat_id`) REFERENCES `library_seat`(`id`),
     FOREIGN KEY (`reservation_id`) REFERENCES `reservation`(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='评价表';
+
+-- 教室反馈表（用于反馈页：环境评分、设备评分、评价内容等）
+CREATE TABLE IF NOT EXISTS `classroom_feedback` (
+    `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '反馈ID',
+    `user_id` BIGINT NOT NULL COMMENT '用户ID',
+    `classroom_id` BIGINT NOT NULL COMMENT '教室ID',
+    `reservation_id` BIGINT COMMENT '关联预约ID（可选）',
+    `env_score` TINYINT NULL COMMENT '整体环境评分 1-5（待评价时可为空）',
+    `equip_score` TINYINT NULL COMMENT '设备设施评分 1-5（待评价时可为空）',
+    `content` TEXT COMMENT '评价内容',
+    `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态: 1-待评价(预留), 2-已评价',
+    `used_start_time` DATETIME COMMENT '使用开始时间',
+    `used_end_time` DATETIME COMMENT '使用结束时间',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '删除标记: 0-未删除, 1-已删除',
+    INDEX idx_user_id (`user_id`),
+    INDEX idx_classroom_id (`classroom_id`),
+    INDEX idx_status (`status`),
+    UNIQUE KEY uk_user_reservation (`user_id`, `reservation_id`),
+    FOREIGN KEY (`user_id`) REFERENCES `user`(`id`),
+    FOREIGN KEY (`classroom_id`) REFERENCES `classroom`(`id`),
+    FOREIGN KEY (`reservation_id`) REFERENCES `reservation`(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='教室反馈表';
+
+-- 兼容已存在表结构：确保待评价时评分字段允许为空
+ALTER TABLE `classroom_feedback` MODIFY COLUMN `env_score` TINYINT NULL;
+ALTER TABLE `classroom_feedback` MODIFY COLUMN `equip_score` TINYINT NULL;
 
 -- 组队需求表
 CREATE TABLE IF NOT EXISTS `team_request` (
