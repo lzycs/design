@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的报修</title>
+    <script src="https://at.alicdn.com/t/c/font_4068990_7yf5e9z09.js"></script> <!-- 在线矢量图标库 -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        body {
+            background-color: #F5F7FA;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        /* 手机边框容器 */
+        .phone-container {
+            width: 375px;
+            height: 812px;
+            border: 1px solid #DCDFE6;
+            border-radius: 32px;
+            background-color: #FFFFFF;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+        /* 页面通用样式 */
+        .common-page {
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            background-color: #F5F7FA;
+            padding-bottom: 72px;
+        }
+        .common-page::-webkit-scrollbar {
+            display: none;
+        }
+        /* 页面标题栏 */
+        .page-header {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            background-color: #FFFFFF;
+            border-bottom: 1px solid #F5F7FA;
+        }
+        .back-btn {
+            margin-right: 16px;
+        }
+        .back-btn .icon {
+            font-size: 20px;
+            color: #1A1A1A;
+        }
+        .page-header-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1A1A1A;
+            flex: 1;
+            text-align: center;
+        }
+        /* 内容区域 */
+        .content-area {
+            padding: 16px 20px;
+        }
+        /* 新增报修按钮 */
+        .add-repair-btn {
+            display: block;
+            width: 100%;
+            height: 44px;
+            border-radius: 12px;
+            background-color: #4A90E2;
+            color: #FFFFFF;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        .add-repair-btn .icon {
+            font-size: 18px;
+        }
+        /* 状态标签栏 */
+        .status-tab-bar {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+        }
+        .status-tab-bar::-webkit-scrollbar {
+            display: none;
+        }
+        .status-tab-item {
+            padding: 8px 16px;
+            border-radius: 16px;
+            background-color: #F5F7FA;
+            font-size: 14px;
+            color: #333333;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+        .status-tab-item.active {
+            background-color: #4A90E2;
+            color: #FFFFFF;
+        }
+        /* 报修卡片 */
+        .repair-card {
+            background-color: #FFFFFF;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        .repair-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        .repair-card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1A1A1A;
+        }
+        .repair-status {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+        .status-pending {
+            background-color: #FEF7E0;
+            color: #E6A23C;
+        }
+        .status-processing {
+            background-color: #ECF5FF;
+            color: #4A90E2;
+        }
+        .status-completed {
+            background-color: #F0F9FF;
+            color: #67C23A;
+        }
+        .repair-card-detail {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .detail-row {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: #666666;
+        }
+        .detail-row .icon {
+            font-size: 14px;
+            color: #909399;
+            margin-right: 8px;
+            width: 16px;
+            text-align: center;
+        }
+        .detail-label {
+            color: #909399;
+            margin-right: 4px;
+        }
+        .repair-desc {
+            font-size: 14px;
+            color: #333333;
+            line-height: 1.5;
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            background-color: #F9F9F9;
+            border-radius: 8px;
+        }
+        .repair-card-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+        .action-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background-color: #4A90E2;
+            color: #FFFFFF;
+        }
+        .btn-secondary {
+            background-color: #F5F7FA;
+            color: #666666;
+        }
+        /* 无报修提示 */
+        .empty-repair {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px 20px;
+            text-align: center;
+        }
+        .empty-icon {
+            font-size: 64px;
+            color: #E5E6EB;
+            margin-bottom: 16px;
+        }
+        .empty-title {
+            font-size: 18px;
+            color: #1A1A1A;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .empty-desc {
+            font-size: 14px;
+            color: #909399;
+            margin-bottom: 24px;
+        }
+        /* 底部Tab导航 */
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 375px;
+            height: 56px;
+            background-color: #FFFFFF;
+            border-top: 1px solid #F5F7FA;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 99;
+        }
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #909399;
+            font-size: 12px;
+        }
+        .tab-item.active {
+            color: #4A90E2;
+        }
+        .tab-item .icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+        <!-- 我的报修页面 -->
+        <div class="common-page">
+            <!-- 标题栏 -->
+            <div class="page-header">
+                <a href="my.html" class="back-btn" style="text-decoration: none;">
+                    <i class="icon iconfont icon-arrow-left"></i>
+                </a>
+                <div class="page-header-title">我的报修</div>
+                <div style="width: 24px;"></div> <!-- 占位，使标题居中 -->
+            </div>
+            
+            <!-- 内容区域 -->
+            <div class="content-area">
+                <!-- 新增报修按钮 -->
+                <button class="add-repair-btn">
+                    <i class="icon iconfont icon-plus"></i>
+                    <span>新增报修</span>
+                </button>
+                
+                <!-- 状态标签 -->
+                <div class="status-tab-bar">
+                    <div class="status-tab-item active" data-target="all">全部</div>
+                    <div class="status-tab-item" data-target="pending">待处理</div>
+                    <div class="status-tab-item" data-target="processing">处理中</div>
+                    <div class="status-tab-item" data-target="completed">已完成</div>
+                </div>
+                
+                <!-- 全部报修 -->
+                <div class="status-content active" id="all">
+                    <!-- 待处理 -->
+                    <div class="repair-card">
+                        <div class="repair-card-header">
+                            <div class="repair-card-title">一号教学楼-101</div>
+                            <div class="repair-status status-pending">待处理</div>
+                        </div>
+                        <div class="repair-card-detail">
+                            <div class="detail-row">
+                                <i class="icon iconfont icon-calendar"></i>
+                                <span class="detail-label">报修时间：</span>
+                                <span>2026-03-05 09:15</span>
+                            </div>
+                            <div class="detail-row">
+                                <i class="icon iconfont icon-tag"></i>
+                                <span class="detail-label">报修类型：</span>
+                                <span>设备故障</span>
+                            </div>
+                        </div>
+                        <div class="repair-desc">
+                            教室投影仪无法正常开启，开机后屏幕显示蓝屏，影响正常教学使用，请尽快处理。
+                        </div>
+                        <div class="repair-card-actions">
+                            <button class="action-btn btn-secondary">修改报修</button>
+                            <button class="action-btn btn-primary">查看进度</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 处理中 -->
+                    <div class="repair-card">
+                        <div class="repair-card-header">
+                            <div class="repair-card-title">研讨室-01</div>
+                            <div class="repair-status status-processing">处理中</div>
+                        </div>
+                        <div class="repair-card-detail">
+                            <div class="detail-row">
+                                <i class="icon iconfont icon-calendar"></i>
+                                <span class="detail-label">报修时间：</span>
+                                <span>2026-03-04 16:30</span>
+                            </div>
+                            <div class="detail-row">
+                                <i class="icon iconfont icon-tag"></i>
+                                <span class="detail-label">报修类型：</span>
+                                <span>家具损坏</span>
+                            </div>
+                            <div class="detail-row">
+                                <i class="icon iconfont icon-user"></i>
+                                <span class="detail-label">维修人员：</span>
+                                <span>张师傅 (13800138000)</span>
+                            </div>
+                        </div>
+                        <div class="repair-desc">
+                            研讨室其中一把椅子的靠背松动，存在安全隐患，需要加固或更换。
+                        </div>
+                        <div class="repair-card-actions">
+                            <button class="action-btn btn-secondary">联系维修</button>
+                            <button class="action-btn btn-primary">查看进度</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 已完成 -->
+                    <div class="repair-card">
+                        <div class="repair-card-header">
+                            <div class="repair-card-title">二号教学楼-202</div>
+                            <div class="repair-status status-completed">已完成</div>
+                        </div>
+                        <div class="repair-card-detail">
+                            <div class="detail-row">
+                                <i class="icon iconfont icon-calendar"></i>
+                                <span class="detail-label">报修时间：</span>
+                                <span>2026-03-03 14:20</span>
+                            </div>
+                            <div class="detail-row">
+                                <i class="icon iconfont icon-tag"></i>
+                                <span class="detail-label">报修类型：</span>
+                                <span>水电问题</span>
+                            </div>
+                            <div class="detail-row">
+                                <i class="icon iconfont icon-check"></i>
+                                <span class="detail-label">完成时间：</span>
+                                <span>2026-03-03 17:45</span>
+                            </div>
+                        </div>
+                        <div class="repair-desc">
+                            教室空调遥控器失灵，无法调节温度，现在天气较热，影响学习环境。
+                        </div>
+                        <div class="repair-card-actions">
+                            <button class="action-btn btn-secondary">评价维修</button>
+                            <button class="action-btn btn-primary">查看详情</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 待处理 -->
+                <div class="status-content" id="pending">
+                    <div class="repair-card">
+                        <div class="repair-card-header">
+                            <div class="repair-card-title">一号教学楼-101</div>
+                            <div class="repair-status status-pending">待处理</div>
+                        </div>
+                        <div class="repair-card-detail">
+                            <div class="detail-row">
+                                <i class="icon iconfont icon-calendar"></i>
+                                <span class="detail-label">报修时间：</span>
+                                <span>2026-03-05 09:15</span>
+                            </div>
+                            <div class="detail-row">
+                                <i class="icon iconfont icon-tag"></i>
+                                <span class="detail-label">报修类型：</span>
+                                <span>设备故障</span>
+                            </div>
+                        </div>
+                        <div class="repair-desc">
+                            教室投影仪无法正常开启，开机后屏幕显示蓝屏，影响正常教学使用，请尽快处理。
+                        </div>
+                        <div class="repair-card-actions">
+                            <button class="action-btn btn-secondary">修改报修</button>
+                            <button class="action-btn btn-primary">查看进度</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 处理中 -->
+                <div class="status-content" id="processing">
+                    <div class="repair-card">
+                        <div class="repair-card-header">
+                            <div class="repair-card-title">研讨室-01</div>
+                            <div class="repair-status status-processing">处理中</div>
+                        </div>
+                        <div class="repair-card-detail">
+                            <div class="detail-row">
+                                <i class="icon iconfont icon-calendar"></i>
+                                <span class="detail-label">报修时间：</span>
+                                <span>2026-03-04 16:30</span>
+                            </div>
+                            <div class="detail-row">
+                                <i class="icon iconfont icon-tag"></i>
+                                <span class="detail-label">报修类型：</span>
+                                <span>家具损坏</span>
+                            </div>
+                            <div class="detail-row">
+                                <i class="icon iconfont icon-user"></i>
+                                <span class="detail-label">维修人员：</span>
+                                <span>张师傅 (13800138000)</span>
+                            </div>
+                        </div>
+                        <div class="repair-desc">
+                            研讨室其中一把椅子的靠背松动，存在安全隐患，需要加固或更换。
+                        </div>
+                        <div class="repair-card-actions">
+                            <button class="action-btn btn-secondary">联系维修</button>
+                            <button class="action-btn btn-primary">查看进度</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 已完成 -->
+                <div class="status-content" id="completed">
+                    <div class="repair-card">
+                        <div class="repair-card-header">
+                            <div class="repair-card-title">二号教学楼-202</div>
+                            <div class="repair-status status-completed">已完成</div>
+                        </div>
+                        <div class="repair-card-detail">
+                            <div class="detail-row">
+                                <i class="icon iconfont icon-calendar"></i>
+                                <span class="detail-label">报修时间：</span>
+                                <span>2026-03-03 14:20</span>
+                            </div>
+                            <div class="detail-row">
+                                <i class="icon iconfont icon-tag"></i>
+                                <span class="detail-label">报修类型：</span>
+                                <span>水电问题</span>
+                            </div>
+                            <div class="detail-row">
+                                <i class="icon iconfont icon-check"></i>
+                                <span class="detail-label">完成时间：</span>
+                                <span>2026-03-03 17:45</span>
+                            </div>
+                        </div>
+                        <div class="repair-desc">
+                            教室空调遥控器失灵，无法调节温度，现在天气较热，影响学习环境。
+                        </div>
+                        <div class="repair-card-actions">
+                            <button class="action-btn btn-secondary">评价维修</button>
+                            <button class="action-btn btn-primary">查看详情</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部Tab导航 -->
+        <div class="tab-bar">
+            <div class="tab-item">
+                <i class="icon iconfont icon-home"></i>
+                <span>首页</span>
+            </div>
+            <div class="tab-item">
+                <i class="icon iconfont icon-order"></i>
+                <span>预约</span>
+            </div>
+            <div class="tab-item active">
+                <i class="icon iconfont icon-my"></i>
+                <span>我的</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 状态标签切换
+        document.querySelectorAll('.status-tab-item').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.status-tab-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                const targetId = this.getAttribute('data-target');
+                document.querySelectorAll('.status-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(targetId).classList.add('active');
+            });
+        });
+        
+        // 新增报修按钮点击事件
+        document.querySelector('.add-repair-btn').addEventListener('click', function() {
+            alert('即将进入新增报修页面');
+            // 实际项目中可跳转至报修表单页
+        });
+        
+        // 报修卡片按钮点击事件
+        document.querySelectorAll('.action-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const btnText = this.textContent.trim();
+                if (btnText === '修改报修') {
+                    alert('即将进入报修修改页面');
+                } else if (btnText === '查看进度' || btnText === '查看详情') {
+                    alert('即将查看报修详情/进度');
+                } else if (btnText === '联系维修') {
+                    alert('正在拨打维修人员电话：13800138000');
+                } else if (btnText === '评价维修') {
+                    alert('即将进入维修评价页面');
+                }
+            });
+        });
+        
+        // Tab切换效果
+        document.querySelectorAll('.tab-item').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                const tabText = this.querySelector('span').textContent;
+                if (tabText === '首页') {
+                    alert('即将跳转到首页');
+                } else if (tabText === '预约') {
+                    alert('即将跳转到预约中心');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

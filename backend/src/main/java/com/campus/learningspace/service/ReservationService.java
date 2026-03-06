@@ -3,6 +3,7 @@ package com.campus.learningspace.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.campus.learningspace.entity.Reservation;
+import com.campus.learningspace.entity.ReservationVO;
 import com.campus.learningspace.entity.TimeSlot;
 import com.campus.learningspace.mapper.ReservationMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,11 +22,11 @@ public class ReservationService extends ServiceImpl<ReservationMapper, Reservati
     @Autowired
     private TimeSlotService timeSlotService;
 
-    public List<Reservation> getUserReservations(Long userId) {
-        LambdaQueryWrapper<Reservation> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Reservation::getUserId, userId)
-                .orderByDesc(Reservation::getCreateTime);
-        return list(wrapper);
+    /**
+     * 用户预约列表（含资源名称等展示字段）
+     */
+    public List<ReservationVO> getUserReservations(Long userId) {
+        return baseMapper.selectUserReservations(userId);
     }
 
     public List<Reservation> getClassroomReservations(Long classroomId, LocalDate date) {

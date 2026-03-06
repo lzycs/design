@@ -229,7 +229,7 @@ onMounted(async () => {
 
             <div
               class="menu-item"
-              @click="$router.push('/profile/reviews')"
+              @click="$router.push({ path: '/feedback', query: { tab: 'evaluation', only: '1' } })"
             >
               <div class="menu-left">
                 <div class="menu-icon">

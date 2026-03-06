@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的协作</title>
+    <script src="https://at.alicdn.com/t/c/font_4068990_7yf5e9z09.js"></script> <!-- 在线矢量图标库 -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        body {
+            background-color: #F5F7FA;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        /* 手机边框容器 */
+        .phone-container {
+            width: 375px;
+            height: 812px;
+            border: 1px solid #DCDFE6;
+            border-radius: 32px;
+            background-color: #FFFFFF;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+        /* 页面通用样式 */
+        .common-page {
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            background-color: #F5F7FA;
+            padding-bottom: 72px;
+            display: none;
+        }
+        .common-page.active {
+            display: block;
+        }
+        .common-page::-webkit-scrollbar {
+            display: none;
+        }
+        /* 页面标题栏 */
+        .page-header {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            background-color: #FFFFFF;
+            border-bottom: 1px solid #F5F7FA;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .back-btn {
+            margin-right: 16px;
+            cursor: pointer;
+        }
+        .back-btn .icon {
+            font-size: 20px;
+            color: #1A1A1A;
+        }
+        .page-header-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1A1A1A;
+            flex: 1;
+            text-align: center;
+        }
+        .header-right-btn {
+            font-size: 14px;
+            color: #4A90E2;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        /* 筛选标签栏 */
+        .filter-tabs {
+            display: flex;
+            background-color: #FFFFFF;
+            padding: 8px 20px;
+            border-bottom: 1px solid #F5F7FA;
+        }
+        .filter-tab {
+            flex: 1;
+            text-align: center;
+            padding: 8px 0;
+            font-size: 14px;
+            color: #909399;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .filter-tab.active {
+            color: #4A90E2;
+            border-bottom: 2px solid #4A90E2;
+            font-weight: 600;
+        }
+        /* 内容区域 */
+        .content-area {
+            padding: 16px 20px;
+        }
+        /* 协作卡片 */
+        .collab-card {
+            background-color: #FFFFFF;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            cursor: pointer;
+        }
+        .collab-cover {
+            width: 64px;
+            height: 64px;
+            border-radius: 8px;
+            background-color: #F0F7FF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        .collab-cover .icon {
+            font-size: 32px;
+            color: #4A90E2;
+        }
+        .collab-info {
+            flex: 1;
+            overflow: hidden;
+        }
+        .collab-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 4px;
+        }
+        .collab-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1A1A1A;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .collab-status {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .status-doing {
+            background-color: #FFF7E6;
+            color: #FF9A2E;
+        }
+        .status-done {
+            background-color: #E8F5E9;
+            color: #4CAF50;
+        }
+        .collab-meta {
+            font-size: 12px;
+            color: #909399;
+            margin-bottom: 8px;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .collab-desc {
+            font-size: 14px;
+            color: #666666;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        /* 空状态 */
+        .empty-collab {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px 20px;
+            text-align: center;
+        }
+        .empty-icon {
+            font-size: 64px;
+            color: #E5E6EB;
+            margin-bottom: 16px;
+        }
+        .empty-title {
+            font-size: 18px;
+            color: #1A1A1A;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .empty-desc {
+            font-size: 14px;
+            color: #909399;
+            margin-bottom: 24px;
+        }
+        .empty-btn {
+            padding: 10px 24px;
+            border-radius: 8px;
+            background-color: #4A90E2;
+            color: #FFFFFF;
+            border: none;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        /* 详情页样式 */
+        .collab-detail-header {
+            background-color: #FFFFFF;
+            padding: 20px;
+            margin-bottom: 12px;
+            border-radius: 12px;
+        }
+        .detail-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1A1A1A;
+            margin-bottom: 8px;
+        }
+        .detail-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #909399;
+            margin-bottom: 12px;
+        }
+        .detail-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 16px;
+        }
+        .detail-desc {
+            font-size: 14px;
+            color: #333333;
+            line-height: 1.6;
+            padding: 16px 0;
+            border-top: 1px solid #F5F7FA;
+            border-bottom: 1px solid #F5F7FA;
+        }
+        /* 成员管理 */
+        .member-section {
+            background-color: #FFFFFF;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1A1A1A;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .add-member-btn {
+            font-size: 14px;
+            color: #4A90E2;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        .add-member-btn .icon {
+            font-size: 16px;
+            margin-right: 4px;
+        }
+        .member-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .member-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 60px;
+        }
+        .member-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: #F0F7FF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        .member-avatar .icon {
+            font-size: 24px;
+            color: #4A90E2;
+        }
+        .member-name {
+            font-size: 12px;
+            color: #333333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+            text-align: center;
+        }
+        /* 进度条 */
+        .progress-section {
+            background-color: #FFFFFF;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background-color: #F5F7FA;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #4A90E2;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        .progress-text {
+            font-size: 12px;
+            color: #909399;
+            text-align: right;
+        }
+        /* 底部操作栏 */
+        .action-bar {
+            position: fixed;
+            bottom: 56px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 335px;
+            display: flex;
+            gap: 12px;
+            padding: 16px 0;
+        }
+        .action-btn {
+            flex: 1;
+            padding: 12px 0;
+            border-radius: 8px;
+            border: none;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .primary-btn {
+            background-color: #4A90E2;
+            color: #FFFFFF;
+        }
+        .primary-btn:disabled {
+            background-color: #C9D8EB;
+            cursor: not-allowed;
+        }
+        .secondary-btn {
+            background-color: #F5F7FA;
+            color: #4A90E2;
+        }
+        /* 发起协作表单 */
+        .form-section {
+            background-color: #FFFFFF;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+        .form-label {
+            font-size: 14px;
+            color: #333333;
+            margin-bottom: 8px;
+            display: block;
+            font-weight: 500;
+        }
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #E5E6EB;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #1A1A1A;
+            margin-bottom: 16px;
+            outline: none;
+        }
+        .form-input:focus {
+            border-color: #4A90E2;
+        }
+        .form-textarea {
+            min-height: 100px;
+            resize: none;
+        }
+        .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #E5E6EB;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #1A1A1A;
+            margin-bottom: 16px;
+            outline: none;
+            background-color: #FFFFFF;
+        }
+        .form-select:focus {
+            border-color: #4A90E2;
+        }
+        .member-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .member-tag {
+            display: flex;
+            align-items: center;
+            padding: 6px 12px;
+            background-color: #F0F7FF;
+            border-radius: 16px;
+            font-size: 12px;
+            color: #4A90E2;
+        }
+        .tag-close {
+            margin-left: 8px;
+            cursor: pointer;
+        }
+        /* 弹窗样式 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            display: none;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            width: 335px;
+            background-color: #FFFFFF;
+            border-radius: 12px;
+            padding: 20px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1A1A1A;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        .contact-list {
+            margin-bottom: 16px;
+        }
+        .contact-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #F5F7FA;
+            cursor: pointer;
+        }
+        .contact-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #F0F7FF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 12px;
+        }
+        .contact-avatar .icon {
+            font-size: 20px;
+            color: #4A90E2;
+        }
+        .contact-name {
+            font-size: 14px;
+            color: #333333;
+            flex: 1;
+        }
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .modal-btn {
+            flex: 1;
+            padding: 10px 0;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        /* 底部Tab导航 */
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 375px;
+            height: 56px;
+            background-color: #FFFFFF;
+            border-top: 1px solid #F5F7FA;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 99;
+        }
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #909399;
+            font-size: 12px;
+        }
+        .tab-item.active {
+            color: #4A90E2;
+        }
+        .tab-item .icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+        <!-- 1. 协作列表页 -->
+        <div class="common-page active" id="listPage">
+            <!-- 标题栏 -->
+            <div class="page-header">
+                <div class="back-btn" style="visibility: hidden;">
+                    <i class="icon iconfont icon-arrow-left"></i>
+                </div>
+                <div class="page-header-title">我的协作</div>
+                <div class="header-right-btn" id="createCollabBtn">发起协作</div>
+            </div>
+            
+            <!-- 筛选标签 -->
+            <div class="filter-tabs">
+                <div class="filter-tab active" data-type="all">全部</div>
+                <div class="filter-tab" data-type="initiated">我发起的</div>
+                <div class="filter-tab" data-type="joined">我参与的</div>
+            </div>
+            
+            <!-- 内容区域 -->
+            <div class="content-area" id="collabList">
+                <!-- 协作卡片1 -->
+                <div class="collab-card" data-id="1" data-status="doing" data-creator="1">
+                    <div class="collab-cover">
+                        <i class="icon iconfont icon-team"></i>
+                    </div>
+                    <div class="collab-info">
+                        <div class="collab-header">
+                            <div class="collab-title">项目需求评审</div>
+                            <div class="collab-status status-doing">进行中</div>
+                        </div>
+                        <div class="collab-meta">发起人：张三 | 更新时间：2026-03-10</div>
+                        <div class="collab-desc">完成项目需求文档评审，确定核心功能和优先级，输出评审意见和修改建议</div>
+                    </div>
+                </div>
+                
+                <!-- 协作卡片2 -->
+                <div class="collab-card" data-id="2" data-status="done" data-creator="2">
+                    <div class="collab-cover">
+                        <i class="icon iconfont icon-team"></i>
+                    </div>
+                    <div class="collab-info">
+                        <div class="collab-header">
+                            <div class="collab-title">UI设计稿确认</div>
+                            <div class="collab-status status-done">已完成</div>
+                        </div>
+                        <div class="collab-meta">发起人：李四 | 更新时间：2026-03-08</div>
+                        <div class="collab-desc">确认首页、详情页、表单页的UI设计稿，反馈修改意见，最终定稿</div>
+                    </div>
+                </div>
+                
+                <!-- 协作卡片3 -->
+                <div class="collab-card" data-id="3" data-status="doing" data-creator="2">
+                    <div class="collab-cover">
+                        <i class="icon iconfont icon-team"></i>
+                    </div>
+                    <div class="collab-info">
+                        <div class="collab-header">
+                            <div class="collab-title">接口联调测试</div>
+                            <div class="collab-status status-doing">进行中</div>
+                        </div>
+                        <div class="collab-meta">发起人：李四 | 更新时间：2026-03-09</div>
+                        <div class="collab-desc">前后端接口联调，测试各接口的可用性和数据准确性，修复联调中发现的问题</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 空状态（默认隐藏） -->
+            <div class="empty-collab" id="emptyCollab" style="display: none;">
+                <i class="icon iconfont icon-team empty-icon"></i>
+                <div class="empty-title">暂无协作</div>
+                <div class="empty-desc">你还没有发起或参与任何协作，快来创建第一个协作吧</div>
+                <button class="empty-btn" id="emptyCreateBtn">发起协作</button>
+            </div>
+        </div>
+        
+        <!-- 2. 协作详情页 -->
+        <div class="common-page" id="detailPage">
+            <!-- 标题栏 -->
+            <div class="page-header">
+                <div class="back-btn" id="detailBackBtn">
+                    <i class="icon iconfont icon-arrow-left"></i>
+                </div>
+                <div class="page-header-title">协作详情</div>
+                <div style="width: 24px;"></div>
+            </div>
+            
+            <!-- 内容区域 -->
+            <div class="content-area">
+                <!-- 基础信息 -->
+                <div class="collab-detail-header">
+                    <div class="detail-title" id="detailTitle">项目需求评审</div>
+                    <div class="detail-meta">
+                        <span>发起人：<span id="detailCreator">张三</span></span>
+                        <span>更新时间：<span id="detailTime">2026-03-10</span></span>
+                    </div>
+                    <div class="detail-status status-doing" id="detailStatus">进行中</div>
+                    <div class="detail-desc" id="detailDesc">完成项目需求文档评审，确定核心功能和优先级，输出评审意见和修改建议</div>
+                </div>
+                
+                <!-- 成员管理 -->
+                <div class="member-section">
+                    <div class="section-title">
+                        <span>参与成员</span>
+                        <div class="add-member-btn" id="addMemberBtn">
+                            <i class="icon iconfont icon-add"></i>
+                            <span>添加成员</span>
+                        </div>
+                    </div>
+                    <div class="member-list" id="memberList">
+                        <div class="member-item">
+                            <div class="member-avatar">
+                                <i class="icon iconfont icon-user"></i>
+                            </div>
+                            <div class="member-name">张三</div>
+                        </div>
+                        <div class="member-item">
+                            <div class="member-avatar">
+                                <i class="icon iconfont icon-user"></i>
+                            </div>
+                            <div class="member-name">李四</div>
+                        </div>
+                        <div class="member-item">
+                            <div class="member-avatar">
+                                <i class="icon iconfont icon-user"></i>
+                            </div>
+                            <div class="member-name">王五</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 进度展示 -->
+                <div class="progress-section">
+                    <div class="section-title">协作进度</div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="progressBar" style="width: 70%;"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">当前进度：70%</div>
+                </div>
+            </div>
+            
+            <!-- 底部操作栏 -->
+            <div class="action-bar">
+                <button class="action-btn primary-btn" id="markDoneBtn">标记完成</button>
+                <button class="action-btn secondary-btn">进入聊天</button>
+            </div>
+        </div>
+        
+        <!-- 3. 发起协作页 -->
+        <div class="common-page" id="createPage">
+            <!-- 标题栏 -->
+            <div class="page-header">
+                <div class="back-btn" id="createBackBtn">
+                    <i class="icon iconfont icon-arrow-left"></i>
+                </div>
+                <div class="page-header-title">发起协作</div>
+                <div style="width: 24px;"></div>
+            </div>
+            
+            <!-- 内容区域 -->
+            <div class="content-area">
+                <form id="createForm">
+                    <!-- 标题 -->
+                    <div class="form-section">
+                        <label class="form-label">协作标题 <span style="color: #F56C6C;">*</span></label>
+                        <input type="text" class="form-input" id="collabTitle" placeholder="请输入协作标题">
+                    </div>
+                    
+                    <!-- 描述 -->
+                    <div class="form-section">
+                        <label class="form-label">协作描述</label>
+                        <textarea class="form-input form-textarea" id="collabDesc" placeholder="请输入协作详细描述"></textarea>
+                    </div>
+                    
+                    <!-- 初始状态 -->
+                    <div class="form-section">
+                        <label class="form-label">初始状态</label>
+                        <select class="form-select" id="collabInitStatus">
+                            <option value="doing">进行中</option>
+                            <option value="done">已完成</option>
+                        </select>
+                    </div>
+                    
+                    <!-- 成员选择 -->
+                    <div class="form-section">
+                        <label class="form-label">参与成员</label>
+                        <div class="add-member-btn" id="selectMemberBtn">
+                            <i class="icon iconfont icon-add"></i>
+                            <span>从通讯录选择成员</span>
+                        </div>
+                        <div class="member-tags" id="selectedMembers">
+                            <!-- 选中的成员标签 -->
+                        </div>
+                    </div>
+                </form>
+                
+                <!-- 提交按钮 -->
+                <div class="action-bar">
+                    <button class="action-btn primary-btn" id="submitCollabBtn" disabled>提交</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 成员选择弹窗 -->
+        <div class="modal" id="memberModal">
+            <div class="modal-content">
+                <div class="modal-title">选择通讯录成员</div>
+                <div class="contact-list">
+                    <div class="contact-item" data-name="张三">
+                        <div class="contact-avatar">
+                            <i class="icon iconfont icon-user"></i>
+                        </div>
+                        <div class="contact-name">张三</div>
+                    </div>
+                    <div class="contact-item" data-name="李四">
+                        <div class="contact-avatar">
+                            <i class="icon iconfont icon-user"></i>
+                        </div>
+                        <div class="contact-name">李四</div>
+                    </div>
+                    <div class="contact-item" data-name="王五">
+                        <div class="contact-avatar">
+                            <i class="icon iconfont icon-user"></i>
+                        </div>
+                        <div class="contact-name">王五</div>
+                    </div>
+                    <div class="contact-item" data-name="赵六">
+                        <div class="contact-avatar">
+                            <i class="icon iconfont icon-user"></i>
+                        </div>
+                        <div class="contact-name">赵六</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="modal-btn secondary-btn" id="modalCancelBtn">取消</button>
+                    <button class="modal-btn primary-btn" id="modalConfirmBtn">确认</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部Tab导航 -->
+        <div class="tab-bar">
+            <div class="tab-item">
+                <i class="icon iconfont icon-home"></i>
+                <span>首页</span>
+            </div>
+            <div class="tab-item active">
+                <i class="icon iconfont icon-team"></i>
+                <span>协作</span>
+            </div>
+            <div class="tab-item">
+                <i class="icon iconfont icon-my"></i>
+                <span>我的</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 页面元素
+        const listPage = document.getElementById('listPage');
+        const detailPage = document.getElementById('detailPage');
+        const createPage = document.getElementById('createPage');
+        const memberModal = document.getElementById('memberModal');
+        
+        // 筛选标签切换
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.filter-tab').forEach(item => {
+                    item.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                // 模拟筛选逻辑
+                const type = this.dataset.type;
+                const collabCards = document.querySelectorAll('.collab-card');
+                let hasContent = false;
+                
+                collabCards.forEach(card => {
+                    if (type === 'all') {
+                        card.style.display = 'flex';
+                        hasContent = true;
+                    } else if (type === 'initiated' && card.dataset.creator === '1') {
+                        card.style.display = 'flex';
+                        hasContent = true;
+                    } else if (type === 'joined' && card.dataset.creator !== '1') {
+                        card.style.display = 'flex';
+                        hasContent = true;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+                
+                // 显示/隐藏空状态
+                document.getElementById('collabList').style.display = hasContent ? 'block' : 'none';
+                document.getElementById('emptyCollab').style.display = hasContent ? 'none' : 'flex';
+            });
+        });
+        
+        // 跳转到详情页
+        document.querySelectorAll('.collab-card').forEach(card => {
+            card.addEventListener('click', function() {
+                listPage.classList.remove('active');
+                detailPage.classList.add('active');
+                
+                // 填充详情数据
+                const id = this.dataset.id;
+                const status = this.dataset.status;
+                const title = this.querySelector('.collab-title').textContent;
+                const meta = this.querySelector('.collab-meta').textContent;
+                const desc = this.querySelector('.collab-desc').textContent;
+                
+                const creator = meta.split('|')[0].replace('发起人：', '').trim();
+                const time = meta.split('|')[1].replace('更新时间：', '').trim();
+                
+                document.getElementById('detailTitle').textContent = title;
+                document.getElementById('detailCreator').textContent = creator;
+                document.getElementById('detailTime').textContent = time;
+                document.getElementById('detailDesc').textContent = desc;
+                
+                // 设置状态样式
+                const statusEl = document.getElementById('detailStatus');
+                statusEl.textContent = status === 'doing' ? '进行中' : '已完成';
+                statusEl.className = `detail-status ${status === 'doing' ? 'status-doing' : 'status-done'}`;
+                
+                // 设置进度条
+                const progressBar = document.getElementById('progressBar');
+                const progressText = document.getElementById('progressText');
+                const progress = status === 'done' ? 100 : 70;
+                progressBar.style.width = `${progress}%`;
+                progressText.textContent = `当前进度：${progress}%`;
+                
+                // 控制标记完成按钮显示
+                document.getElementById('markDoneBtn').style.display = status === 'doing' ? 'block' : 'none';
+            });
+        });
+        
+        // 标记完成功能
+        document.getElementById('markDoneBtn').addEventListener('click', function() {
+            // 更新详情页状态
+            const statusEl = document.getElementById('detailStatus');
+            statusEl.textContent = '已完成';
+            statusEl.className = 'detail-status status-done';
+            
+            // 更新进度条
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            progressBar.style.width = '100%';
+            progressText.textContent = '当前进度：100%';
+            
+            // 隐藏标记完成按钮
+            this.style.display = 'none';
+            
+            // 同步更新列表页状态
+            const activeCard = document.querySelector(`.collab-card[data-id="${document.getElementById('detailTitle').textContent === '项目需求评审' ? 1 : 2}"]`);
+            if (activeCard) {
+                activeCard.dataset.status = 'done';
+                const statusTag = activeCard.querySelector('.collab-status');
+                statusTag.textContent = '已完成';
+                statusTag.className = 'collab-status status-done';
+            }
+            
+            alert('协作已标记为完成！');
+        });
+        
+        // 发起协作页跳转
+        document.getElementById('createCollabBtn').addEventListener('click', function() {
+            listPage.classList.remove('active');
+            createPage.classList.add('active');
+        });
+        document.getElementById('emptyCreateBtn').addEventListener('click', function() {
+            listPage.classList.remove('active');
+            createPage.classList.add('active');
+        });
+        
+        // 标题输入校验（控制提交按钮禁用状态）
+        document.getElementById('collabTitle').addEventListener('input', function() {
+            const submitBtn = document.getElementById('submitCollabBtn');
+            submitBtn.disabled = this.value.trim() === '';
+        });
+        
+        // 成员选择弹窗
+        let selectedMemberNames = [];
+        document.getElementById('selectMemberBtn').addEventListener('click', function() {
+            memberModal.classList.add('active');
+            // 重置选中状态
+            document.querySelectorAll('.contact-item').forEach(item => {
+                item.style.backgroundColor = '';
+            });
+            // 标记已选中的成员
+            selectedMemberNames.forEach(name => {
+                const item = document.querySelector(`.contact-item[data-name="${name}"]`);
+                if (item) item.style.backgroundColor = '#F0F7FF';
+            });
+        });
+        
+        // 选择通讯录成员
+        document.querySelectorAll('.contact-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const name = this.dataset.name;
+                if (selectedMemberNames.includes(name)) {
+                    selectedMemberNames = selectedMemberNames.filter(n => n !== name);
+                    this.style.backgroundColor = '';
+                } else {
+                    selectedMemberNames.push(name);
+                    this.style.backgroundColor = '#F0F7FF';
+                }
+            });
+        });
+        
+        // 确认选择成员
+        document.getElementById('modalConfirmBtn').addEventListener('click', function() {
+            memberModal.classList.remove('active');
+            const memberTags = document.getElementById('selectedMembers');
+            memberTags.innerHTML = '';
+            
+            selectedMemberNames.forEach(name => {
+                const tag = document.createElement('div');
+                tag.className = 'member-tag';
+                tag.innerHTML = `${name}<span class="tag-close" data-name="${name}">×</span>`;
+                memberTags.appendChild(tag);
+            });
+            
+            // 绑定删除标签事件
+            document.querySelectorAll('.tag-close').forEach(close => {
+                close.addEventListener('click', function() {
+                    const name = this.dataset.name;
+                    selectedMemberNames = selectedMemberNames.filter(n => n !== name);
+                    this.parentElement.remove();
+                });
+            });
+        });
+        
+        // 取消选择成员
+        document.getElementById('modalCancelBtn').addEventListener('click', function() {
+            memberModal.classList.remove('active');
+        });
+        
+        // 添加成员按钮（详情页）
+        document.getElementById('addMemberBtn').addEventListener('click', function() {
+            memberModal.classList.add('active');
+        });
+        
+        // 提交发起协作
+        document.getElementById('submitCollabBtn').addEventListener('click', function() {
+            const title = document.getElementById('collabTitle').value.trim();
+            const desc = document.getElementById('collabDesc').value.trim();
+            const status = document.getElementById('collabInitStatus').value;
+            
+            // 创建新协作卡片
+            const collabList = document.getElementById('collabList');
+            const newCard = document.createElement('div');
+            newCard.className = 'collab-card';
+            newCard.dataset.id = Date.now();
+            newCard.dataset.status = status;
+            newCard.dataset.creator = '1';
+            
+            newCard.innerHTML = `
+                <div class="collab-cover">
+                    <i class="icon iconfont icon-team"></i>
+                </div>
+                <div class="collab-info">
+                    <div class="collab-header">
+                        <div class="collab-title">${title}</div>
+                        <div class="collab-status ${status === 'doing' ? 'status-doing' : 'status-done'}">${status === 'doing' ? '进行中' : '已完成'}</div>
+                    </div>
+                    <div class="collab-meta">发起人：我 | 更新时间：${new Date().toLocaleDateString().replace(/\//g, '-')}</div>
+                    <div class="collab-desc">${desc || '无描述'}</div>
+                </div>
+            `;
+            
+            // 添加点击事件
+            newCard.addEventListener('click', function() {
+                listPage.classList.remove('active');
+                detailPage.classList.add('active');
+                
+                // 填充详情数据
+                document.getElementById('detailTitle').textContent = title;
+                document.getElementById('detailCreator').textContent = '我';
+                document.getElementById('detailTime').textContent = new Date().toLocaleDateString().replace(/\//g, '-');
+                document.getElementById('detailDesc').textContent = desc || '无描述';
+                
+                const statusEl = document.getElementById('detailStatus');
+                statusEl.textContent = status === 'doing' ? '进行中' : '已完成';
+                statusEl.className = `detail-status ${status === 'doing' ? 'status-doing' : 'status-done'}`;
+                
+                const progressBar = document.getElementById('progressBar');
+                const progressText = document.getElementById('progressText');
+                const progress = status === 'done' ? 100 : 0;
+                progressBar.style.width = `${progress}%`;
+                progressText.textContent = `当前进度：${progress}%`;
+                
+                document.getElementById('markDoneBtn').style.display = status === 'doing' ? 'block' : 'none';
+            });
+            
+            // 添加到列表顶部
+            collabList.insertBefore(newCard, collabList.firstChild);
+            
+            // 重置表单
+            document.getElementById('createForm').reset();
+            document.getElementById('selectedMembers').innerHTML = '';
+            selectedMemberNames = [];
+            
+            // 返回列表页
+            createPage.classList.remove('active');
+            listPage.classList.add('active');
+            
+            // 显示列表，隐藏空状态
+            document.getElementById('collabList').style.display = 'block';
+            document.getElementById('emptyCollab').style.display = 'none';
+            
+            alert('协作发起成功！');
+        });
+        
+        // 返回按钮事件
+        document.getElementById('detailBackBtn').addEventListener('click', function() {
+            detailPage.classList.remove('active');
+            listPage.classList.add('active');
+        });
+        document.getElementById('createBackBtn').addEventListener('click', function() {
+            createPage.classList.remove('active');
+            listPage.classList.add('active');
+        });
+        
+        // Tab切换效果
+        document.querySelectorAll('.tab-item').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

@@ -343,12 +343,14 @@ CREATE TABLE IF NOT EXISTS `notification` (
 -- 插入测试数据
 -- ----------------------------
 
--- 插入用户数据
+-- 插入用户数据（含维修人员：张师傅 role=4 后勤人员）
 INSERT IGNORE INTO `user` (`username`, `password`, `real_name`, `student_id`, `email`, `phone`, `role`, `status`) VALUES
 ('zhangsan', '123456', '张三', '20220001', 'zhangsan@example.com', '13800138001', 1, 1),
 ('lisi', '123456', '李四', '20220002', 'lisi@example.com', '13800138002', 1, 1),
 ('wanglaoshi', '123456', '王老师', NULL, 'wang@edu.com', '13800138003', 2, 1),
-('admin', '123456', '管理员', NULL, 'admin@system.com', '13800138000', 3, 1);
+('admin', '123456', '管理员', NULL, 'admin@system.com', '13800138000', 3, 1),
+('zhangshifu', '123456', '张师傅', NULL, NULL, '13800138000', 4, 1),
+('wangwu', '123456', '王五', NULL, NULL, '13800138006', 1, 1);
 
 -- 插入教学楼数据
 INSERT IGNORE INTO `building` (`name`, `address`, `floor_count`, `description`, `latitude`, `longitude`) VALUES
@@ -391,66 +393,181 @@ INSERT IGNORE INTO `library_seat` (`library_id`, `seat_label`, `floor`, `row_num
 (2, 'S-03', 2, 1, 1, 3);
 
 -- 插入课程数据
-INSERT IGNORE INTO `course` (`classroom_id`, `course_name`, `teacher_name`, `week_day`, `start_time`, `end_time`, `start_week`, `end_week`) VALUES
-(1, '高等数学', '王老师', 2, '08:00:00', '09:40:00', 1, 16),
-(3, '小组讨论-数据结构', '李老师', 4, '10:00:00', '11:40:00', 1, 8);
+-- 注意：course/time_slot/reservation 等表默认无唯一约束且未指定 id，会导致每次启动重复插入
+INSERT INTO `course` (`id`, `classroom_id`, `course_name`, `teacher_name`, `week_day`, `start_time`, `end_time`, `start_week`, `end_week`) VALUES
+(1, 1, '高等数学', '王老师', 2, '08:00:00', '09:40:00', 1, 16),
+(2, 3, '小组讨论-数据结构', '李老师', 4, '10:00:00', '11:40:00', 1, 8)
+ON DUPLICATE KEY UPDATE
+  `classroom_id` = VALUES(`classroom_id`),
+  `course_name`  = VALUES(`course_name`),
+  `teacher_name` = VALUES(`teacher_name`),
+  `week_day`     = VALUES(`week_day`),
+  `start_time`   = VALUES(`start_time`),
+  `end_time`     = VALUES(`end_time`),
+  `start_week`   = VALUES(`start_week`),
+  `end_week`     = VALUES(`end_week`);
 
 -- 插入标准时间段数据
-INSERT IGNORE INTO `time_slot` (`label`, `start_time`, `end_time`, `sort_order`) VALUES
-('8:00-10:00', '08:00:00', '10:00:00', 1),
-('10:00-12:00', '10:00:00', '12:00:00', 2),
-('12:00-14:00', '12:00:00', '14:00:00', 3),
-('14:00-16:00', '14:00:00', '16:00:00', 4),
-('16:00-18:00', '16:00:00', '18:00:00', 5);
+INSERT INTO `time_slot` (`id`, `label`, `start_time`, `end_time`, `sort_order`) VALUES
+(1, '8:00-10:00',  '08:00:00', '10:00:00', 1),
+(2, '10:00-12:00', '10:00:00', '12:00:00', 2),
+(3, '12:00-14:00', '12:00:00', '14:00:00', 3),
+(4, '14:00-16:00', '14:00:00', '16:00:00', 4),
+(5, '16:00-18:00', '16:00:00', '18:00:00', 5)
+ON DUPLICATE KEY UPDATE
+  `label`      = VALUES(`label`),
+  `start_time` = VALUES(`start_time`),
+  `end_time`   = VALUES(`end_time`),
+  `sort_order` = VALUES(`sort_order`);
 
 -- 插入预约记录 (预约教室)
-INSERT IGNORE INTO `reservation` (`user_id`, `resource_type`, `classroom_id`, `reservation_date`, `start_time`, `end_time`, `duration`, `purpose`, `status`) VALUES
-(1, 1, 2, DATE_ADD(CURDATE(), INTERVAL 1 DAY), '14:00:00', '16:00:00', 120, '自习', 1);
+INSERT INTO `reservation` (
+  `id`, `user_id`, `resource_type`, `classroom_id`, `reservation_date`,
+  `start_time`, `end_time`, `duration`, `purpose`, `status`, `checkin_time`
+) VALUES
+-- 张三：待签到（教室）
+(1, 1, 1, 2, DATE_ADD(CURDATE(), INTERVAL 1 DAY), '14:00:00', '16:00:00', 120, '自习', 1, NULL),
+-- 张三：已签到（教室）
+(2, 1, 1, 1, CURDATE(), '08:00:00', '10:00:00', 120, '早自习', 2, DATE_ADD(NOW(), INTERVAL -10 MINUTE)),
+-- 张三：已完成（教室）
+(3, 1, 1, 3, DATE_ADD(CURDATE(), INTERVAL -1 DAY), '10:00:00', '12:00:00', 120, '小组讨论', 3, DATE_ADD(NOW(), INTERVAL -1 DAY)),
+-- 张三：已取消（教室）
+(4, 1, 1, 4, DATE_ADD(CURDATE(), INTERVAL -2 DAY), '16:00:00', '18:00:00', 120, '临时有事取消', 4, NULL),
+-- 李四：待签到（教室）
+(5, 2, 1, 6, DATE_ADD(CURDATE(), INTERVAL 2 DAY), '14:00:00', '16:00:00', 120, '会议', 1, NULL)
+ON DUPLICATE KEY UPDATE
+  `user_id`          = VALUES(`user_id`),
+  `resource_type`    = VALUES(`resource_type`),
+  `classroom_id`     = VALUES(`classroom_id`),
+  `reservation_date` = VALUES(`reservation_date`),
+  `start_time`       = VALUES(`start_time`),
+  `end_time`         = VALUES(`end_time`),
+  `duration`         = VALUES(`duration`),
+  `purpose`          = VALUES(`purpose`),
+  `status`           = VALUES(`status`),
+  `checkin_time`     = VALUES(`checkin_time`);
 
 -- 插入预约记录 (预约图书馆座位)
-INSERT IGNORE INTO `reservation` (`user_id`, `resource_type`, `library_seat_id`, `reservation_date`, `start_time`, `end_time`, `duration`, `purpose`, `status`) VALUES
-(2, 2, 1, DATE_ADD(CURDATE(), INTERVAL 1 DAY), '19:00:00', '21:00:00', 120, '复习备考', 2);
+INSERT INTO `reservation` (
+  `id`, `user_id`, `resource_type`, `library_seat_id`, `reservation_date`,
+  `start_time`, `end_time`, `duration`, `purpose`, `status`, `checkin_time`
+) VALUES
+-- 李四：已签到（图书馆座位）
+(6, 2, 2, 1, DATE_ADD(CURDATE(), INTERVAL 1 DAY), '19:00:00', '21:00:00', 120, '复习备考', 2, DATE_ADD(NOW(), INTERVAL -30 MINUTE)),
+-- 李四：已完成（图书馆座位）
+(7, 2, 2, 2, DATE_ADD(CURDATE(), INTERVAL -1 DAY), '08:00:00', '12:00:00', 240, '图书馆自习', 3, DATE_ADD(NOW(), INTERVAL -1 DAY)),
+-- 李四：已取消（图书馆座位）
+(8, 2, 2, 3, DATE_ADD(CURDATE(), INTERVAL -3 DAY), '14:00:00', '16:00:00', 120, '行程变更', 4, NULL),
+-- 张三：已违约（图书馆座位）
+(9, 1, 2, 4, DATE_ADD(CURDATE(), INTERVAL -4 DAY), '10:00:00', '12:00:00', 120, '未按时到场', 5, NULL)
+ON DUPLICATE KEY UPDATE
+  `user_id`          = VALUES(`user_id`),
+  `resource_type`    = VALUES(`resource_type`),
+  `library_seat_id`  = VALUES(`library_seat_id`),
+  `reservation_date` = VALUES(`reservation_date`),
+  `start_time`       = VALUES(`start_time`),
+  `end_time`         = VALUES(`end_time`),
+  `duration`         = VALUES(`duration`),
+  `purpose`          = VALUES(`purpose`),
+  `status`           = VALUES(`status`),
+  `checkin_time`     = VALUES(`checkin_time`);
 
--- 插入报修工单
-INSERT IGNORE INTO `repair` (`user_id`, `resource_type`, `classroom_id`, `title`, `description`, `type`, `priority`) VALUES
-(1, 1, 1, '101教室投影仪无法开启', '下午上课时发现投影仪无法启动。', 4, 1);
+-- 插入报修工单（与“我的报修”页面对应：待处理/处理中/已完成各一条，类型 1-照明 2-空调 3-桌椅 4-多媒体 5-网络 6-其他，状态 1-待处理 2-处理中 3-已修复）
+INSERT INTO `repair` (`id`, `user_id`, `resource_type`, `classroom_id`, `title`, `description`, `type`, `priority`, `status`, `handler_id`, `handle_time`, `create_time`) VALUES
+(1, 1, 1, 1, '第一教学楼-101', '教室投影仪无法正常开启，开机后屏幕显示蓝屏，影响正常教学使用，请尽快处理。', 4, 2, 1, NULL, NULL, '2026-03-05 09:15:00'),
+(2, 1, 1, 3, '第一教学楼-201A', '研讨室其中一把椅子的靠背松动，存在安全隐患，需要加固或更换。', 3, 2, 2, 5, NULL, '2026-03-04 16:30:00'),
+(3, 1, 1, 4, '第二教学楼-202B', '教室空调遥控器失灵，无法调节温度，现在天气较热，影响学习环境。', 2, 2, 3, 5, '2026-03-03 17:45:00', '2026-03-03 14:20:00')
+ON DUPLICATE KEY UPDATE
+  `user_id`       = VALUES(`user_id`),
+  `resource_type` = VALUES(`resource_type`),
+  `classroom_id`  = VALUES(`classroom_id`),
+  `title`         = VALUES(`title`),
+  `description`   = VALUES(`description`),
+  `type`          = VALUES(`type`),
+  `priority`      = VALUES(`priority`),
+  `status`        = VALUES(`status`),
+  `handler_id`    = VALUES(`handler_id`),
+  `handle_time`   = VALUES(`handle_time`),
+  `create_time`   = VALUES(`create_time`);
 
 -- 插入评价
-INSERT IGNORE INTO `review` (`user_id`, `resource_type`, `classroom_id`, `reservation_id`, `score`, `content`, `tags`) VALUES
-(1, 1, 3, 1, 5, '研讨室很安静，设备齐全，适合小组讨论。', '["安静", "设备好"]');
+INSERT INTO `review` (`id`, `user_id`, `resource_type`, `classroom_id`, `reservation_id`, `score`, `content`, `tags`) VALUES
+(1, 1, 1, 3, 1, 5, '研讨室很安静，设备齐全，适合小组讨论。', '["安静", "设备好"]')
+ON DUPLICATE KEY UPDATE
+  `user_id`        = VALUES(`user_id`),
+  `resource_type`  = VALUES(`resource_type`),
+  `classroom_id`   = VALUES(`classroom_id`),
+  `reservation_id` = VALUES(`reservation_id`),
+  `score`          = VALUES(`score`),
+  `content`        = VALUES(`content`),
+  `tags`           = VALUES(`tags`);
 
--- 插入组队需求
-INSERT IGNORE INTO `team_request` (`user_id`, `title`, `description`, `tags`, `expected_count`, `current_count`) VALUES
-(1, '寻找数据结构课程学习伙伴', '希望找2-3位同学一起学习和完成数据结构作业。', '["学习协作","数据结构"]', 3, 1),
-(1, '期末高等数学刷题小组', '一起刷真题、总结错题，冲刺高数期末考试。', '["考试复习","高数"]', 4, 2),
-(2, 'Java项目开发组队', '基于SpringBoot的课程项目开发，欢迎有Java基础的同学加入。', '["项目开发","Java"]', 4, 1),
-(2, '25考研公共课自习搭子', '每天晚上自习室互相监督打卡，主攻政治+英语。', '["考研自习","公共课"]', 5, 2),
-(3, '英语口语练习角', '每周两次线下口语角，提升英语口语表达。', '["语言学习","英语口语"]', 3, 1);
+-- 插入组队需求（与「我的协作」页面对应：项目需求评审、UI设计稿确认、接口联调测试；status 0-已关闭 1-招募中 2-已满员，前端展示为 进行中/已完成）
+-- 使用 ON DUPLICATE KEY UPDATE 避免 REPLACE 删除行时触发 study_plan 外键约束
+INSERT INTO `team_request` (`id`, `user_id`, `title`, `description`, `tags`, `expected_count`, `current_count`, `status`, `create_time`, `update_time`) VALUES
+(1, 1, '项目需求评审', '完成项目需求文档评审，确定核心功能和优先级，输出评审意见和修改建议', NULL, 5, 3, 1, '2026-03-10 10:00:00', '2026-03-10 12:00:00'),
+(2, 2, 'UI设计稿确认', '确认首页、详情页、表单页的UI设计稿，反馈修改意见，最终定稿', NULL, 3, 3, 0, '2026-03-08 10:00:00', '2026-03-08 12:00:00'),
+(3, 2, '接口联调测试', '前后端接口联调，测试各接口的可用性和数据准确性，修复联调中发现的问题', NULL, 4, 2, 1, '2026-03-09 10:00:00', '2026-03-09 12:00:00')
+ON DUPLICATE KEY UPDATE
+  `user_id` = VALUES(`user_id`),
+  `title` = VALUES(`title`),
+  `description` = VALUES(`description`),
+  `tags` = VALUES(`tags`),
+  `expected_count` = VALUES(`expected_count`),
+  `current_count` = VALUES(`current_count`),
+  `status` = VALUES(`status`),
+  `create_time` = VALUES(`create_time`),
+  `update_time` = VALUES(`update_time`);
 
--- 插入组队成员
-INSERT IGNORE INTO `team_member` (`team_request_id`, `user_id`, `role`) VALUES
-(1, 1, 1),
-(2, 1, 1),
-(2, 2, 2),
-(3, 2, 1),
-(4, 1, 2),
-(4, 2, 1),
-(5, 3, 1);
+-- 插入组队成员（1=创建者 2=成员；项目需求评审：张三/李四/王五；UI设计稿确认：李四/张三/王五；接口联调测试：李四/张三）
+INSERT INTO `team_member` (`id`, `team_request_id`, `user_id`, `role`, `join_time`) VALUES
+(1, 1, 1, 1, '2026-03-10 10:00:00'),
+(2, 1, 2, 2, '2026-03-10 10:30:00'),
+(3, 1, 6, 2, '2026-03-10 11:00:00'),
+(4, 2, 2, 1, '2026-03-08 10:00:00'),
+(5, 2, 1, 2, '2026-03-08 10:30:00'),
+(6, 2, 6, 2, '2026-03-08 11:00:00'),
+(7, 3, 2, 1, '2026-03-09 10:00:00'),
+(8, 3, 1, 2, '2026-03-09 10:30:00')
+ON DUPLICATE KEY UPDATE
+  `team_request_id` = VALUES(`team_request_id`),
+  `user_id`         = VALUES(`user_id`),
+  `role`            = VALUES(`role`),
+  `join_time`       = VALUES(`join_time`);
 
--- 插入小组聊天消息（以“Java项目开发组队”为例，假设其ID为3）
-INSERT IGNORE INTO `team_message` (`team_request_id`, `sender_id`, `sender_name`, `type`, `content`)
-VALUES
-(3, 2, '李四', 1, '大家好，本周三下午3点研讨室讨论项目需求，记得准时参加！'),
-(3, 2, '李四', 1, '我整理了一些SpringBoot的学习资料，等下发给大家'),
-(3, 2, '李四', 2, 'SpringBoot教程.pdf'),
-(3, 1, '张三', 1, '收到！我这边负责前端部分，已经开始搭建框架了');
+-- 插入小组聊天消息（接口联调测试 id=3）
+INSERT INTO `team_message` (`id`, `team_request_id`, `sender_id`, `sender_name`, `type`, `content`) VALUES
+(1, 3, 2, '李四', 1, '大家好，本周三下午3点研讨室讨论项目需求，记得准时参加！'),
+(2, 3, 2, '李四', 1, '我整理了一些SpringBoot的学习资料，等下发给大家'),
+(3, 3, 2, '李四', 2, 'SpringBoot教程.pdf'),
+(4, 3, 1, '张三', 1, '收到！我这边负责前端部分，已经开始搭建框架了')
+ON DUPLICATE KEY UPDATE
+  `team_request_id` = VALUES(`team_request_id`),
+  `sender_id`       = VALUES(`sender_id`),
+  `sender_name`     = VALUES(`sender_name`),
+  `type`            = VALUES(`type`),
+  `content`         = VALUES(`content`);
 
 -- 插入学习计划
-INSERT IGNORE INTO `study_plan` (`team_request_id`, `user_id`, `reservation_id`, `title`, `plan_date`, `start_time`, `end_time`) VALUES
-(1, 1, NULL, '第三章树和图的学习', DATE_ADD(CURDATE(), INTERVAL 2 DAY), '15:00:00', '17:00:00');
+INSERT INTO `study_plan` (`id`, `team_request_id`, `user_id`, `reservation_id`, `title`, `plan_date`, `start_time`, `end_time`) VALUES
+(1, 1, 1, NULL, '第三章树和图的学习', DATE_ADD(CURDATE(), INTERVAL 2 DAY), '15:00:00', '17:00:00')
+ON DUPLICATE KEY UPDATE
+  `team_request_id` = VALUES(`team_request_id`),
+  `user_id`         = VALUES(`user_id`),
+  `reservation_id`  = VALUES(`reservation_id`),
+  `title`           = VALUES(`title`),
+  `plan_date`       = VALUES(`plan_date`),
+  `start_time`      = VALUES(`start_time`),
+  `end_time`        = VALUES(`end_time`);
 
 -- 插入通知消息
-INSERT IGNORE INTO `notification` (`user_id`, `type`, `title`, `content`, `related_id`) VALUES
-(1, 2, '预约即将开始提醒', '您预约的教室将在30分钟后开始，请准时签到。', 1);
+INSERT INTO `notification` (`id`, `user_id`, `type`, `title`, `content`, `related_id`) VALUES
+(1, 1, 2, '预约即将开始提醒', '您预约的教室将在30分钟后开始，请准时签到。', 1)
+ON DUPLICATE KEY UPDATE
+  `user_id`     = VALUES(`user_id`),
+  `type`        = VALUES(`type`),
+  `title`       = VALUES(`title`),
+  `content`     = VALUES(`content`),
+  `related_id`  = VALUES(`related_id`);
 
 SELECT '测试数据插入完成。' AS result;

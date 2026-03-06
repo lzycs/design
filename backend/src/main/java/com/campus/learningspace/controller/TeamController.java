@@ -2,7 +2,9 @@ package com.campus.learningspace.controller;
 
 import com.campus.learningspace.common.Result;
 import com.campus.learningspace.entity.TeamMember;
+import com.campus.learningspace.entity.TeamMemberVO;
 import com.campus.learningspace.entity.TeamRequest;
+import com.campus.learningspace.entity.TeamRequestVO;
 import com.campus.learningspace.entity.TeamMessage;
 import com.campus.learningspace.service.TeamMemberService;
 import com.campus.learningspace.service.TeamRequestService;
@@ -11,8 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/team")
@@ -29,8 +29,9 @@ public class TeamController {
     private TeamMessageService teamMessageService;
 
     @GetMapping("/request/{id}")
-    public Result<TeamRequest> getRequestById(@PathVariable Long id) {
-        return Result.success(teamRequestService.getById(id));
+    public Result<TeamRequestVO> getRequestById(@PathVariable Long id) {
+        TeamRequestVO vo = teamRequestService.getTeamRequestVOById(id);
+        return vo != null ? Result.success(vo) : Result.error(404, "协作不存在");
     }
 
     @GetMapping("/requests/active")
@@ -45,15 +46,21 @@ public class TeamController {
 
     @PostMapping("/request")
     public Result<TeamRequest> createRequest(@RequestBody TeamRequest request) {
-        request.setId(null);
-        if (request.getStatus() == null) {
-            request.setStatus(1); // 招募中
-        }
-        if (request.getCurrentCount() == null) {
-            request.setCurrentCount(1);
-        }
-        teamRequestService.save(request);
+        teamRequestService.createRequestWithCreator(request);
         return Result.success(request);
+    }
+
+    @PutMapping("/request/{id}/status")
+    public Result<Boolean> updateRequestStatus(@PathVariable Long id, @RequestBody TeamRequest payload) {
+        TeamRequest existing = teamRequestService.getById(id);
+        if (existing == null) {
+            return Result.error(404, "协作不存在");
+        }
+        if (payload.getStatus() != null) {
+            existing.setStatus(payload.getStatus()); // 0-已关闭(已完成) 1-招募中 2-已满员
+            teamRequestService.updateById(existing);
+        }
+        return Result.success(true);
     }
 
     @PostMapping("/request/{requestId}/join")
@@ -67,16 +74,13 @@ public class TeamController {
     }
 
     @GetMapping("/user/{userId}")
-    public Result<List<TeamRequest>> getUserTeams(@PathVariable Long userId) {
-        List<TeamMember> memberships = teamMemberService.getUserTeams(userId);
-        Set<Long> requestIds = memberships.stream()
-                .map(TeamMember::getTeamRequestId)
-                .collect(Collectors.toSet());
-        if (requestIds.isEmpty()) {
-            return Result.success(List.of());
-        }
-        List<TeamRequest> requests = teamRequestService.listByIds(requestIds);
-        return Result.success(requests);
+    public Result<List<TeamRequestVO>> getUserTeams(@PathVariable Long userId) {
+        return Result.success(teamRequestService.getUserTeamVOList(userId));
+    }
+
+    @GetMapping("/request/{requestId}/members")
+    public Result<List<TeamMemberVO>> getMembers(@PathVariable Long requestId) {
+        return Result.success(teamMemberService.getTeamMemberVOList(requestId));
     }
 
     @GetMapping("/request/{requestId}/messages")
@@ -94,11 +98,6 @@ public class TeamController {
         }
         teamMessageService.save(message);
         return Result.success(message);
-    }
-
-    @GetMapping("/request/{requestId}/members")
-    public Result<List<TeamMember>> getMembers(@PathVariable Long requestId) {
-        return Result.success(teamMemberService.getTeamMembers(requestId));
     }
 }
 

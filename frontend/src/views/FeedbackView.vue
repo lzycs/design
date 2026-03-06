@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { getAvailableClassrooms, type Classroom as ApiClassroom } from '../api/classroom'
 import {
   createRepair,
@@ -14,9 +14,11 @@ import {
 } from '../api/feedback'
 
 const router = useRouter()
+const route = useRoute()
 
-// 顶部标签：一键报修 / 评价列表
+// 顶部标签：一键报修 / 评价列表（支持从「我的」页「我的评价」跳转时仅显示评价列表，不显示报修和标签栏）
 const activeTopTab = ref<'repair' | 'evaluation'>('repair')
+const isEvaluationOnly = computed(() => route.query.tab === 'evaluation' && route.query.only === '1')
 
 // 评价筛选：全部 / 待评价 / 已评价
 const evalFilter = ref<'all' | 'pending' | 'evaluated'>('all')
@@ -225,20 +227,29 @@ const onDeleteEvaluation = async (item: FeedbackItem) => {
 // 底部 Tab 跳转
 const goHome = () => router.push('/')
 
+const goBackToProfile = () => router.push('/profile')
+
 onMounted(() => {
   loadUserFromStorage()
   loadClassrooms()
   loadFeedbackData()
+  if (route.query.tab === 'evaluation' || route.query.only === '1') {
+    activeTopTab.value = 'evaluation'
+  }
 })
 </script>
 
 <template>
   <div class="feedback">
-    <!-- 顶部标题栏 -->
-    <van-nav-bar title="反馈报修" left-arrow @click-left="goHome" />
+    <!-- 顶部标题栏：从「我的评价」进入时只显示「评价列表」，返回个人中心 -->
+    <van-nav-bar
+      :title="isEvaluationOnly ? '评价列表' : '反馈报修'"
+      left-arrow
+      @click-left="isEvaluationOnly ? goBackToProfile() : goHome()"
+    />
 
-    <!-- 顶部标签导航 -->
-    <div class="top-tab-bar">
+    <!-- 顶部标签导航（仅反馈页完整模式显示） -->
+    <div v-if="!isEvaluationOnly" class="top-tab-bar">
       <div
         class="top-tab-item"
         :class="{ active: activeTopTab === 'repair' }"
@@ -255,8 +266,8 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- 一键报修表单区域 -->
-    <div v-if="activeTopTab === 'repair'" class="form-area">
+    <!-- 一键报修表单区域（仅反馈页且选了一键报修时显示） -->
+    <div v-if="!isEvaluationOnly && activeTopTab === 'repair'" class="form-area">
       <div class="form-card">
         <!-- 选择教室 -->
         <div class="form-item">
@@ -312,8 +323,8 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- 评价列表区域 -->
-    <div v-else class="form-area">
+    <!-- 评价列表区域（从「我的评价」进入或顶部选「评价列表」时显示） -->
+    <div v-if="isEvaluationOnly || activeTopTab === 'evaluation'" class="form-area">
       <!-- 筛选标签 -->
       <div class="eval-filter-bar">
         <div

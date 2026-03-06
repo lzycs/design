@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>反馈报修</title>
+    <script src="https://at.alicdn.com/t/c/font_4068990_7yf5e9z09.js"></script> <!-- 在线矢量图标库 -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        body {
+            background-color: #F5F7FA;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        /* 手机边框容器 */
+        .phone-container {
+            width: 375px;
+            height: 812px;
+            border: 1px solid #DCDFE6;
+            border-radius: 32px;
+            background-color: #FFFFFF;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+        /* 页面通用样式 */
+        .common-page {
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            background-color: #F5F7FA;
+            padding-bottom: 72px;
+        }
+        .common-page::-webkit-scrollbar {
+            display: none;
+        }
+        /* 页面标题栏 */
+        .page-header {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            background-color: #FFFFFF;
+            border-bottom: 1px solid #F5F7FA;
+        }
+        .back-btn {
+            margin-right: 16px;
+        }
+        .back-btn .icon {
+            font-size: 20px;
+            color: #1A1A1A;
+        }
+        .page-header-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1A1A1A;
+            flex: 1;
+            text-align: center;
+        }
+        /* 顶部标签导航 */
+        .top-tab-bar {
+            display: flex;
+            background-color: #FFFFFF;
+            border-bottom: 1px solid #F5F7FA;
+        }
+        .top-tab-item {
+            flex: 1;
+            text-align: center;
+            padding: 16px 0;
+            font-size: 16px;
+            color: #909399;
+            font-weight: 500;
+            position: relative;
+            cursor: pointer;
+        }
+        .top-tab-item.active {
+            color: #4A90E2;
+        }
+        .top-tab-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 3px;
+            background-color: #4A90E2;
+            border-radius: 2px;
+        }
+        /* 评价筛选标签 */
+        .eval-filter-bar {
+            display: flex;
+            background-color: #FFFFFF;
+            padding: 12px 20px;
+            border-bottom: 1px solid #F5F7FA;
+        }
+        .filter-item {
+            padding: 6px 16px;
+            font-size: 14px;
+            color: #909399;
+            border-radius: 20px;
+            margin-right: 12px;
+            cursor: pointer;
+        }
+        .filter-item.active {
+            background-color: #4A90E2;
+            color: #FFFFFF;
+        }
+        /* 表单区域通用样式 */
+        .form-area {
+            padding: 20px;
+            display: block;
+        }
+        .form-card {
+            background-color: #FFFFFF;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            padding: 20px;
+        }
+        .form-item {
+            margin-bottom: 20px;
+        }
+        .form-label {
+            font-size: 14px;
+            color: #333333;
+            font-weight: 500;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .form-select {
+            width: 100%;
+            height: 44px;
+            border: 1px solid #E5E6EB;
+            border-radius: 8px;
+            padding: 0 16px;
+            font-size: 14px;
+            color: #1A1A1A;
+            appearance: none;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23909399' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 16px center;
+            background-size: 16px;
+        }
+        .form-textarea {
+            width: 100%;
+            min-height: 120px;
+            border: 1px solid #E5E6EB;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 14px;
+            color: #1A1A1A;
+            resize: none;
+        }
+        .form-textarea::placeholder {
+            color: #909399;
+        }
+        /* 图片上传区域 */
+        .upload-area {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+        }
+        .upload-item {
+            width: 80px;
+            height: 80px;
+            border: 1px dashed #DCDFE6;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #F9F9F9;
+            cursor: pointer;
+        }
+        .upload-item .icon {
+            font-size: 24px;
+            color: #C0C4CC;
+        }
+        .upload-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        /* 提交按钮 */
+        .submit-btn {
+            width: 100%;
+            height: 48px;
+            background-color: #4A90E2;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+        .submit-btn:disabled {
+            background-color: #C0C4CC;
+            cursor: not-allowed;
+        }
+        /* 星级评分样式 */
+        .star-rating {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+        .star-item {
+            font-size: 20px;
+            color: #E5E6EB;
+            cursor: pointer;
+        }
+        .star-item.active {
+            color: #E6A23C;
+        }
+        .star-score {
+            font-size: 14px;
+            color: #666666;
+            margin-left: 8px;
+        }
+        /* 教室卡片样式（已签到） */
+        .classroom-card {
+            background-color: #FFFFFF;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            padding: 16px;
+            margin-bottom: 12px;
+            position: relative;
+        }
+        .classroom-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .classroom-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1A1A1A;
+        }
+        .classroom-time {
+            font-size: 12px;
+            color: #909399;
+        }
+        .classroom-status {
+            font-size: 12px;
+            color: #67C23A;
+            background-color: #F0F9FF;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        .go-eval-btn {
+            position: absolute;
+            right: 16px;
+            bottom: 16px;
+            padding: 6px 12px;
+            background-color: #4A90E2;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        /* 评价卡片样式 */
+        .evaluation-card {
+            background-color: #FFFFFF;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        .evaluation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .evaluation-classroom {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1A1A1A;
+        }
+        .evaluation-time {
+            font-size: 12px;
+            color: #909399;
+        }
+        .evaluation-category {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .category-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .category-name {
+            font-size: 14px;
+            color: #333333;
+        }
+        .evaluation-content {
+            font-size: 14px;
+            color: #666666;
+            line-height: 1.5;
+            padding: 8px 12px;
+            background-color: #F9F9F9;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        .evaluation-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+        .eval-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-edit {
+            background-color: #F5F7FA;
+            color: #666666;
+        }
+        .btn-delete {
+            background-color: #FEF0F0;
+            color: #F56C6C;
+        }
+        /* 无数据提示 */
+        .empty-tip {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px 20px;
+            text-align: center;
+        }
+        .empty-icon {
+            font-size: 64px;
+            color: #E5E6EB;
+            margin-bottom: 16px;
+        }
+        .empty-title {
+            font-size: 18px;
+            color: #1A1A1A;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .empty-desc {
+            font-size: 14px;
+            color: #909399;
+            margin-bottom: 24px;
+        }
+        /* 底部Tab导航 */
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 375px;
+            height: 56px;
+            background-color: #FFFFFF;
+            border-top: 1px solid #F5F7FA;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 99;
+        }
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #909399;
+            font-size: 12px;
+        }
+        .tab-item.active {
+            color: #4A90E2;
+        }
+        .tab-item .icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        /* 隐藏内容区域 */
+        .hidden {
+            display: none !important;
+        }
+        /* 评价表单页面 */
+        #evaluation-form-page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #F5F7FA;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+        <!-- 反馈报修主页面 -->
+        <div class="common-page" id="main-page">
+            <!-- 标题栏 -->
+            <div class="page-header">
+                <a href="javascript:void(0)" class="back-btn" style="text-decoration: none;">
+                    <i class="icon iconfont icon-arrow-left"></i>
+                </a>
+                <div class="page-header-title">反馈报修</div>
+                <div style="width: 24px;"></div> <!-- 占位，使标题居中 -->
+            </div>
+            
+            <!-- 顶部标签导航（移除工单查询） -->
+            <div class="top-tab-bar">
+                <div class="top-tab-item active" data-target="repair">一键报修</div>
+                <div class="top-tab-item" data-target="evaluation">评价列表</div>
+            </div>
+            
+            <!-- 1. 一键报修表单区域 -->
+            <div id="repair-content" class="form-area">
+                <div class="form-card">
+                    <!-- 选择教室 -->
+                    <div class="form-item">
+                        <label class="form-label">选择教室</label>
+                        <select class="form-select" id="classroom-select">
+                            <option value="1">一号楼-101</option>
+                            <option value="2">一号楼-102</option>
+                            <option value="3">二号楼-201</option>
+                            <option value="4">二号楼-202</option>
+                            <option value="5">研讨室-01</option>
+                            <option value="6">研讨室-02</option>
+                        </select>
+                    </div>
+                    
+                    <!-- 故障类型 -->
+                    <div class="form-item">
+                        <label class="form-label">故障类型</label>
+                        <select class="form-select" id="fault-type">
+                            <option value="air">空调故障</option>
+                            <option value="projector">投影仪故障</option>
+                            <option value="furniture">家具损坏</option>
+                            <option value="power">水电问题</option>
+                            <option value="network">网络故障</option>
+                            <option value="other">其他问题</option>
+                        </select>
+                    </div>
+                    
+                    <!-- 问题描述 -->
+                    <div class="form-item">
+                        <label class="form-label">问题描述</label>
+                        <textarea class="form-textarea" placeholder="请详细描述故障情况，便于后勤人员处理" id="fault-desc"></textarea>
+                    </div>
+                    
+                    <!-- 上传照片 -->
+                    <div class="form-item">
+                        <label class="form-label">上传照片（可选）</label>
+                        <div class="upload-area">
+                            <div class="upload-item" id="upload-1">
+                                <i class="icon iconfont icon-plus"></i>
+                            </div>
+                            <div class="upload-item" id="upload-2">
+                                <i class="icon iconfont icon-plus"></i>
+                            </div>
+                            <div class="upload-item" id="upload-3">
+                                <i class="icon iconfont icon-plus"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 提交按钮 -->
+                    <button class="submit-btn" id="submit-repair">提交报修工单</button>
+                </div>
+            </div>
+            
+            <!-- 2. 评价列表区域 -->
+            <div id="evaluation-content" class="form-area hidden">
+                <!-- 评价筛选标签 -->
+                <div class="eval-filter-bar">
+                    <div class="filter-item active" data-filter="all">全部</div>
+                    <div class="filter-item" data-filter="pending">待评价</div>
+                    <div class="filter-item" data-filter="evaluated">已评价</div>
+                </div>
+                
+                <!-- 待评价教室列表 -->
+                <div class="pending-list">
+                    <!-- 已签到待评价教室卡片 -->
+                    <div class="classroom-card" data-status="pending">
+                        <div class="classroom-header">
+                            <div class="classroom-name">二号教学楼-202</div>
+                            <div class="classroom-status">已签到</div>
+                        </div>
+                        <div class="classroom-time">使用时间：2026-03-04 14:00-16:00</div>
+                        <button class="go-eval-btn" data-classroom="二号教学楼-202">去评价</button>
+                    </div>
+                    
+                    <div class="classroom-card" data-status="pending">
+                        <div class="classroom-header">
+                            <div class="classroom-name">研讨室-01</div>
+                            <div class="classroom-status">已签到</div>
+                        </div>
+                        <div class="classroom-time">使用时间：2026-03-03 15:00-17:00</div>
+                        <button class="go-eval-btn" data-classroom="研讨室-01">去评价</button>
+                    </div>
+                </div>
+                
+                <!-- 已评价列表 -->
+                <div class="evaluated-list">
+                    <!-- 评价卡片1 -->
+                    <div class="evaluation-card" data-status="evaluated">
+                        <div class="evaluation-header">
+                            <div class="evaluation-classroom">一号楼-101</div>
+                            <div class="evaluation-time">评价时间：2026-03-02 18:20</div>
+                        </div>
+                        
+                        <div class="evaluation-category">
+                            <div class="category-item">
+                                <span class="category-name">整体环境</span>
+                                <div class="star-rating">
+                                    <i class="icon iconfont icon-star active"></i>
+                                    <i class="icon iconfont icon-star active"></i>
+                                    <i class="icon iconfont icon-star active"></i>
+                                    <i class="icon iconfont icon-star active"></i>
+                                    <i class="icon iconfont icon-star"></i>
+                                    <span class="star-score">4.0分</span>
+                                </div>
+                            </div>
+                            <div class="category-item">
+                                <span class="category-name">设备设施</span>
+                                <div class="star-rating">
+                                    <i class="icon iconfont icon-star active"></i>
+                                    <i class="icon iconfont icon-star active"></i>
+                                    <i class="icon iconfont icon-star active"></i>
+                                    <i class="icon iconfont icon-star"></i>
+                                    <i class="icon iconfont icon-star"></i>
+                                    <span class="star-score">3.0分</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="evaluation-content">
+                            教室整体环境干净整洁，空调制冷效果很好，但是投影仪偶尔会卡顿，整体体验不错。
+                        </div>
+                        
+                        <div class="evaluation-actions">
+                            <button class="eval-btn btn-edit">编辑评价</button>
+                            <button class="eval-btn btn-delete">删除评价</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 评价表单页面 -->
+        <div class="common-page hidden" id="evaluation-form-page">
+            <!-- 标题栏 -->
+            <div class="page-header">
+                <a href="javascript:void(0)" class="back-btn" id="eval-back-btn" style="text-decoration: none;">
+                    <i class="icon iconfont icon-arrow-left"></i>
+                </a>
+                <div class="page-header-title" id="eval-page-title">评价教室</div>
+                <div style="width: 24px;"></div>
+            </div>
+            
+            <!-- 评价表单 -->
+            <div class="form-area">
+                <div class="form-card">
+                    <div class="form-item">
+                        <label class="form-label">教室名称</label>
+                        <div class="form-select" style="background: none; border: none; padding-left: 0;" id="eval-classroom-name">二号教学楼-202</div>
+                    </div>
+                    
+                    <div class="form-item">
+                        <label class="form-label">整体环境评分</label>
+                        <div class="star-rating" id="env-rating">
+                            <i class="icon iconfont icon-star"></i>
+                            <i class="icon iconfont icon-star"></i>
+                            <i class="icon iconfont icon-star"></i>
+                            <i class="icon iconfont icon-star"></i>
+                            <i class="icon iconfont icon-star"></i>
+                            <span class="star-score">0.0分</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-item">
+                        <label class="form-label">设备设施评分</label>
+                        <div class="star-rating" id="equip-rating">
+                            <i class="icon iconfont icon-star"></i>
+                            <i class="icon iconfont icon-star"></i>
+                            <i class="icon iconfont icon-star"></i>
+                            <i class="icon iconfont icon-star"></i>
+                            <i class="icon iconfont icon-star"></i>
+                            <span class="star-score">0.0分</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-item">
+                        <label class="form-label">评价内容</label>
+                        <textarea class="form-textarea" placeholder="请输入你的评价内容（选填）" id="eval-content"></textarea>
+                    </div>
+                    
+                    <button class="submit-btn" id="submit-evaluation">提交评价</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部Tab导航 -->
+        <div class="tab-bar">
+            <div class="tab-item">
+                <i class="icon iconfont icon-home"></i>
+                <span>首页</span>
+            </div>
+            <div class="tab-item">
+                <i class="icon iconfont icon-order"></i>
+                <span>预约</span>
+            </div>
+            <div class="tab-item">
+                <i class="icon iconfont icon-feedback"></i>
+                <span>反馈</span>
+            </div>
+            <div class="tab-item">
+                <i class="icon iconfont icon-team"></i>
+                <span>协作</span>
+            </div>
+            <div class="tab-item active">
+                <i class="icon iconfont icon-my"></i>
+                <span>我的</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 顶部标签切换逻辑（移除工单查询）
+        document.querySelectorAll('.top-tab-item').forEach(tab => {
+            tab.addEventListener('click', function() {
+                // 切换标签激活状态
+                document.querySelectorAll('.top-tab-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                // 隐藏所有内容区域
+                document.getElementById('repair-content').classList.add('hidden');
+                document.getElementById('evaluation-content').classList.add('hidden');
+                
+                // 显示对应内容
+                const target = this.getAttribute('data-target');
+                if (target === 'repair') {
+                    document.getElementById('repair-content').classList.remove('hidden');
+                } else if (target === 'evaluation') {
+                    document.getElementById('evaluation-content').classList.remove('hidden');
+                }
+            });
+        });
+        
+        // 评价筛选标签切换
+        document.querySelectorAll('.filter-item').forEach(filter => {
+            filter.addEventListener('click', function() {
+                // 切换筛选标签激活状态
+                document.querySelectorAll('.filter-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                const filterType = this.getAttribute('data-filter');
+                const pendingCards = document.querySelectorAll('.classroom-card[data-status="pending"]');
+                const evaluatedCards = document.querySelectorAll('.evaluation-card[data-status="evaluated"]');
+                
+                // 根据筛选类型显示/隐藏卡片
+                if (filterType === 'all') {
+                    pendingCards.forEach(card => card.style.display = 'block');
+                    evaluatedCards.forEach(card => card.style.display = 'block');
+                } else if (filterType === 'pending') {
+                    pendingCards.forEach(card => card.style.display = 'block');
+                    evaluatedCards.forEach(card => card.style.display = 'none');
+                } else if (filterType === 'evaluated') {
+                    pendingCards.forEach(card => card.style.display = 'none');
+                    evaluatedCards.forEach(card => card.style.display = 'block');
+                }
+            });
+        });
+        
+        // 图片上传模拟
+        document.querySelectorAll('.upload-item').forEach(item => {
+            item.addEventListener('click', function() {
+                if (!this.querySelector('img')) {
+                    this.innerHTML = '<img src="https://via.placeholder.com/80x80/EEEEEE/999999?text=图片" alt="故障照片">';
+                }
+            });
+        });
+        
+        // 提交报修工单
+        document.getElementById('submit-repair').addEventListener('click', function() {
+            const desc = document.getElementById('fault-desc').value.trim();
+            if (!desc) {
+                alert('请填写问题描述后提交！');
+                return;
+            }
+            
+            alert('报修工单提交成功！工单号：XJ20260305' + Math.floor(Math.random() * 10000));
+            document.getElementById('fault-desc').value = '';
+            document.querySelectorAll('.upload-item').forEach(item => {
+                item.innerHTML = '<i class="icon iconfont icon-plus"></i>';
+            });
+        });
+        
+        // 去评价按钮点击事件
+        document.querySelectorAll('.go-eval-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const classroomName = this.getAttribute('data-classroom');
+                // 设置评价页面的教室名称
+                document.getElementById('eval-classroom-name').textContent = classroomName;
+                // 重置评分和内容
+                resetStarRating('env-rating');
+                resetStarRating('equip-rating');
+                document.getElementById('eval-content').value = '';
+                // 显示评价表单页面，隐藏主页面
+                document.getElementById('main-page').classList.add('hidden');
+                document.getElementById('evaluation-form-page').classList.remove('hidden');
+            });
+        });
+        
+        // 返回按钮（评价页面）
+        document.getElementById('eval-back-btn').addEventListener('click', function() {
+            document.getElementById('evaluation-form-page').classList.add('hidden');
+            document.getElementById('main-page').classList.remove('hidden');
+        });
+        
+        // 初始化星级评分交互
+        function initStarRating() {
+            const starContainers = document.querySelectorAll('.star-rating');
+            starContainers.forEach(container => {
+                const stars = container.querySelectorAll('.star-item');
+                const scoreText = container.querySelector('.star-score');
+                
+                stars.forEach((star, index) => {
+                    star.addEventListener('click', function() {
+                        stars.forEach((s, i) => {
+                            if (i <= index) {
+                                s.classList.add('active');
+                            } else {
+                                s.classList.remove('active');
+                            }
+                        });
+                        const score = (index + 1).toFixed(1);
+                        scoreText.textContent = `${score}分`;
+                    });
+                });
+            });
+        }
+        
+        // 重置星级评分
+        function resetStarRating(containerId) {
+            const container = document.getElementById(containerId);
+            const stars = container.querySelectorAll('.star-item');
+            const scoreText = container.querySelector('.star-score');
+            
+            stars.forEach(star => star.classList.remove('active'));
+            scoreText.textContent = '0.0分';
+        }
+        
+        // 提交评价
+        document.getElementById('submit-evaluation').addEventListener('click', function() {
+            const envStars = document.querySelectorAll('#env-rating .star-item.active').length;
+            const equipStars = document.querySelectorAll('#equip-rating .star-item.active').length;
+            
+            if (envStars === 0 || equipStars === 0) {
+                alert('请完成整体环境和设备设施的评分！');
+                return;
+            }
+            
+            alert('评价提交成功！感谢你的反馈');
+            // 返回评价列表页面
+            document.getElementById('evaluation-form-page').classList.add('hidden');
+            document.getElementById('main-page').classList.remove('hidden');
+            
+            // 模拟将待评价卡片转为已评价（实际项目中需结合后端）
+            const classroomName = document.getElementById('eval-classroom-name').textContent;
+            document.querySelectorAll('.go-eval-btn').forEach(btn => {
+                if (btn.getAttribute('data-classroom') === classroomName) {
+                    btn.closest('.classroom-card').style.display = 'none';
+                }
+            });
+        });
+        
+        // 评价卡片编辑/删除
+        document.querySelectorAll('.eval-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const btnText = this.textContent.trim();
+                const classroom = this.closest('.evaluation-card').querySelector('.evaluation-classroom').textContent;
+                
+                if (btnText === '编辑评价') {
+                    alert(`即将编辑【${classroom}】的评价`);
+                } else if (btnText === '删除评价') {
+                    if (confirm(`确定要删除【${classroom}】的评价吗？`)) {
+                        this.closest('.evaluation-card').remove();
+                    }
+                }
+            });
+        });
+        
+        // 底部Tab切换
+        document.querySelectorAll('.tab-item').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                const tabText = this.querySelector('span').textContent;
+                if (tabText === '首页') {
+                    alert('即将跳转到首页');
+                } else if (tabText === '预约') {
+                    alert('即将跳转到预约中心');
+                } else if (tabText === '反馈') {
+                    alert('当前已在反馈报修页面');
+                } else if (tabText === '协作') {
+                    alert('即将跳转到协作页面');
+                }
+            });
+        });
+        
+        // 初始化星级评分
+        initStarRating();
+    </script>
+</body>
+</html>

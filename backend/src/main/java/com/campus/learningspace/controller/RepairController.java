@@ -2,6 +2,7 @@ package com.campus.learningspace.controller;
 
 import com.campus.learningspace.common.Result;
 import com.campus.learningspace.entity.Repair;
+import com.campus.learningspace.entity.RepairVO;
 import com.campus.learningspace.service.RepairService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -17,13 +18,14 @@ public class RepairController {
     private RepairService repairService;
 
     @GetMapping("/{id}")
-    public Result<Repair> getById(@PathVariable Long id) {
-        return Result.success(repairService.getById(id));
+    public Result<RepairVO> getById(@PathVariable Long id) {
+        RepairVO vo = repairService.getRepairVOById(id);
+        return vo != null ? Result.success(vo) : Result.error(404, "报修工单不存在");
     }
 
     @GetMapping("/user/{userId}")
-    public Result<List<Repair>> getUserRepairs(@PathVariable Long userId) {
-        return Result.success(repairService.getUserRepairs(userId));
+    public Result<List<RepairVO>> getUserRepairs(@PathVariable Long userId) {
+        return Result.success(repairService.getUserRepairVOList(userId));
     }
 
     @PostMapping

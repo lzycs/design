@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>协作广场</title>
+    <script src="https://at.alicdn.com/t/c/font_4068990_7yf5e9z09.js"></script> <!-- 在线矢量图标库 -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        body {
+            background-color: #F5F7FA;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        /* 手机容器 */
+        .phone-container {
+            width: 375px;
+            height: 812px;
+            border: 1px solid #DCDFE6;
+            border-radius: 32px;
+            background-color: #FFFFFF;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+        /* 通用页面样式 */
+        .page {
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            background-color: #F5F7FA;
+            padding-bottom: 72px;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .page::-webkit-scrollbar {
+            display: none;
+        }
+        .hidden {
+            display: none !important;
+        }
+        /* 标题栏 */
+        .page-header {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            background-color: #FFFFFF;
+            border-bottom: 1px solid #F5F7FA;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .back-btn {
+            margin-right: 16px;
+            text-decoration: none;
+        }
+        .back-btn .icon {
+            font-size: 20px;
+            color: #1A1A1A;
+        }
+        .page-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1A1A1A;
+            flex: 1;
+            text-align: center;
+        }
+        /* 分类标签栏 */
+        .category-bar {
+            display: flex;
+            padding: 12px 20px;
+            background-color: #FFFFFF;
+            overflow-x: auto;
+            white-space: nowrap;
+            border-bottom: 1px solid #F5F7FA;
+        }
+        .category-bar::-webkit-scrollbar {
+            display: none;
+        }
+        .category-item {
+            padding: 6px 16px;
+            font-size: 14px;
+            color: #909399;
+            background-color: #F5F7FA;
+            border-radius: 20px;
+            margin-right: 12px;
+            cursor: pointer;
+        }
+        .category-item.active {
+            background-color: #4A90E2;
+            color: #FFFFFF;
+        }
+        /* 协作广场列表 */
+        .team-list {
+            padding: 16px 20px;
+        }
+        .team-card {
+            background-color: #FFFFFF;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+        }
+        .team-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #E5E6EB;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        .team-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1A1A1A;
+        }
+        .team-tags {
+            display: flex;
+            gap: 8px;
+            margin: 8px 0;
+        }
+        .tag {
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background-color: #F5F7FA;
+            color: #666666;
+        }
+        .team-desc {
+            font-size: 14px;
+            color: #666666;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        /* 小组详情页 */
+        .team-detail-header {
+            padding: 20px;
+            background-color: #4A90E2;
+            color: #FFFFFF;
+        }
+        .team-detail-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .team-detail-tags {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .team-detail-tag {
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background-color: rgba(255,255,255,0.2);
+            color: #FFFFFF;
+        }
+        .team-detail-desc {
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+        .join-btn {
+            width: 100%;
+            height: 44px;
+            background-color: #FFFFFF;
+            color: #4A90E2;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .joined-btn {
+            background-color: #F5F7FA;
+            color: #909399;
+            cursor: not-allowed;
+        }
+        /* 成员列表 */
+        .member-section {
+            padding: 20px;
+            background-color: #FFFFFF;
+            margin: 12px 0;
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1A1A1A;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+        .section-title .icon {
+            margin-right: 8px;
+            color: #4A90E2;
+        }
+        .member-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .member-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .member-info {
+            display: flex;
+            align-items: center;
+        }
+        .member-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #E5E6EB;
+            margin-right: 12px;
+        }
+        .member-name {
+            font-size: 14px;
+            color: #1A1A1A;
+            font-weight: 500;
+        }
+        .member-role {
+            font-size: 12px;
+            color: #FFFFFF;
+            background-color: #4A90E2;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .member-role.normal {
+            background-color: #909399;
+        }
+        /* 聊天页面 */
+        .chat-page {
+            background-color: #F5F7FA;
+        }
+        .chat-header {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            background-color: #FFFFFF;
+            border-bottom: 1px solid #F5F7FA;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .chat-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #E5E6EB;
+            margin-right: 12px;
+        }
+        .chat-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1A1A1A;
+            flex: 1;
+        }
+        .chat-tools {
+            display: flex;
+            gap: 16px;
+        }
+        .chat-tools .icon {
+            font-size: 20px;
+            color: #666666;
+            cursor: pointer;
+        }
+        /* 聊天内容区域 */
+        .chat-content {
+            padding: 16px 20px;
+            height: calc(100% - 140px);
+            overflow-y: auto;
+        }
+        .chat-message {
+            margin-bottom: 16px;
+            display: flex;
+        }
+        .chat-message.right {
+            justify-content: flex-end;
+        }
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #E5E6EB;
+            margin-right: 8px;
+            flex-shrink: 0;
+        }
+        .chat-message.right .message-avatar {
+            margin-right: 0;
+            margin-left: 8px;
+        }
+        .message-content {
+            max-width: 70%;
+        }
+        .message-text {
+            background-color: #FFFFFF;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #1A1A1A;
+            line-height: 1.5;
+        }
+        .chat-message.right .message-text {
+            background-color: #4A90E2;
+            color: #FFFFFF;
+        }
+        .message-time {
+            font-size: 12px;
+            color: #909399;
+            margin-top: 4px;
+            text-align: right;
+        }
+        /* 文件消息样式 */
+        .file-message {
+            background-color: #FFFFFF;
+            padding: 12px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .file-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            background-color: #F5F7FA;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 12px;
+        }
+        .file-icon .icon {
+            font-size: 24px;
+            color: #4A90E2;
+        }
+        .file-info {
+            flex: 1;
+        }
+        .file-name {
+            font-size: 14px;
+            color: #1A1A1A;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .file-size {
+            font-size: 12px;
+            color: #909399;
+        }
+        .file-progress {
+            width: 100%;
+            height: 4px;
+            background-color: #F5F7FA;
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #4A90E2;
+            width: 75%;
+        }
+        /* 聊天输入框 */
+        .chat-input-area {
+            padding: 12px 20px;
+            background-color: #FFFFFF;
+            border-top: 1px solid #F5F7FA;
+            position: sticky;
+            bottom: 0;
+        }
+        .input-toolbar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .tool-item {
+            font-size: 24px;
+            color: #666666;
+            cursor: pointer;
+        }
+        .chat-input {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .input-box {
+            flex: 1;
+            height: 40px;
+            border: 1px solid #E5E6EB;
+            border-radius: 20px;
+            padding: 0 16px;
+            font-size: 14px;
+            outline: none;
+        }
+        .send-btn {
+            width: 80px;
+            height: 40px;
+            background-color: #4A90E2;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .send-btn:disabled {
+            background-color: #C0C4CC;
+            cursor: not-allowed;
+        }
+        /* 底部Tab导航 */
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 375px;
+            height: 56px;
+            background-color: #FFFFFF;
+            border-top: 1px solid #F5F7FA;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 99;
+        }
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #909399;
+            font-size: 12px;
+        }
+        .tab-item.active {
+            color: #4A90E2;
+        }
+        .tab-item .icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+        <!-- 1. 协作广场主页面 -->
+        <div class="page" id="square-page">
+            <!-- 标题栏 -->
+            <div class="page-header">
+                <div style="width: 24px;"></div> <!-- 占位 -->
+                <div class="page-title">协作广场</div>
+                <div style="width: 24px;"></div> <!-- 占位 -->
+            </div>
+            
+            <!-- 分类标签 -->
+            <div class="category-bar">
+                <div class="category-item active" data-category="all">全部组队</div>
+                <div class="category-item" data-category="exam">考试复习</div>
+                <div class="category-item" data-category="project">项目开发</div>
+                <div class="category-item" data-category="postgrad">考研自习</div>
+                <div class="category-item" data-category="language">语言学习</div>
+            </div>
+            
+            <!-- 组队列表 -->
+            <div class="team-list">
+                <!-- 项目开发组队 -->
+                <div class="team-card" data-id="1" data-category="project">
+                    <div class="team-header">
+                        <div class="avatar"></div>
+                        <div class="team-title">Java项目开发组队</div>
+                    </div>
+                    <div class="team-tags">
+                        <div class="tag">项目开发</div>
+                        <div class="tag">4人</div>
+                        <div class="tag">研讨室</div>
+                    </div>
+                    <div class="team-desc">寻找Java开发伙伴，完成课程设计项目，需要3-4人，每周三、五下午研讨室讨论，有意者联系！</div>
+                </div>
+                
+                <!-- 考研数学互助 -->
+                <div class="team-card" data-id="2" data-category="postgrad">
+                    <div class="team-header">
+                        <div class="avatar"></div>
+                        <div class="team-title">考研数学互助小组</div>
+                    </div>
+                    <div class="team-tags">
+                        <div class="tag">考研自习</div>
+                        <div class="tag">6人</div>
+                        <div class="tag">图书馆</div>
+                    </div>
+                    <div class="team-desc">25考研数学互助，每天固定时间图书馆学习，互相监督，分享资料和解题思路，希望能坚持到最后！</div>
+                </div>
+                
+                <!-- 英语口语练习 -->
+                <div class="team-card" data-id="3" data-category="language">
+                    <div class="team-header">
+                        <div class="avatar"></div>
+                        <div class="team-title">英语口语练习</div>
+                    </div>
+                    <div class="team-tags">
+                        <div class="tag">语言学习</div>
+                        <div class="tag">2-3人</div>
+                        <div class="tag">咖啡角</div>
+                    </div>
+                    <div class="team-desc">寻找英语口语练习伙伴，每天晚上半小时，主题式练习，提升口语表达能力，要求有基础，能坚持！</div>
+                </div>
+                
+                <!-- 期末考试复习 -->
+                <div class="team-card" data-id="4" data-category="exam">
+                    <div class="team-header">
+                        <div class="avatar"></div>
+                        <div class="team-title">数据结构期末复习</div>
+                    </div>
+                    <div class="team-tags">
+                        <div class="tag">考试复习</div>
+                        <div class="tag">5人</div>
+                        <div class="tag">自习室</div>
+                    </div>
+                    <div class="team-desc">期末数据结构复习小组，每天晚上自习室刷题，讲解知识点，互相答疑，争取都高分通过！</div>
+                </div>
+            </div>
+            
+            <!-- 底部Tab -->
+            <div class="tab-bar">
+                <div class="tab-item">
+                    <i class="icon iconfont icon-home"></i>
+                    <span>首页</span>
+                </div>
+                <div class="tab-item">
+                    <i class="icon iconfont icon-order"></i>
+                    <span>预约</span>
+                </div>
+                <div class="tab-item">
+                    <i class="icon iconfont icon-feedback"></i>
+                    <span>反馈</span>
+                </div>
+                <div class="tab-item active">
+                    <i class="icon iconfont icon-team"></i>
+                    <span>协作</span>
+                </div>
+                <div class="tab-item">
+                    <i class="icon iconfont icon-my"></i>
+                    <span>我的</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 2. 小组详情页面 -->
+        <div class="page hidden" id="detail-page">
+            <!-- 标题栏 -->
+            <div class="page-header">
+                <a href="javascript:void(0)" class="back-btn" id="detail-back">
+                    <i class="icon iconfont icon-arrow-left"></i>
+                </a>
+                <div class="page-title">小组详情</div>
+                <div style="width: 24px;"></div>
+            </div>
+            
+            <!-- 小组基本信息 -->
+            <div class="team-detail-header">
+                <div class="team-detail-title" id="detail-title">Java项目开发组队</div>
+                <div class="team-detail-tags">
+                    <div class="team-detail-tag">项目开发</div>
+                    <div class="team-detail-tag">4人</div>
+                    <div class="team-detail-tag">研讨室</div>
+                </div>
+                <div class="team-detail-desc" id="detail-desc">
+                    寻找Java开发伙伴，完成课程设计项目，需要3-4人，每周三、五下午研讨室讨论，有意者联系！<br><br>
+                    项目内容：基于SpringBoot的校园二手交易平台开发，需要后端2人，前端2人，有相关经验优先。
+                </div>
+                <button class="join-btn" id="join-team">加入小组</button>
+            </div>
+            
+            <!-- 组长信息 -->
+            <div class="member-section">
+                <div class="section-title">
+                    <i class="icon iconfont icon-user"></i>
+                    组长
+                </div>
+                <div class="member-list">
+                    <div class="member-item">
+                        <div class="member-info">
+                            <div class="member-avatar"></div>
+                            <div class="member-name">张三（组长）</div>
+                        </div>
+                        <div class="member-role">组长</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 成员列表 -->
+            <div class="member-section">
+                <div class="section-title">
+                    <i class="icon iconfont icon-team"></i>
+                    成员 (3/4)
+                </div>
+                <div class="member-list">
+                    <div class="member-item">
+                        <div class="member-info">
+                            <div class="member-avatar"></div>
+                            <div class="member-name">李四</div>
+                        </div>
+                        <div class="member-role normal">成员</div>
+                    </div>
+                    <div class="member-item">
+                        <div class="member-info">
+                            <div class="member-avatar"></div>
+                            <div class="member-name">王五</div>
+                        </div>
+                        <div class="member-role normal">成员</div>
+                    </div>
+                    <div class="member-item">
+                        <div class="member-info">
+                            <div class="member-avatar"></div>
+                            <div class="member-name">赵六</div>
+                        </div>
+                        <div class="member-role normal">成员</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 聊天入口 -->
+            <div class="member-section">
+                <button class="join-btn" id="enter-chat" style="display: none;">进入小组聊天</button>
+            </div>
+        </div>
+        
+        <!-- 3. 聊天页面 -->
+        <div class="page hidden" id="chat-page">
+            <!-- 聊天标题栏 -->
+            <div class="chat-header">
+                <a href="javascript:void(0)" class="back-btn" id="chat-back">
+                    <i class="icon iconfont icon-arrow-left"></i>
+                </a>
+                <div class="chat-avatar"></div>
+                <div class="chat-title">Java项目开发组队</div>
+                <div class="chat-tools">
+                    <i class="icon iconfont icon-more"></i>
+                </div>
+            </div>
+            
+            <!-- 聊天内容 -->
+            <div class="chat-content" id="chat-messages">
+                <!-- 他人消息 -->
+                <div class="chat-message">
+                    <div class="message-avatar"></div>
+                    <div class="message-content">
+                        <div class="message-text">大家好，本周三下午3点研讨室讨论项目需求，记得准时参加！</div>
+                        <div class="message-time">10:20</div>
+                    </div>
+                </div>
+                
+                <!-- 他人消息 -->
+                <div class="chat-message">
+                    <div class="message-avatar"></div>
+                    <div class="message-content">
+                        <div class="message-text">我整理了一些SpringBoot的学习资料，等下发给大家</div>
+                        <div class="message-time">10:25</div>
+                    </div>
+                </div>
+                
+                <!-- 文件消息 -->
+                <div class="chat-message">
+                    <div class="message-avatar"></div>
+                    <div class="message-content">
+                        <div class="file-message">
+                            <div class="file-icon">
+                                <i class="icon iconfont icon-file"></i>
+                            </div>
+                            <div class="file-info">
+                                <div class="file-name">SpringBoot教程.pdf</div>
+                                <div class="file-size">2.4MB</div>
+                                <div class="file-progress">
+                                    <div class="progress-bar"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="message-time">10:28</div>
+                    </div>
+                </div>
+                
+                <!-- 自己的消息 -->
+                <div class="chat-message right">
+                    <div class="message-content">
+                        <div class="message-text">收到！我这边负责前端部分，已经开始搭建框架了</div>
+                        <div class="message-time">10:30</div>
+                    </div>
+                    <div class="message-avatar"></div>
+                </div>
+            </div>
+            
+            <!-- 输入区域 -->
+            <div class="chat-input-area">
+                <div class="input-toolbar">
+                    <i class="icon iconfont icon-file" id="file-btn"></i>
+                    <i class="icon iconfont icon-face"></i>
+                </div>
+                <div class="chat-input">
+                    <input type="text" class="input-box" placeholder="输入消息..." id="message-input">
+                    <button class="send-btn" id="send-btn" disabled>发送</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. 协作广场分类筛选
+        document.querySelectorAll('.category-item').forEach(item => {
+            item.addEventListener('click', function() {
+                // 切换激活状态
+                document.querySelectorAll('.category-item').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                
+                const category = this.getAttribute('data-category');
+                // 筛选组队卡片
+                document.querySelectorAll('.team-card').forEach(card => {
+                    if (category === 'all' || card.getAttribute('data-category') === category) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+        
+        // 2. 点击组队卡片进入详情页
+        document.querySelectorAll('.team-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const teamId = this.getAttribute('data-id');
+                const teamTitle = this.querySelector('.team-title').textContent;
+                const teamDesc = this.querySelector('.team-desc').textContent;
+                
+                // 设置详情页内容
+                document.getElementById('detail-title').textContent = teamTitle;
+                document.getElementById('detail-desc').textContent = teamDesc + '\n\n' + 
+                    (teamId === '1' ? '项目内容：基于SpringBoot的校园二手交易平台开发，需要后端2人，前端2人，有相关经验优先。' :
+                     teamId === '2' ? '复习计划：每天刷20道真题，每周日模拟考试，定期讲解错题和难点。' :
+                     teamId === '3' ? '练习计划：每天一个主题，轮流做演讲，互相纠正发音和语法错误。' :
+                     '复习范围：树、图、排序算法、动态规划，重点突破算法大题。');
+                
+                // 显示详情页，隐藏广场页
+                document.getElementById('square-page').classList.add('hidden');
+                document.getElementById('detail-page').classList.remove('hidden');
+            });
+        });
+        
+        // 3. 详情页返回按钮
+        document.getElementById('detail-back').addEventListener('click', function() {
+            document.getElementById('detail-page').classList.add('hidden');
+            document.getElementById('square-page').classList.remove('hidden');
+        });
+        
+        // 4. 加入小组按钮
+        document.getElementById('join-team').addEventListener('click', function() {
+            if (this.textContent === '加入小组') {
+                alert('加入小组成功！');
+                this.textContent = '已加入';
+                this.classList.add('joined-btn');
+                // 显示聊天入口
+                document.getElementById('enter-chat').style.display = 'block';
+            }
+        });
+        
+        // 5. 进入聊天页面
+        document.getElementById('enter-chat').addEventListener('click', function() {
+            document.getElementById('detail-page').classList.add('hidden');
+            document.getElementById('chat-page').classList.remove('hidden');
+        });
+        
+        // 6. 聊天页面返回按钮
+        document.getElementById('chat-back').addEventListener('click', function() {
+            document.getElementById('chat-page').classList.add('hidden');
+            document.getElementById('detail-page').classList.remove('hidden');
+        });
+        
+        // 7. 聊天输入框交互
+        const messageInput = document.getElementById('message-input');
+        const sendBtn = document.getElementById('send-btn');
+        
+        messageInput.addEventListener('input', function() {
+            sendBtn.disabled = this.value.trim() === '';
+        });
+        
+        // 发送消息
+        sendBtn.addEventListener('click', function() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+            
+            // 创建新消息元素
+            const chatContent = document.getElementById('chat-messages');
+            const newMessage = document.createElement('div');
+            newMessage.className = 'chat-message right';
+            newMessage.innerHTML = `
+                <div class="message-content">
+                    <div class="message-text">${message}</div>
+                    <div class="message-time">${new Date().getHours()}:${new Date().getMinutes().toString().padStart(2, '0')}</div>
+                </div>
+                <div class="message-avatar"></div>
+            `;
+            
+            chatContent.appendChild(newMessage);
+            chatContent.scrollTop = chatContent.scrollHeight; // 滚动到底部
+            messageInput.value = '';
+            sendBtn.disabled = true;
+        });
+        
+        // 8. 文件上传按钮
+        document.getElementById('file-btn').addEventListener('click', function() {
+            alert('打开文件选择器，可选择文件发送到小组聊天');
+            
+            // 模拟发送文件消息
+            const chatContent = document.getElementById('chat-messages');
+            const fileMessage = document.createElement('div');
+            fileMessage.className = 'chat-message right';
+            fileMessage.innerHTML = `
+                <div class="message-content">
+                    <div class="file-message">
+                        <div class="file-icon">
+                            <i class="icon iconfont icon-file"></i>
+                        </div>
+                        <div class="file-info">
+                            <div class="file-name">前端开发文档.docx</div>
+                            <div class="file-size">1.8MB</div>
+                            <div class="file-progress">
+                                <div class="progress-bar" style="width: 100%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="message-time">${new Date().getHours()}:${new Date().getMinutes().toString().padStart(2, '0')}</div>
+                </div>
+                <div class="message-avatar"></div>
+            `;
+            
+            chatContent.appendChild(fileMessage);
+            chatContent.scrollTop = chatContent.scrollHeight;
+        });
+        
+        // 9. 底部Tab切换
+        document.querySelectorAll('.tab-item').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab-item').forEach(item => item.classList.remove('active'));
+                this.classList.add('active');
+                
+                const tabText = this.querySelector('span').textContent;
+                if (tabText !== '协作') {
+                    alert(`即将跳转到${tabText}页面`);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

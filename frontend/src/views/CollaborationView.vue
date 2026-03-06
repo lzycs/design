@@ -6,7 +6,7 @@ import {
   joinTeam,
   type TeamRequest,
   getTeamMembers,
-  type TeamMember,
+  type TeamMemberVO,
 } from '@/api/team'
 
 type CategoryKey = 'all' | 'exam' | 'project' | 'postgrad' | 'language'
@@ -28,7 +28,7 @@ const loading = ref(false)
 const showDetail = ref(false)
 const currentTeam = ref<TeamRequest | null>(null)
 const joining = ref(false)
-const members = ref<TeamMember[]>([])
+const members = ref<TeamMemberVO[]>([])
 
 const storedUser = ref<{ id: number; username?: string } | null>(null)
 

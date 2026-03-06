@@ -6,8 +6,13 @@ const route = useRoute()
 const active = ref(0)
 
 watch(
-  () => route.path,
-  (path) => {
+  () => ({ path: route.path, only: route.query.only }),
+  ({ path, only }) => {
+    // 从「我的评价」进入的反馈页（仅评价列表）：不点亮「反馈」tab，保持「我的」高亮
+    if (path.startsWith('/feedback') && only === '1') {
+      active.value = 4
+      return
+    }
     if (path.startsWith('/reservation')) {
       active.value = 1
     } else if (path.startsWith('/collaboration')) {
@@ -20,14 +25,14 @@ watch(
       active.value = 0
     }
   },
-  { immediate: true }
+  { immediate: true, deep: true }
 )
 </script>
 
 <template>
   <div class="app-container">
     <RouterView />
-    <van-tabbar v-model="active" route>
+    <van-tabbar v-model="active">
       <van-tabbar-item icon="home-o" to="/">首页</van-tabbar-item>
       <van-tabbar-item icon="calendar-o" to="/reservation">预约</van-tabbar-item>
       <van-tabbar-item icon="friends-o" to="/collaboration">协作</van-tabbar-item>

@@ -2,6 +2,7 @@ package com.campus.learningspace.controller;
 
 import com.campus.learningspace.common.Result;
 import com.campus.learningspace.entity.Reservation;
+import com.campus.learningspace.entity.ReservationVO;
 import com.campus.learningspace.service.ReservationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -20,7 +21,7 @@ public class ReservationController {
     private ReservationService reservationService;
 
     @GetMapping("/user/{userId}")
-    public Result<List<Reservation>> getUserReservations(@PathVariable Long userId) {
+    public Result<List<ReservationVO>> getUserReservations(@PathVariable Long userId) {
         return Result.success(reservationService.getUserReservations(userId));
     }
 

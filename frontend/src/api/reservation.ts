@@ -18,6 +18,11 @@ export interface Reservation extends ReservationPayload {
   qrcode?: string
   createTime?: string
   checkinTime?: string
+  resourceName?: string
+  buildingName?: string
+  classroomRoomNumber?: string
+  libraryName?: string
+  seatLabel?: string
 }
 
 export interface Result<T> {

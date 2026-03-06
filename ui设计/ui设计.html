@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校园学习空间综合服务平台 UI 设计</title>
+    <script src="https://at.alicdn.com/t/c/font_4068990_7yf5e9z09.js"></script> <!-- 在线矢量图标库 -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        body {
+            background-color: #F5F7FA;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        /* 手机边框容器，375x812PX */
+        .phone-container {
+            width: 375px;
+            height: 812px;
+            border: 1px solid #DCDFE6;
+            border-radius: 32px;
+            background-color: #FFFFFF;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+        /* 页面通用样式 */
+        .page {
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            padding: 16px;
+            background-color: #F5F7FA;
+        }
+        .page::-webkit-scrollbar {
+            display: none;
+        }
+        /* 标题样式 */
+        .page-title {
+            font-size: 20px;
+            color: #1A1A1A;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+        /* 模块化卡片 */
+        .card {
+            background-color: #FFFFFF;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            padding: 16px;
+            margin-bottom: 16px;
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        /* 图标样式：无背景/外框，线性矢量 */
+        .icon {
+            font-size: 20px;
+            color: #4A90E2;
+        }
+        .icon-yellow {
+            color: #F7D060;
+        }
+        .icon-gray {
+            color: #909399;
+        }
+        /* 按钮样式 */
+        .btn {
+            width: 100%;
+            height: 44px;
+            border-radius: 12px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            color: #FFFFFF;
+            background-color: #4A90E2;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .btn-yellow {
+            background-color: #F7D060;
+            color: #1A1A1A;
+        }
+        .btn-small {
+            height: 32px;
+            font-size: 14px;
+            width: auto;
+            padding: 0 16px;
+        }
+        .btn:hover {
+            background-color: #3A7BC8;
+        }
+        .btn-yellow:hover {
+            background-color: #E6C050;
+        }
+        /* 底部Tab导航 */
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 375px;
+            height: 56px;
+            background-color: #FFFFFF;
+            border-top: 1px solid #F5F7FA;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 99;
+        }
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #909399;
+            font-size: 12px;
+        }
+        .tab-item.active {
+            color: #4A90E2;
+        }
+        .tab-item .icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        /* 标签栏样式 */
+        .tag-bar {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+        }
+        .tag-item {
+            padding: 8px 16px;
+            border-radius: 16px;
+            background-color: #F5F7FA;
+            font-size: 14px;
+            color: #333333;
+            white-space: nowrap;
+        }
+        .tag-item.active {
+            background-color: #4A90E2;
+            color: #FFFFFF;
+        }
+        /* 列表项通用样式 */
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #F5F7FA;
+        }
+        .list-item:last-child {
+            border-bottom: none;
+        }
+        .list-left {
+            display: flex;
+            align-items: center;
+        }
+        .list-info h3 {
+            font-size: 16px;
+            color: #1A1A1A;
+            font-weight: 600;
+        }
+        .list-info p {
+            font-size: 12px;
+            color: #909399;
+            margin-top: 4px;
+        }
+        .list-right {
+            display: flex;
+            align-items: center;
+        }
+        /* 状态标签通用样式 */
+        .status-tag {
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #FFFFFF;
+            margin-right: 8px;
+        }
+        .status-blue {
+            background-color: #4A90E2;
+        }
+        .status-yellow {
+            background-color: #F7D060;
+            color: #1A1A1A;
+        }
+        .status-gray {
+            background-color: #909399;
+        }
+        .status-red {
+            background-color: #F56C6C;
+        }
+
+        /* -------------------- 首页专属样式 -------------------- */
+        .home-page .search-bar {
+            width: 100%;
+            height: 44px;
+            background-color: #FFFFFF;
+            border-radius: 12px;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .home-page .search-bar input {
+            border: none;
+            outline: none;
+            flex: 1;
+            font-size: 14px;
+            color: #333333;
+            margin-left: 8px;
+        }
+        .home-page .func-card {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+        .home-page .func-item {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            color: #333333;
+        }
+        .home-page .func-item .icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background-color: #F5F7FA;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .home-page .state-list-title {
+            font-size: 16px;
+            color: #1A1A1A;
+            font-weight: 600;
+            margin: 24px 0 16px 0;
+        }
+        .home-page .state-tag {
+            width: 64px;
+            height: 24px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: #FFFFFF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 12px;
+        }
+        .home-page .tag-free {
+            background-color: #4A90E2;
+        }
+        .home-page .tag-booked {
+            background-color: #F7D060;
+            color: #1A1A1A;
+        }
+        .home-page .tag-repair {
+            background-color: #909399;
+        }
+
+        /* -------------------- 教室详情页专属样式 -------------------- */
+        .detail-page .classroom-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+        }
+        .detail-page .classroom-info h2 {
+            font-size: 20px;
+            color: #1A1A1A;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .detail-page .classroom-info p {
+            font-size: 14px;
+            color: #909399;
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        .detail-page .classroom-info p .icon {
+            font-size: 14px;
+            margin-right: 4px;
+        }
+        .detail-page .classroom-state {
+            width: 80px;
+            height: 32px;
+            border-radius: 16px;
+            background-color: #4A90E2;
+            color: #FFFFFF;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .detail-page .score-title {
+            font-size: 16px;
+            color: #1A1A1A;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        .detail-page .score-stars {
+            display: flex;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        .detail-page .score-stars .icon {
+            font-size: 24px;
+            color: #F7D060;
+            margin-right: 8px;
+        }
+        .detail-page .score-desc {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        .detail-page .score-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 12px;
+            color: #909399;
+        }
+        .detail-page .score-item span {
+            font-size: 16px;
+            color: #1A1A1A;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .detail-page .book-title {
+            font-size: 16px;
+            color: #1A1A1A;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        .detail-page .date-picker {
+            display: flex;
+            overflow-x: auto;
+            gap: 8px;
+            margin-bottom: 24px;
+            padding-bottom: 8px;
+        }
+        .detail-page .date-item {
+            min-width: 60px;
+            height: 72px;
+            border-radius: 8px;
+            background-color: #F5F7FA;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            color: #909399;
+        }
+        .detail-page .date-item.active {
+            background-color: #4A90E2;
+            color: #FFFFFF;
+        }
+        .detail-page .date-item span {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .detail-page .time-picker {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        .detail-page .time-item {
+            height: 36px;
+            border-radius: 8px;
+            background-color: #F5F7FA;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+            color: #333333;
+            cursor: pointer;
+        }
+        .detail-page .time-item.active {
+            background-color: #4A90E2;
+            color: #FFFFFF;
+        }
+        .detail-page .operate-btn {
+            display: flex;
+            gap: 16px;
+            margin-top: 24px;
+        }
+        .detail-page .operate-btn .btn {
+            flex: 1;
+            height: 40px;
+            font-size: 14px;
+        }
+        .detail-page .feedback-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .detail-page .feedback-item {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            flex: 1;
+            color: #333333;
+            font-size: 12px;
+        }
+        .detail-page .feedback-item .icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        /* -------------------- 预约中心页专属样式 -------------------- */
+        .booking-page .filter-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .booking-page .filter-btn {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: #333333;
+        }
+        .booking-page .filter-btn .icon {
+            font-size: 16px;
+            margin-right: 4px;
+        }
+        .booking-page .qrcode-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background-color: #F5F7FA;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .booking-page .booking-empty {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 48px 0;
+            color: #909399;
+            font-size: 14px;
+        }
+        .booking-page .booking-empty .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            color: #DCDFE6;
+        }
+
+        /* -------------------- 反馈报修页专属样式 -------------------- */
+        .feedback-page .tab-nav {
+            display: flex;
+            justify-content: space-around;
+            background-color: #FFFFFF;
+            margin-bottom: 16px;
+            border-radius: 8px;
+        }
+        .feedback-page .tab-nav-item {
+            padding: 12px 0;
+            font-size: 16px;
+            color: #909399;
+            font-weight: 500;
+            width: 100%;
+            text-align: center;
+            border-bottom: 2px solid transparent;
+        }
+        .feedback-page .tab-nav-item.active {
+            color: #4A90E2;
+            border-bottom: 2px solid #4A90E2;
+        }
+        .feedback-page .form-item {
+            margin-bottom: 16px;
+        }
+        .feedback-page .form-label {
+            font-size: 14px;
+            color: #333333;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .feedback-page .form-input {
+            width: 100%;
+            height: 44px;
+            border-radius: 8px;
+            border: 1px solid #DCDFE6;
+            padding: 0 16px;
+            font-size: 14px;
+            color: #333333;
+            outline: none;
+        }
+        .feedback-page .form-textarea {
+            height: 120px;
+            padding: 16px;
+            resize: none;
+        }
+        .feedback-page .upload-area {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .feedback-page .upload-item {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            border: 1px dashed #DCDFE6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #909399;
+            font-size: 24px;
+        }
+
+        /* -------------------- 协作广场页专属样式 -------------------- */
+        .coop-page .publish-btn {
+            position: fixed;
+            bottom: 72px;
+            right: 16px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background-color: #F7D060;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 90;
+        }
+        .coop-page .publish-btn .icon {
+            font-size: 24px;
+            color: #1A1A1A;
+        }
+        .coop-page .team-card {
+            display: flex;
+            gap: 12px;
+            padding: 16px;
+        }
+        .coop-page .team-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: #F5F7FA;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #4A90E2;
+            font-size: 20px;
+        }
+        .coop-page .team-info {
+            flex: 1;
+        }
+        .coop-page .team-info h3 {
+            font-size: 16px;
+            color: #1A1A1A;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .coop-page .team-tags {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+        .coop-page .team-tag {
+            padding: 2px 8px;
+            border-radius: 4px;
+            background-color: #F5F7FA;
+            font-size: 12px;
+            color: #909399;
+        }
+        .coop-page .team-desc {
+            font-size: 12px;
+            color: #909399;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* -------------------- 我的页面专属样式 -------------------- */
+        .mine-page .user-header {
+            display: flex;
+            align-items: center;
+            padding: 24px 0;
+            border-bottom: 1px solid #F5F7FA;
+            margin-bottom: 24px;
+        }
+        .mine-page .user-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background-color: #F5F7FA;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #4A90E2;
+            font-size: 24px;
+            margin-right: 16px;
+        }
+        .mine-page .user-info h3 {
+            font-size: 18px;
+            color: #1A1A1A;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .mine-page .user-info p {
+            font-size: 14px;
+            color: #909399;
+        }
+        .mine-page .menu-card {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            text-align: center;
+        }
+        .mine-page .menu-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #333333;
+            font-size: 12px;
+        }
+        .mine-page .menu-item .icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        .mine-page .setting-list {
+            margin-top: 24px;
+        }
+        .mine-page .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid #F5F7FA;
+            font-size: 16px;
+            color: #333333;
+        }
+        .mine-page .setting-item:last-child {
+            border-bottom: none;
+        }
+        .mine-page .setting-item .icon {
+            font-size: 16px;
+            color: #909399;
+        }
+    </style>
+</head>
+<body>
+    <!-- 1. 首页 -->
+    <div class="phone-container">
+        <div class="page home-page">
+            <!-- 搜索栏 -->
+            <div class="search-bar">
+                <i class="icon iconfont icon-sousuo"></i>
+                <input type="text" placeholder="搜索教学楼/教室号">
+            </div>
+
+            <!-- 核心功能入口 -->
+            <div class="card func-card">
+                <div class="func-item">
+                    <div class="icon"><i class="iconfont icon-yuyue"></i></div>
+                    <span>在线预约</span>
+                </div>
+                <div class="func-item">
+                    <div class="icon"><i class="iconfont icon-baoxiu"></i></div>
+                    <span>设施报修</span>
+                </div>
+                <div class="func-item">
+                    <div class="icon"><i class="iconfont icon-duiwu"></i></div>
+                    <span>组队匹配</span>
+                </div>
+                <div class="func-item">
+                    <div class="icon"><i class="iconfont icon-fenxiang"></i></div>
+                    <span>共享计划</span>
+                </div>
+            </div>
+
+            <!-- 热门教室实时状态 -->
+            <div class="state-list-title">热门教室实时状态</div>
+            <div class="card state-card">
+                <div class="state-item list-item">
+                    <div class="state-left list-left">
+                        <div class="state-tag tag-free">空闲</div>
+                        <div class="state-info list-info">
+                            <h3>一号楼-101</h3>
+                            <p>空调√ | 插座充足 | 光线良好</p>
+                        </div>
+                    </div>
+                    <div class="state-right list-right">
+                        <i class="icon iconfont icon-arrow-right"></i>
+                    </div>
+                </div>
+                <div class="state-item list-item">
+                    <div class="state-left list-left">
+                        <div class="state-tag tag-booked">预约中</div>
+                        <div class="state-info list-info">
+                            <h3>一号楼-202</h3>
+                            <p>多媒体√ | 插座充足 | 安静</p>
+                        </div>
+                    </div>
+                    <div class="state-right list-right">
+                        <i class="icon iconfont icon-arrow-right"></i>
+                    </div>
+                </div>
+                <div class="state-item list-item">
+                    <div class="state-left list-left">
+                        <div class="state-tag tag-repair">报修中</div>
+                        <div class="state-info list-info">
+                            <h3>二号楼-305</h3>
+                            <p>灯故障 | 空调√ | 插座较少</p>
+                        </div>
+                    </div>
+                    <div class="state-right list-right">
+                        <i class="icon iconfont icon-arrow-right"></i>
+                    </div>
+                </div>
+                <div class="state-item list-item">
+                    <div class="state-left list-left">
+                        <div class="state-tag tag-booked">已签到</div>
+                        <div class="state-info list-info">
+                            <h3>图书馆-研修间01</h3>
+                            <p>独立空间 | 网络快 | 插座充足</p>
+                        </div>
+                    </div>
+                    <div class="state-right list-right">
+                        <i class="icon iconfont icon-arrow-right"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 底部Tab导航 -->
+            <div class="tab-bar">
+                <div class="tab-item active">
+                    <i class="icon iconfont icon-shouye"></i>
+                    <span>首页</span>
+                </div>
+                <div class="tab-item">
+                    <i class="icon iconfont icon-yuyuezhongxin"></i>
+                    <span>预约</span>
+                </div>
+                <div class="tab-item">
+                    <i class="icon iconfont icon-baoxiu1"></i>
+                    <span>反馈</span>
+                </div>
+                <div class="tab-item">
+                    <i class="icon iconfont icon-xiezuo"></i>
+                    <span>协作</span>
+                </div>
+                <div class="tab-item">
+                    <i class="icon iconfont icon-wode"></i>
+                    <span>我的</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. 教室详情页 -->
+    <div class="phone-container">
+        <div class="page detail-page">
+            <!-- 教室头部信息 -->
+            <div class="classroom-header">
+                <div class="classroom-info">
+                    <h2>一号楼-101</h2>
+                    <p><i class="icon iconfont icon-lou"></i> 一号教学楼1层 | 普通教室 | 50座</p>
+                    <p><i class="icon iconfont icon-rexian"></i> 历史预约热度：★★★★☆ (高)</p>
+                </div>
+                <div class="classroom-state">空闲</div>
+            </div>
+
+            <!-- 环境评分与评价 -->
+            <div class="card score-card">
+                <div class="score-title">环境综合评分</div>
+                <div class="score-stars">
+                    <i class="icon iconfont icon-star"></i>
+                    <i class="icon iconfont icon-star"></i>
+                    <i class="icon iconfont icon-star"></i>
+                    <i class="icon iconfont icon-star"></i>
+                    <i class="icon iconfont icon-star-half"></i>
+                    <span style="margin-left: 8px; font-size: 16px; color: #1A1A1A;">4.5分</span>
+                </div>
+                <div class="score-desc">
+                    <div class="score-item">
+                        <span>4.8</span>
+                        <span>空调效果</span>
+                    </div>
+                    <div class="score-item">
+                        <span>4.6</span>
+                        <span>光线条件</span>
+                    </div>
+                    <div class="score-item">
+                        <span>4.4</span>
+                        <span>网络速度</span>
+                    </div>
+                    <div class="score-item">
+                        <span>4.7</span>
+                        <span>插座数量</span>
+                    </div>
+                    <div class="score-item">
+                        <span>4.5</span>
+                        <span>安静程度</span>
+                    </div>
+                    <div class="score-item">
+                        <span>4.6</span>
+                        <span>桌椅舒适度</span>
+                    </div>
+                </div>
+                <button class="btn">查看全部评价(128)</button>
+            </div>
+
+            <!-- 预约时段选择 -->
+            <div class="card book-card">
+                <div class="book-title">预约时段选择</div>
+                <div class="date-picker">
+                    <div class="date-item">
+                        <span>今日</span>
+                        <span>5/20</span>
+                    </div>
+                    <div class="date-item active">
+                        <span>明日</span>
+                        <span>5/21</span>
+                    </div>
+                    <div class="date-item">
+                        <span>周三</span>
+                        <span>5/22</span>
+                    </div>
+                    <div class="date-item">
+                        <span>周四</span>
+                        <span>5/23</span>
+                    </div>
+                    <div class="date-item">
+                        <span>周五</span>
+                        <span>5/24</span>
+                    </div>
+                </div>
+                <div class="time-picker">
+                    <div class="time-item">8:00-10:00</div>
+                    <div class="time-item active">10:00-12:00</div>
+                    <div class="time-item">14:00-16:00</div>
+                    <div class="time-item active">16:00-18:00</div>
+                    <div class="time-item">18:00-20:00</div>
+                    <div class="time-item">20:00-22:00</div>
+                </div>
+                <div style="font-size: 12px; color: #909399; margin-bottom: 16px;">
+                    温馨提示：每人每周最多预约4次，单次最长4小时
+                </div>
+                <button class="btn btn-yellow">确认预约(2小时/¥0)</button>
+            </div>
+
+            <!-- 评价与报修入口 -->
+            <div class="card feedback-card">
+                <div class="feedback-item">
+                    <i class="icon iconfont icon-pingjia icon-yellow"></i>
+                    <span>环境评价</span>
+                </div>
+                <div class="feedback-item">
+                    <i class="icon iconfont icon-baoxiu icon-gray"></i>
+                    <span>一键报修</span>
+                </div>
+                <div class="feedback-item">
+                    <i class="icon iconfont icon-collect icon-gray"></i>
+                    <span>收藏教室</span>
+                </div>
+            </div>
+
+            <!-- 协作关联入口 -->
+            <div class="card" style="margin-top: 16px;">
+                <div style="font-size: 16px; color: #1A1A1A; font-weight: 600; margin-bottom: 16px;">
+                    小组协作关联
+                </div>
+                <div class="operate-btn">
+                    <button class="btn">创建学习计划</button>
+                    <button class="btn btn-yellow">匹配学习伙伴</button>
+                </div>
+            </div>
+
+            <!-- 底部Tab导航 -->
+            <div class="tab-bar">
+                <div class="tab-item">
+                    <i class="icon iconfont icon-shouye"></i>
+                    <span>首页</span>
+                </div>
+                <div class="tab-item active">
+                    <i class="icon iconfont icon-yuyuezhongxin"></i>
+                    <span>预约</span>
+                </div>
+                <div class="tab-item">
+                    <i class="icon iconfont icon-baoxiu1"></i>
+                    <span>反馈</span>
+                </div>
+                <div class="tab-item">
+                    <i class="icon iconfont icon-xiezuo"></i>
+                    <span>协作</span>
+                </div>
+                <div class="tab-item">
+                    <i class="icon iconfont icon-wode"></i>
+                    <span>我的</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 预约中心页 -->
+    <div class="phone-container">
+        <div class="page booking-page">
+            <div class="page-title">预约中心</div>
+            
+            <!-- 标签栏 -->
+            <div class="tag-bar">
+                <div class="tag-item active">全部预约</div>
+                <div class="tag-item">待签到</div>
+                <div class="tag-item">已使用</div>
+                <div class="tag-item">已取消</div>
+                <div class="tag-item">违约记录</div>
+            </div>
+
+            <!-- 筛选栏 -->
+            <div class="filter-bar">
+                <div class="filter-btn">
+                    <i class="icon iconfont icon-filter icon-gray"></i>
+                    <span>筛选</span>
+                </div>
+                <div class="qrcode-btn">
+                    <i class="icon iconfont icon-erweima"></i>
+                </div>
+            </div>
+
+            <!-- 预约列表 -->
+            <div class="card">
+                <div class="list-item">
+                    <div class="list-left">
+                        <div class="status-tag status-yellow">待签到</div>
+                        <div class="list-info">
+                            <h3>一号楼-101</h3>
+                            <p>5月21日 10:00-12:00 | 2小时</p>
+                        </div>
+                    </div>
+                    <div class="list-right">
+                        <button class="btn btn-small">取消预约</button>
+                    </div>
+                </div>
+                <div class="list-item">
+                    <div class="list-left">
+                        <div class="status-tag status-blue">已使用</div>
+                        <div class="list-info">
+                            <h3>图书馆-研修间01</h3>
+                            <p>5月18日 14:00-16:00 | 2小时</p>
+                        </div>
+                    </div>
+                    <div class="list-right">
+                        <button class="btn btn-small btn-yellow">评价</button>
+                    </div>
+                </div>
+                <div class="list-item">
+                    <div class="list-left">
+                        <div class="status-tag status-red">违约记录</div>
+                        <div class="list-info">
+                            <h3>二号楼-208</h3>
+                            <p>5月15日 08:00-10:00 | 未签到</p>
+                        </div>
+                    </div>
+                    <div class="list-right">
+                        <i class="icon iconfont icon-arrow-right icon-gray"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 资源分类预约入口 -->
+            <div class="card" style="margin-top: 24px;">
+                <div style="font-size: 16px; color: #1A1A1A; font-weight: 600; margin-bottom: 16px;">
+                    快速预约
+                </div>
+                <div class="func-card">
+                    <div class="func-item">
+                        <div class="icon"><i class="iconfont icon-jiaoshi"></i></div>
+                        <span>普通教室</span>
+                    </div>
+                    <div class="func-item">
+                        <div class="icon"><i class="iconfont icon-yantaoshi"></i></div>
+                        <span>研讨室</span>
+                    </div>
+                    <div class="func-item">
+                        <div class="icon"><i class="iconfont icon-tushuguan"></i></div>
+                        <span>图书馆座位</span>
+                    </div>
+                    <div class="func-item">
+                        <div class="icon"><i class="iconfont icon-tingchechang"></i></div>
+                        <span>其他资源</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 底部Tab导航 -->
+            <div class="tab-bar">
+                <div class="tab-item">
+                    <i class="icon iconfont icon-shouye"></i>
+                    <span>首页</span>
+                </div>
+                <div class="tab-item active">
+                    <i class="icon iconfont icon-yuyuezhongxin"></i>
+                    <span>预约</span>
+                </div>
+                <div class="tab-item">
+                    <i class="icon iconfont icon-baoxiu1"></i>
+                    <span>反馈</span>
+                </div>
+                <div class="tab-item">
+                    <i class="icon iconfont icon-xiezuo"></i>
+                    <span>协作</span>
+                </div>
+                <div class="tab-item">
+                    <i class="icon iconfont icon-wode"></i>
+                    <span>我的</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. 反馈报修页 -->
+    <div class="phone-container">
+        <div class="page feedback-page">
+            <div class="page-title">反馈报修</div>
+            
+            <!-- 顶部Tab -->
+            <div class="tab-nav">
+                <div class="tab-nav-item active">一键报修</div>
+                <div class="tab-nav-item">评价列表</div>
+                <div class="tab-nav-item">工单查询</div>
+            </div>
+
+            <!-- 报修表单 -->
+            <div class="card">
+                <div class="form-item">
+                    <label class="form-label">选择教室</label>
+                    <select class="form-input">
+                        <option>一号楼-101</option>
+                        <option>一号楼-202</option>
+                        <option>二号楼-305</option>
+                        <option>图书馆-研修间01</option>
+                    </select>
+                </div>
+
+                <div class="form-item">
+                    <label class="form-label">故障类型</label>
+                    <select class="form-input">
+                        <option>空调故障</option>
+                        <option>照明故障</option>
+                        <option>插座故障</option>
+                        <option>多媒体故障</option>
+                        <option>桌椅损坏</option>
+                        <option>其他问题</option>
+                    </select>
+                </div>
+
+                <div class="form-item">
+                    <label class="form-label">问题描述</label>
+                    <textarea class="form-input form-textarea" placeholder="请详细描述故障情况，便于后勤人员处理"></textarea>
+                </div>
+
+                <div class="form-item">
+                    <label class="form-label">上传照片（可选）</label>
+                    <div class="upload-area">
+                        <div class="upload-item">
+                            <i class="icon iconfont icon-add icon-gray"></i>
+                        </div>
+                        <div class="upload-item">
+                            <i class="icon iconfont icon-add icon-gray"></i>
+                        </div>
+                        <div class="upload-item">
+                            <i class="icon iconfont icon-add icon-gray"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn">提交报修工单</button>
+            </div>
+
+            <!-- 底部Tab导航 -->
+            <div class="tab-bar">
+                <div class="tab-item">
+                    <i class="icon iconfont icon-shouye"></i>
+                    <span>首页</span>
+                </div>
+                <div class="tab-item">
+                    <i class="icon iconfont icon-yuyuezhongxin"></i>
+                    <span>预约</span>
+                </div>
+                <div class="tab-item active">
+                    <i class="icon iconfont icon-baoxiu1"></i>
+                    <span>反馈</span>
+                </div>
+                <div class="tab-item">
+                    <i class="icon iconfont icon-xiezuo"></i>
+                    <span>协作</span>
+                </div>
+                <div class="tab-item">
+                    <i class="icon iconfont icon-wode"></i>
+                    <span>我的</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. 协作广场页 -->
+    <div class="phone-container">
+        <div class="page coop-page">
+            <div class="page-title">协作广场</div>
+            
+            <!-- 标签栏 -->
+            <div class="tag-bar">
+                <div class="tag-item active">全部组队</div>
+                <div class="tag-item">考试复习</div>
+                <div class="tag-item">项目开发</div>
+                <div class="tag-item">考研自习</div>
+                <div class="tag-item">语言学习</div>
+            </div>
+
+            <!-- 组队列表 -->
+            <div class="card team-card">
+                <div class="team-avatar">
+                    <i class="iconfont icon-user"></i>
+                </div>
+                <div class="team-info">
+                    <h3>Java项目开发组队</h3>
+                    <div class="team-tags">
+                        <div class="team-tag">项目开发</div>
+                        <div class="team-tag">4人</div>
+                        <div class="team-tag">研讨室</div>
+                    </div>
+                    <div class="team-desc">
+                        寻找Java开发伙伴，完成课程设计项目，需要3-4人，每周三、五下午研讨室讨论，有意者联系！
+                    </div>
+                </div>
+            </div>
+
+            <div class="card team-card">
+                <div class="team-avatar">
+                    <i class="iconfont icon-user"></i>
+                </div>
+                <div class="team-info">
+                    <h3>考研数学互助小组</h3>
+                    <div class="team-tags">
+                        <div class="team-tag">考研自习</div>
+                        <div class="team-tag">6人</div>
+                        <div class="team-tag">图书馆</div>
+                    </div>
+                    <div class="team-desc">
+                        25考研数学互助，每天固定时间图书馆学习，互相监督，分享资料和解题思路，希望能坚持的小伙伴加入！
+                    </div>
+                </div>
+            </div>
+
+            <div class="card team-card">
+                <div class="team-avatar">
+                    <i class="iconfont icon-user"></i>
+                </div>
+                <div class="team-info">
+                    <h3>英语口语练习</h3>
+                    <div class="team-tags">
+                        <div class="team-tag">语言学习</div>
+                        <div class="team-tag">2-3人</div>
+                        <div class="team-tag">咖啡角</div>
+                    </div>
+                    <div class="team-desc">
+                        寻找英语口语练习伙伴，每天晚上半小时，主题式练习，提升口语表达能力，要求有基础，能坚持。
+                    </div>
+                </div>
+            </div>
+
+            <!-- 发布按钮 -->
+            <div class="publish-btn">
+                <i class="icon iconfont icon-add"></i>
+            </div>
+
+            <!-- 底部Tab导航 -->
+            <div class="tab-bar">
+                <div class="tab-item">
+                    <i class="icon iconfont icon-shouye"></i>
+                    <span>首页</span>
+                </div>
+                <div class="tab-item">
+                    <i class="icon iconfont icon-yuyuezhongxin"></i>
+                    <span>预约</span>
+                </div>
+                <div class="tab-item">
+                    <i class="icon iconfont icon-baoxiu1"></i>
+                    <span>反馈</span>
+                </div>
+                <div class="tab-item active">
+                    <i class="icon iconfont icon-xiezuo"></i>
+                    <span>协作</span>
+                </div>
+                <div class="tab-item">
+                    <i class="icon iconfont icon-wode"></i>
+                    <span>我的</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. 我的页面 -->
+    <div class="phone-container">
+        <div class="page mine-page">
+            <!-- 用户信息头部 -->
+            <div class="user-header">
+                <div class="user-avatar">
+                    <i class="iconfont icon-user"></i>
+                </div>
+                <div class="user-info">
+                    <h3>张三</h3>
+                    <p>20230001 | 计算机学院</p>
+                </div>
+            </div>
+
+            <!-- 功能菜单 -->
+            <div class="card menu-card">
+                <div class="menu-item">
+                    <i class="icon iconfont icon-yuyue1"></i>
+                    <span>我的预约</span>
+                </div>
+                <div class="menu-item">
+                    <i class="icon iconfont icon-shoucang"></i>
+                    <span>我的收藏</span>
+                </div>
+                <div class="menu-item">
+                    <i class="icon iconfont icon-pingjia1"></i>
+                    <span>我的评价</span>
+                </div>
+                <div class="menu-item">
+                    <i class="icon iconfont icon-baoxiu2"></i>
+                    <span>我的报修</span>
+                </div>
+            </div>
+
+            <!-- 本周预约次数 -->
+            <div class="card" style="margin-top: 16px;">
+                <div style="font-size: 16px; color: #1A1A1A; font-weight: 600; margin-bottom: 16px;">
+                    本周预约额度
+                </div>
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div style="font-size: 14px; color: #333333;">
+                        剩余次数：<span style="color: #4A90E2; font-weight: 600;">2/4</span>
+                    </div>
+                    <div style="font-size: 14px; color: #333333;">
+                        单次最长：<span style="color: #4A90E2; font-weight: 600;">4小时</span>
+                    </div>
+                </div>
+                <div style="height: 8px; background-color: #F5F7FA; border-radius: 4px; margin-top: 12px;">
+                    <div style="width: 50%; height: 100%; background-color: #4A90E2; border-radius: 4px;"></div>
+                </div>
+            </div>
+
+            <!-- 设置列表 -->
+            <div class="card setting-list">
+                <div class="setting-item">
+                    <span>账号安全</span>
+                    <i class="icon iconfont icon-arrow-right"></i>
+                </div>
+                <div class="setting-item">
+                    <span>消息通知</span>
+                    <i class="icon iconfont icon-arrow-right"></i>
+                </div>
+                <div class="setting-item">
+                    <span>帮助中心</span>
+                    <i class="icon iconfont icon-arrow-right"></i>
+                </div>
+                <div class="setting-item">
+                    <span>关于我们</span>
+                    <i class="icon iconfont icon-arrow-right"></i>
+                </div>
+                <div class="setting-item" style="color: #F56C6C;">
+                    <span>退出登录</span>
+                    <i class="icon iconfont icon-arrow-right"></i>
+                </div>
+            </div>
+
+            <!-- 底部Tab导航 -->
+            <div class="tab-bar">
+                <div class="tab-item">
+                    <i class="icon iconfont icon-shouye"></i>
+                    <span>首页</span>
+                </div>
+                <div class="tab-item">
+                    <i class="icon iconfont icon-yuyuezhongxin"></i>
+                    <span>预约</span>
+                </div>
+                <div class="tab-item">
+                    <i class="icon iconfont icon-baoxiu1"></i>
+                    <span>反馈</span>
+                </div>
+                <div class="tab-item">
+                    <i class="icon iconfont icon-xiezuo"></i>
+                    <span>协作</span>
+                </div>
+                <div class="tab-item active">
+                    <i class="icon iconfont icon-wode"></i>
+                    <span>我的</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 交互脚本 -->
+    <script>
+        // 通用交互
+        const cards = document.querySelectorAll('.card');
+        const btns = document.querySelectorAll('.btn');
+        const timeItems = document.querySelectorAll('.time-item');
+        const dateItems = document.querySelectorAll('.date-item');
+        const tagItems = document.querySelectorAll('.tag-item');
+        const tabItems = document.querySelectorAll('.tab-item');
+
+        // 卡片hover效果
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'scale(1.02)';
+                card.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'scale(1)';
+                card.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)';
+            });
+        });
+
+        // 时段选择切换
+        timeItems.forEach(item => {
+            item.addEventListener('click', () => {
+                item.classList.toggle('active');
+            });
+        });
+
+        // 日期选择切换
+        dateItems.forEach(item => {
+            item.addEventListener('click', () => {
+                dateItems.forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+            });
+        });
+
+        // 标签切换
+        tagItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const parent = item.parentElement;
+                parent.querySelectorAll('.tag-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+            });
+        });
+
+        // Tab导航切换
+        tabItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const parent = item.parentElement;
+                parent.querySelectorAll('.tab-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

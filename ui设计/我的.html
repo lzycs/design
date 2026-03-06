@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校园学习空间预约系统 - 我的</title>
+    <script src="https://at.alicdn.com/t/c/font_4068990_7yf5e9z09.js"></script> <!-- 在线矢量图标库 -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        body {
+            background-color: #F5F7FA;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        /* 手机边框容器 */
+        .phone-container {
+            width: 375px;
+            height: 812px;
+            border: 1px solid #DCDFE6;
+            border-radius: 32px;
+            background-color: #FFFFFF;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+        /* 我的页面样式 */
+        .my-page {
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            background-color: #F5F7FA;
+            padding-bottom: 72px; /* 给底部tab留空间 */
+        }
+        .my-page::-webkit-scrollbar {
+            display: none;
+        }
+        /* 顶部个人信息栏 */
+        .user-header {
+            width: 100%;
+            height: 160px;
+            background: linear-gradient(135deg, #4A90E2 0%, #5C6BC0 100%);
+            border-radius: 0 0 24px 24px;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            color: #FFFFFF;
+        }
+        .user-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background-color: #FFFFFF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 16px;
+        }
+        .user-avatar .icon {
+            font-size: 32px;
+            color: #4A90E2;
+        }
+        .user-info {
+            flex: 1;
+        }
+        .user-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .user-id {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        /* 功能菜单区域 */
+        .function-menu {
+            padding: 20px;
+        }
+        .menu-group {
+            background-color: #FFFFFF;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            margin-bottom: 16px;
+        }
+        .menu-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid #F5F7FA;
+        }
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+        .menu-left {
+            display: flex;
+            align-items: center;
+        }
+        .menu-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background-color: #ECF5FF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 12px;
+        }
+        .menu-icon .icon {
+            font-size: 16px;
+            color: #4A90E2;
+        }
+        .menu-text {
+            font-size: 16px;
+            color: #1A1A1A;
+            font-weight: 500;
+        }
+        .menu-right {
+            display: flex;
+            align-items: center;
+        }
+        .menu-badge {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: #F56C6C;
+            color: #FFFFFF;
+            font-size: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 8px;
+        }
+        .menu-arrow .icon {
+            font-size: 16px;
+            color: #909399;
+        }
+        /* 底部Tab导航 */
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 375px;
+            height: 56px;
+            background-color: #FFFFFF;
+            border-top: 1px solid #F5F7FA;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 99;
+        }
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #909399;
+            font-size: 12px;
+        }
+        .tab-item.active {
+            color: #4A90E2;
+        }
+        .tab-item .icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+        <!-- 我的页面 -->
+        <div class="my-page">
+            <!-- 顶部个人信息 -->
+            <div class="user-header">
+                <div class="user-avatar">
+                    <i class="icon iconfont icon-user"></i>
+                </div>
+                <div class="user-info">
+                    <div class="user-name">校园用户</div>
+                    <div class="user-id">学号/工号：20260001</div>
+                </div>
+            </div>
+            
+            <!-- 功能菜单 -->
+            <div class="function-menu">
+                <div class="menu-group">
+                    <a href="my-booking.html" class="menu-item" style="text-decoration: none;">
+                        <div class="menu-left">
+                            <div class="menu-icon">
+                                <i class="icon iconfont icon-order"></i>
+                            </div>
+                            <div class="menu-text">我的预约</div>
+                        </div>
+                        <div class="menu-right">
+                            <div class="menu-badge">2</div>
+                            <div class="menu-arrow">
+                                <i class="icon iconfont icon-arrow-right"></i>
+                            </div>
+                        </div>
+                    </a>
+                    <a href="my-evaluation.html" class="menu-item" style="text-decoration: none;">
+                        <div class="menu-left">
+                            <div class="menu-icon">
+                                <i class="icon iconfont icon-star"></i>
+                            </div>
+                            <div class="menu-text">我的评价</div>
+                        </div>
+                        <div class="menu-right">
+                            <div class="menu-arrow">
+                                <i class="icon iconfont icon-arrow-right"></i>
+                            </div>
+                        </div>
+                    </a>
+                    <a href="my-repair.html" class="menu-item" style="text-decoration: none;">
+                        <div class="menu-left">
+                            <div class="menu-icon">
+                                <i class="icon iconfont icon-repair"></i>
+                            </div>
+                            <div class="menu-text">我的报修</div>
+                        </div>
+                        <div class="menu-right">
+                            <div class="menu-badge">1</div>
+                            <div class="menu-arrow">
+                                <i class="icon iconfont icon-arrow-right"></i>
+                            </div>
+                        </div>
+                    </a>
+                    <a href="my-cooperation.html" class="menu-item" style="text-decoration: none;">
+                        <div class="menu-left">
+                            <div class="menu-icon">
+                                <i class="icon iconfont icon-team"></i>
+                            </div>
+                            <div class="menu-text">我的协作</div>
+                        </div>
+                        <div class="menu-right">
+                            <div class="menu-arrow">
+                                <i class="icon iconfont icon-arrow-right"></i>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                
+                <div class="menu-group">
+                    <div class="menu-item">
+                        <div class="menu-left">
+                            <div class="menu-icon">
+                                <i class="icon iconfont icon-setting"></i>
+                            </div>
+                            <div class="menu-text">系统设置</div>
+                        </div>
+                        <div class="menu-right">
+                            <div class="menu-arrow">
+                                <i class="icon iconfont icon-arrow-right"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="menu-left">
+                            <div class="menu-icon">
+                                <i class="icon iconfont icon-help"></i>
+                            </div>
+                            <div class="menu-text">帮助中心</div>
+                        </div>
+                        <div class="menu-right">
+                            <div class="menu-arrow">
+                                <i class="icon iconfont icon-arrow-right"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部Tab导航 -->
+        <div class="tab-bar">
+            <div class="tab-item">
+                <i class="icon iconfont icon-home"></i>
+                <span>首页</span>
+            </div>
+            <div class="tab-item">
+                <i class="icon iconfont icon-order"></i>
+                <span>预约</span>
+            </div>
+            <div class="tab-item active">
+                <i class="icon iconfont icon-my"></i>
+                <span>我的</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab切换效果
+        document.querySelectorAll('.tab-item').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                const tabText = this.querySelector('span').textContent;
+                if (tabText === '首页') {
+                    // window.location.href = 'index.html';
+                    alert('即将跳转到首页');
+                } else if (tabText === '预约') {
+                    // window.location.href = 'booking.html';
+                    alert('即将跳转到预约中心');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
