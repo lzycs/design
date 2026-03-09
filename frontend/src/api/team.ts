@@ -8,6 +8,8 @@ export interface TeamRequest {
   tags?: string
   expectedCount?: number
   currentCount?: number
+  startTime?: string
+  endTime?: string
   status?: number
   createTime?: string
   updateTime?: string
@@ -22,6 +24,8 @@ export interface TeamRequestVO {
   tags?: string
   expectedCount?: number
   currentCount?: number
+  startTime?: string
+  endTime?: string
   status?: number
   createTime?: string
   updateTime?: string
@@ -64,7 +68,7 @@ export interface Result<T> {
 }
 
 export const getActiveTeamRequests = () => {
-  return request.get<unknown, Result<TeamRequest[]>>('/team/requests/active')
+  return request.get<unknown, Result<TeamRequestVO[]>>('/team/requests/active')
 }
 
 export const getTeamRequestDetail = (id: number) => {
@@ -75,8 +79,8 @@ export const createTeamRequest = (payload: TeamRequest) => {
   return request.post<unknown, Result<TeamRequest>>('/team/request', payload)
 }
 
-export const updateTeamStatus = (id: number, status: number) => {
-  return request.put<unknown, Result<boolean>>(`/team/request/${id}/status`, { status })
+export const updateTeamStatus = (id: number, status: number, userId: number) => {
+  return request.put<unknown, Result<boolean>>(`/team/request/${id}/status`, { status, userId })
 }
 
 export const joinTeam = (requestId: number, member: TeamMember) => {

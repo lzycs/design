@@ -22,6 +22,13 @@ public class TeamRequest {
 
     private Integer currentCount;
 
+    /**
+     * 小组时间范围：开始时间/结束时间
+     */
+    private LocalDateTime startTime;
+
+    private LocalDateTime endTime;
+
     private Integer status;
 
     @TableField(fill = FieldFill.INSERT)

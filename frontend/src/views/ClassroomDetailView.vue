@@ -49,8 +49,6 @@ const totalReviews = computed(() => detail.value?.totalReviews ?? 0)
 /** 热度星级 1-5 */
 const popularityStars = computed(() => Math.min(5, Math.max(1, detail.value?.popularityStars ?? 0)))
 
-const isLoggedIn = computed(() => !!storedUser.value?.id)
-
 const getCurrentDate = () => {
   const base =
     dateTab.value === 'today'

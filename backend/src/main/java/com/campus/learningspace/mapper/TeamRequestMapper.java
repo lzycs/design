@@ -16,6 +16,7 @@ public interface TeamRequestMapper extends BaseMapper<TeamRequest> {
     @Select("""
             SELECT t.id, t.user_id AS userId, t.title, t.description, t.tags,
                    t.expected_count AS expectedCount, t.current_count AS currentCount,
+                   t.start_time AS startTime, t.end_time AS endTime,
                    t.status, t.create_time AS createTime, t.update_time AS updateTime,
                    u.real_name AS creatorName
             FROM team_request t
@@ -29,6 +30,7 @@ public interface TeamRequestMapper extends BaseMapper<TeamRequest> {
     @Select("""
             SELECT t.id, t.user_id AS userId, t.title, t.description, t.tags,
                    t.expected_count AS expectedCount, t.current_count AS currentCount,
+                   t.start_time AS startTime, t.end_time AS endTime,
                    t.status, t.create_time AS createTime, t.update_time AS updateTime,
                    u.real_name AS creatorName
             FROM team_request t
@@ -36,4 +38,20 @@ public interface TeamRequestMapper extends BaseMapper<TeamRequest> {
             WHERE t.deleted = 0 AND t.id = #{id}
             """)
     TeamRequestVO selectTeamRequestVOById(@Param("id") Long id);
+
+    /**
+     * 协作广场：查询可展示的组队（招募中 + 已满员），含发起人姓名
+     */
+    @Select("""
+            SELECT t.id, t.user_id AS userId, t.title, t.description, t.tags,
+                   t.expected_count AS expectedCount, t.current_count AS currentCount,
+                   t.start_time AS startTime, t.end_time AS endTime,
+                   t.status, t.create_time AS createTime, t.update_time AS updateTime,
+                   u.real_name AS creatorName
+            FROM team_request t
+            LEFT JOIN `user` u ON t.user_id = u.id AND u.deleted = 0
+            WHERE t.deleted = 0 AND t.status IN (1, 2)
+            ORDER BY t.create_time DESC
+            """)
+    List<TeamRequestVO> selectActiveTeamVOList();
 }

@@ -26,8 +26,8 @@ const currentTeam = ref<TeamRequestVO | null>(null)
 const members = ref<TeamMemberVO[]>([])
 const membersLoading = ref(false)
 
-/** 筛选：全部 / 我发起的 / 我参与的 */
-const filterTab = ref<'all' | 'initiated' | 'joined'>('all')
+/** 筛选：全部 / 我发起的 / 我参与的 / 已完成 */
+const filterTab = ref<'all' | 'initiated' | 'joined' | 'done'>('all')
 
 const isLoggedIn = computed(() => !!storedUser.value?.id)
 
@@ -35,7 +35,8 @@ const filteredTeams = computed(() => {
   if (!storedUser.value?.id) return []
   if (filterTab.value === 'all') return teams.value
   if (filterTab.value === 'initiated') return teams.value.filter((t) => t.userId === storedUser.value!.id)
-  return teams.value.filter((t) => t.userId !== storedUser.value!.id)
+  if (filterTab.value === 'joined') return teams.value.filter((t) => t.userId !== storedUser.value!.id)
+  return teams.value.filter((t) => t.status === 0)
 })
 
 /** 状态：0-已完成 1-招募中 2-已满员 -> 进行中/已完成 */
@@ -62,6 +63,27 @@ const formatDate = (s?: string) => {
   if (!s) return '-'
   const d = new Date(s)
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+const formatDateTime = (s?: string) => {
+  if (!s) return ''
+  const d = new Date(s)
+  if (Number.isNaN(d.getTime())) return s
+  const yyyy = d.getFullYear()
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  const hh = String(d.getHours()).padStart(2, '0')
+  const mi = String(d.getMinutes()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd} ${hh}:${mi}`
+}
+
+const formatRange = (start?: string, end?: string) => {
+  const a = formatDateTime(start)
+  const b = formatDateTime(end)
+  if (a && b) return `${a} - ${b}`
+  if (a) return `开始：${a}`
+  if (b) return `结束：${b}`
+  return ''
 }
 
 const loadFromStorage = () => {
@@ -124,19 +146,26 @@ const goCreate = () => {
   createForm.title = ''
   createForm.description = ''
   createForm.initStatus = 1
+  createForm.startTime = ''
+  createForm.endTime = ''
 }
 
 const markDone = async () => {
   if (!currentTeam.value?.id) return
+  if (!storedUser.value?.id) return
   try {
-    await updateTeamStatus(currentTeam.value.id, 0)
+    await updateTeamStatus(currentTeam.value.id, 0, storedUser.value.id)
     currentTeam.value.status = 0
     const idx = teams.value.findIndex((t) => t.id === currentTeam.value!.id)
     if (idx >= 0) teams.value[idx].status = 0
     showToast('已标记为完成')
   } catch (e) {
     console.error(e)
-    showToast('操作失败')
+    const msg =
+      (e as any)?.response?.data?.message ||
+      (e as any)?.response?.data?.msg ||
+      '操作失败'
+    showToast(msg)
   }
 }
 
@@ -152,6 +181,8 @@ const createForm = ref({
   title: '',
   description: '',
   initStatus: 1 as number, // 1-进行中 0-已完成
+  startTime: '',
+  endTime: '',
 })
 
 const createSubmitting = ref(false)
@@ -166,6 +197,11 @@ const submitCreate = async () => {
   }
   createSubmitting.value = true
   try {
+    const normalizeDateTimeLocal = (v: string) => {
+      const s = (v || '').trim()
+      if (!s) return undefined
+      return s.length === 16 ? `${s}:00` : s
+    }
     await createTeamRequest({
       userId: storedUser.value.id,
       title: createForm.value.title.trim(),
@@ -173,6 +209,8 @@ const submitCreate = async () => {
       status: createForm.value.initStatus,
       expectedCount: 5,
       currentCount: 1,
+      startTime: normalizeDateTimeLocal(createForm.value.startTime),
+      endTime: normalizeDateTimeLocal(createForm.value.endTime),
     })
     showToast('发起成功')
     screen.value = 'list'
@@ -184,6 +222,13 @@ const submitCreate = async () => {
     createSubmitting.value = false
   }
 }
+
+const isLeader = computed(() => {
+  if (!storedUser.value?.id || !currentTeam.value?.id) return false
+  // leader 通常就是发起人
+  if (currentTeam.value.userId === storedUser.value.id) return true
+  return members.value.some((m) => m.userId === storedUser.value!.id && m.role === 1)
+})
 
 onMounted(async () => {
   loadFromStorage()
@@ -208,6 +253,7 @@ onMounted(async () => {
               { key: 'all', label: '全部' },
               { key: 'initiated', label: '我发起的' },
               { key: 'joined', label: '我参与的' },
+              { key: 'done', label: '已完成' },
             ]"
             :key="tab.key"
             class="filter-tab"
@@ -246,6 +292,9 @@ onMounted(async () => {
                 <div class="collab-meta">
                   发起人：{{ item.creatorName ?? '-' }} | 更新时间：{{ formatDate(item.updateTime) }}
                 </div>
+                <div class="collab-meta" v-if="formatRange(item.startTime, item.endTime)">
+                  时间：{{ formatRange(item.startTime, item.endTime) }}
+                </div>
                 <div class="collab-desc">{{ item.description || '无描述' }}</div>
               </div>
             </div>
@@ -268,6 +317,9 @@ onMounted(async () => {
           <div class="detail-meta">
             <span>发起人：{{ currentTeam.creatorName ?? '-' }}</span>
             <span>更新时间：{{ formatDate(currentTeam.updateTime) }}</span>
+          </div>
+          <div class="detail-meta" v-if="formatRange(currentTeam.startTime, currentTeam.endTime)">
+            <span>时间：{{ formatRange(currentTeam.startTime, currentTeam.endTime) }}</span>
           </div>
           <div class="detail-status" :class="getStatusClass(currentTeam.status)">
             {{ getStatusText(currentTeam.status) }}
@@ -301,7 +353,7 @@ onMounted(async () => {
 
       <div class="action-bar">
         <button
-          v-if="currentTeam.status !== 0"
+          v-if="currentTeam.status !== 0 && isLeader"
           type="button"
           class="action-btn primary-btn"
           @click="markDone"
@@ -340,6 +392,14 @@ onMounted(async () => {
             <option :value="1">进行中</option>
             <option :value="0">已完成</option>
           </select>
+        </div>
+        <div class="form-section">
+          <label class="form-label">开始时间</label>
+          <input v-model="createForm.startTime" type="datetime-local" class="form-input" />
+        </div>
+        <div class="form-section">
+          <label class="form-label">结束时间</label>
+          <input v-model="createForm.endTime" type="datetime-local" class="form-input" />
         </div>
         <div class="action-bar single">
           <button

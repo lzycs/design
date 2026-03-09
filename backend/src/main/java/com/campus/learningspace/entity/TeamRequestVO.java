@@ -16,6 +16,8 @@ public class TeamRequestVO {
     private String tags;
     private Integer expectedCount;
     private Integer currentCount;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
     private Integer status;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;

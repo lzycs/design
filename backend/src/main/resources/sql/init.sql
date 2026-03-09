@@ -256,6 +256,8 @@ CREATE TABLE IF NOT EXISTS `team_request` (
     `tags` VARCHAR(255) COMMENT '标签(JSON数组)',
     `expected_count` INT NOT NULL COMMENT '期望人数',
     `current_count` INT NOT NULL DEFAULT 1 COMMENT '当前人数',
+    `start_time` DATETIME COMMENT '小组开始时间',
+    `end_time` DATETIME COMMENT '小组结束时间',
     `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态: 0-已关闭, 1-招募中, 2-已满员',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -264,6 +266,39 @@ CREATE TABLE IF NOT EXISTS `team_request` (
     INDEX idx_status (`status`),
     FOREIGN KEY (`user_id`) REFERENCES `user`(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='组队需求表';
+
+-- 兼容已存在表结构：补齐小组时间范围字段
+SET @__team_start_time_exists := (
+  SELECT COUNT(*)
+  FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'team_request'
+    AND COLUMN_NAME = 'start_time'
+);
+SET @__team_start_time_sql := IF(
+  @__team_start_time_exists = 0,
+  'ALTER TABLE `team_request` ADD COLUMN `start_time` DATETIME COMMENT ''小组开始时间''',
+  'SELECT 1'
+);
+PREPARE __stmt FROM @__team_start_time_sql;
+EXECUTE __stmt;
+DEALLOCATE PREPARE __stmt;
+
+SET @__team_end_time_exists := (
+  SELECT COUNT(*)
+  FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'team_request'
+    AND COLUMN_NAME = 'end_time'
+);
+SET @__team_end_time_sql := IF(
+  @__team_end_time_exists = 0,
+  'ALTER TABLE `team_request` ADD COLUMN `end_time` DATETIME COMMENT ''小组结束时间''',
+  'SELECT 1'
+);
+PREPARE __stmt2 FROM @__team_end_time_sql;
+EXECUTE __stmt2;
+DEALLOCATE PREPARE __stmt2;
 
 -- 组队成员表
 CREATE TABLE IF NOT EXISTS `team_member` (
@@ -507,10 +542,14 @@ ON DUPLICATE KEY UPDATE
 
 -- 插入组队需求（与「我的协作」页面对应：项目需求评审、UI设计稿确认、接口联调测试；status 0-已关闭 1-招募中 2-已满员，前端展示为 进行中/已完成）
 -- 使用 ON DUPLICATE KEY UPDATE 避免 REPLACE 删除行时触发 study_plan 外键约束
-INSERT INTO `team_request` (`id`, `user_id`, `title`, `description`, `tags`, `expected_count`, `current_count`, `status`, `create_time`, `update_time`) VALUES
-(1, 1, '项目需求评审', '完成项目需求文档评审，确定核心功能和优先级，输出评审意见和修改建议', NULL, 5, 3, 1, '2026-03-10 10:00:00', '2026-03-10 12:00:00'),
-(2, 2, 'UI设计稿确认', '确认首页、详情页、表单页的UI设计稿，反馈修改意见，最终定稿', NULL, 3, 3, 0, '2026-03-08 10:00:00', '2026-03-08 12:00:00'),
-(3, 2, '接口联调测试', '前后端接口联调，测试各接口的可用性和数据准确性，修复联调中发现的问题', NULL, 4, 2, 1, '2026-03-09 10:00:00', '2026-03-09 12:00:00')
+INSERT INTO `team_request` (`id`, `user_id`, `title`, `description`, `tags`, `expected_count`, `current_count`, `start_time`, `end_time`, `status`, `create_time`, `update_time`) VALUES
+(1, 1, '项目需求评审', '完成项目需求文档评审，确定核心功能和优先级，输出评审意见和修改建议', NULL, 5, 3, '2026-03-10 10:00:00', '2026-03-20 18:00:00', 1, '2026-03-10 10:00:00', '2026-03-10 12:00:00'),
+(2, 2, 'UI设计稿确认', '确认首页、详情页、表单页的UI设计稿，反馈修改意见，最终定稿', NULL, 3, 3, '2026-03-08 10:00:00', '2026-03-12 18:00:00', 0, '2026-03-08 10:00:00', '2026-03-08 12:00:00'),
+(3, 2, '接口联调测试', '前后端接口联调，测试各接口的可用性和数据准确性，修复联调中发现的问题', NULL, 4, 2, '2026-03-09 10:00:00', '2026-03-18 18:00:00', 1, '2026-03-09 10:00:00', '2026-03-09 12:00:00'),
+-- 协作广场示例小组：考研英语复习 / XX项目开发 / 数据库学习
+(10, 1, '考研英语复习', '每天背单词 + 真题精读，互相打卡监督，目标上岸！', '["考研","英语","真题","打卡"]', 6, 2, '2026-03-06 09:00:00', '2026-06-01 18:00:00', 1, '2026-03-06 09:00:00', '2026-03-06 09:00:00'),
+(11, 2, 'XX项目开发', '一起完成“校园学习空间”项目，分工前后端/测试/文档，定期开会同步进度。', '["项目开发","前端","后端","联调"]', 5, 5, '2026-03-06 14:00:00', '2026-04-10 18:00:00', 2, '2026-03-06 14:00:00', '2026-03-07 18:00:00'),
+(12, 6, '数据库学习', '从 SQL 基础到索引与事务，一起刷题复盘，每周至少 2 次讨论。', '["数据库","SQL","MySQL","刷题"]', 4, 2, '2026-03-07 10:00:00', '2026-05-01 18:00:00', 1, '2026-03-07 10:00:00', '2026-03-07 10:00:00')
 ON DUPLICATE KEY UPDATE
   `user_id` = VALUES(`user_id`),
   `title` = VALUES(`title`),
@@ -518,6 +557,8 @@ ON DUPLICATE KEY UPDATE
   `tags` = VALUES(`tags`),
   `expected_count` = VALUES(`expected_count`),
   `current_count` = VALUES(`current_count`),
+  `start_time` = VALUES(`start_time`),
+  `end_time` = VALUES(`end_time`),
   `status` = VALUES(`status`),
   `create_time` = VALUES(`create_time`),
   `update_time` = VALUES(`update_time`);
@@ -531,7 +572,17 @@ INSERT INTO `team_member` (`id`, `team_request_id`, `user_id`, `role`, `join_tim
 (5, 2, 1, 2, '2026-03-08 10:30:00'),
 (6, 2, 6, 2, '2026-03-08 11:00:00'),
 (7, 3, 2, 1, '2026-03-09 10:00:00'),
-(8, 3, 1, 2, '2026-03-09 10:30:00')
+(8, 3, 1, 2, '2026-03-09 10:30:00'),
+-- 协作广场示例小组成员
+(101, 10, 1, 1, '2026-03-06 09:00:00'),
+(102, 10, 2, 2, '2026-03-06 09:10:00'),
+(111, 11, 2, 1, '2026-03-06 14:00:00'),
+(112, 11, 1, 2, '2026-03-06 14:20:00'),
+(113, 11, 6, 2, '2026-03-06 14:30:00'),
+(114, 11, 3, 2, '2026-03-06 14:40:00'),
+(115, 11, 4, 2, '2026-03-06 14:50:00'),
+(121, 12, 6, 1, '2026-03-07 10:00:00'),
+(122, 12, 1, 2, '2026-03-07 10:15:00')
 ON DUPLICATE KEY UPDATE
   `team_request_id` = VALUES(`team_request_id`),
   `user_id`         = VALUES(`user_id`),

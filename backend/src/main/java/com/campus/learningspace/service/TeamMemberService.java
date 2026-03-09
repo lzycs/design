@@ -27,5 +27,20 @@ public class TeamMemberService extends ServiceImpl<TeamMemberMapper, TeamMember>
     public List<TeamMemberVO> getTeamMemberVOList(Long teamRequestId) {
         return baseMapper.selectMemberVOListByTeam(teamRequestId);
     }
+
+    /**
+     * 是否为小组组长（role=1）
+     */
+    public boolean isLeader(Long teamRequestId, Long userId) {
+        if (teamRequestId == null || userId == null) {
+            return false;
+        }
+        LambdaQueryWrapper<TeamMember> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(TeamMember::getTeamRequestId, teamRequestId)
+                .eq(TeamMember::getUserId, userId)
+                .eq(TeamMember::getRole, 1)
+                .eq(TeamMember::getDeleted, 0);
+        return count(wrapper) > 0;
+    }
 }
 

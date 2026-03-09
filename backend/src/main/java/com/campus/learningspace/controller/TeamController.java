@@ -35,8 +35,8 @@ public class TeamController {
     }
 
     @GetMapping("/requests/active")
-    public Result<List<TeamRequest>> getActiveRequests() {
-        return Result.success(teamRequestService.getActiveRequests());
+    public Result<List<TeamRequestVO>> getActiveRequests() {
+        return Result.success(teamRequestService.getActiveRequestVOList());
     }
 
     @GetMapping("/requests/user/{userId}")
@@ -56,6 +56,14 @@ public class TeamController {
         if (existing == null) {
             return Result.error(404, "协作不存在");
         }
+        if (payload == null || payload.getUserId() == null) {
+            return Result.error(400, "缺少 userId");
+        }
+        // 仅组长有权限标记完成/变更状态
+        boolean isLeader = teamMemberService.isLeader(id, payload.getUserId());
+        if (!isLeader) {
+            return Result.error(403, "仅组长可标记完成");
+        }
         if (payload.getStatus() != null) {
             existing.setStatus(payload.getStatus()); // 0-已关闭(已完成) 1-招募中 2-已满员
             teamRequestService.updateById(existing);
@@ -65,12 +73,11 @@ public class TeamController {
 
     @PostMapping("/request/{requestId}/join")
     public Result<Boolean> joinTeam(@PathVariable Long requestId, @RequestBody TeamMember member) {
-        member.setId(null);
-        member.setTeamRequestId(requestId);
-        if (member.getRole() == null) {
-            member.setRole(2); // 成员
+        if (member == null || member.getUserId() == null) {
+            return Result.error(400, "缺少 userId");
         }
-        return Result.success(teamMemberService.save(member));
+        boolean ok = teamRequestService.joinTeam(requestId, member.getUserId());
+        return ok ? Result.success(true) : Result.error(400, "加入失败（可能已加入或已满员）");
     }
 
     @GetMapping("/user/{userId}")
