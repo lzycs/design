@@ -6,9 +6,10 @@ export interface Result<T> {
   data: T
 }
 
-// 后端 Repair 实体创建所需字段
+// 后端 Repair 实体创建所需字段（resourceType: 1-教室 2-图书馆座位）
 export interface CreateRepairPayload {
   userId: number
+  resourceType?: number
   classroomId: number
   title: string
   description: string

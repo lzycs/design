@@ -12,6 +12,9 @@ public class Repair {
 
     private Long userId;
 
+    /** 资源类型: 1-教室, 2-图书馆座位 */
+    private Integer resourceType;
+
     private Long classroomId;
 
     private String title;

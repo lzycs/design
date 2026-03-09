@@ -31,9 +31,11 @@ public class RepairController {
     @PostMapping
     public Result<Boolean> create(@RequestBody Repair repair) {
         repair.setId(null);
-        // 默认状态: 1-待处理
+        if (repair.getResourceType() == null) {
+            repair.setResourceType(1); // 1-教室
+        }
         if (repair.getStatus() == null) {
-            repair.setStatus(1);
+            repair.setStatus(1); // 1-待处理
         }
         return Result.success(repairService.save(repair));
     }

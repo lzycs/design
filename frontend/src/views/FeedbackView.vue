@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { showToast } from 'vant'
 import { getAvailableClassrooms, type Classroom as ApiClassroom } from '../api/classroom'
 import {
   createRepair,
@@ -30,7 +31,37 @@ const classrooms = ref<ApiClassroom[]>([])
 const repairClassroomId = ref<number | null>(null)
 const repairFaultType = ref('air')
 const repairDesc = ref('')
-const repairPhotos = ref<string[]>([]) // 实际项目中应为上传后返回的 URL
+const repairPhotos = ref<string[]>([])
+const repairPhotoUploading = ref(false)
+const maxRepairPhotos = 6
+const maxPhotoSize = 3 * 1024 * 1024 // 3MB
+
+function onRepairPhotoRead(file: File) {
+  if (repairPhotos.value.length >= maxRepairPhotos) {
+    window.alert(`最多上传 ${maxRepairPhotos} 张照片`)
+    return
+  }
+  if (file.size > maxPhotoSize) {
+    window.alert('单张照片不超过 3MB')
+    return
+  }
+  repairPhotoUploading.value = true
+  const reader = new FileReader()
+  reader.onload = () => {
+    const dataUrl = reader.result as string
+    if (dataUrl) repairPhotos.value.push(dataUrl)
+    repairPhotoUploading.value = false
+  }
+  reader.onerror = () => {
+    repairPhotoUploading.value = false
+    window.alert('读取图片失败')
+  }
+  reader.readAsDataURL(file)
+}
+
+function removeRepairPhoto(index: number) {
+  repairPhotos.value.splice(index, 1)
+}
 
 // 评价数据
 const pendingList = ref<PendingFeedbackItem[]>([])
@@ -141,6 +172,7 @@ const onSubmitRepair = async () => {
     const classroomName = classroomNameById(repairClassroomId.value)
     const payload: CreateRepairPayload = {
       userId: currentUserId.value,
+      resourceType: 1,
       classroomId: repairClassroomId.value,
       title: classroomName ? `${classroomName} 报修` : '教室报修',
       description: repairDesc.value.trim(),
@@ -149,10 +181,15 @@ const onSubmitRepair = async () => {
       images: repairPhotos.value.length ? JSON.stringify(repairPhotos.value) : undefined
     }
 
-    await createRepair(payload)
-    window.alert('报修工单提交成功！')
+    const res = await createRepair(payload) as { code?: number; message?: string; data?: boolean }
+    if (res?.code !== 200 && res?.code !== undefined) {
+      showToast(res?.message || '提交失败，请稍后重试')
+      return
+    }
     repairDesc.value = ''
     repairPhotos.value = []
+    showToast('报修工单提交成功')
+    router.push('/profile/repairs')
   } catch (e) {
     console.error('提交报修失败', e)
     window.alert('提交失败，请稍后重试')
@@ -302,19 +339,28 @@ onMounted(() => {
           />
         </div>
 
-        <!-- 上传照片（这里仅占位，实际项目对接上传接口） -->
+        <!-- 上传照片（可选，base64 存入工单） -->
         <div class="form-item">
-          <label class="form-label">上传照片（可选）</label>
+          <label class="form-label">上传照片（可选，最多 {{ maxRepairPhotos }} 张）</label>
           <div class="upload-area">
-            <div class="upload-item">
-              <span class="upload-plus">+</span>
+            <div
+              v-for="(photo, idx) in repairPhotos"
+              :key="idx"
+              class="upload-item upload-preview"
+            >
+              <img :src="photo" alt="报修图" class="upload-preview-img" />
+              <button type="button" class="upload-remove" @click="removeRepairPhoto(idx)">×</button>
             </div>
-            <div class="upload-item">
-              <span class="upload-plus">+</span>
-            </div>
-            <div class="upload-item">
-              <span class="upload-plus">+</span>
-            </div>
+            <label v-if="repairPhotos.length < maxRepairPhotos" class="upload-item upload-trigger">
+              <input
+                type="file"
+                accept="image/*"
+                class="upload-input"
+                :disabled="repairPhotoUploading"
+                @change="(e: Event) => { const t = (e.target as HTMLInputElement); if (t.files?.[0]) { onRepairPhotoRead(t.files[0]); t.value = ''; } }"
+              />
+              <span class="upload-plus">{{ repairPhotoUploading ? '…' : '+' }}</span>
+            </label>
           </div>
         </div>
 
@@ -644,6 +690,47 @@ onMounted(() => {
 .upload-plus {
   font-size: 24px;
   color: #c0c4cc;
+}
+
+.upload-trigger {
+  cursor: pointer;
+}
+
+.upload-input {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+}
+
+.upload-preview {
+  position: relative;
+  overflow: hidden;
+}
+
+.upload-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.upload-remove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .submit-btn {

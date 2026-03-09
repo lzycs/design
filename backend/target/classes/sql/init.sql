@@ -173,7 +173,7 @@ CREATE TABLE IF NOT EXISTS `repair` (
     `library_seat_id` BIGINT COMMENT '图书馆座位ID (当resource_type=2时)',
     `title` VARCHAR(200) NOT NULL COMMENT '标题',
     `description` TEXT NOT NULL COMMENT '描述',
-    `images` TEXT COMMENT '图片路径(JSON数组)',
+    `images` MEDIUMTEXT COMMENT '图片路径(JSON数组，可存 base64)',
     `type` TINYINT NOT NULL COMMENT '类型: 1-照明, 2-空调, 3-桌椅, 4-多媒体设备, 5-网络, 6-其他',
     `priority` TINYINT NOT NULL DEFAULT 2 COMMENT '优先级: 1-紧急, 2-普通, 3-低',
     `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态: 1-待处理, 2-处理中, 3-已修复, 4-已关闭',
@@ -191,6 +191,9 @@ CREATE TABLE IF NOT EXISTS `repair` (
     FOREIGN KEY (`library_seat_id`) REFERENCES `library_seat`(`id`),
     FOREIGN KEY (`handler_id`) REFERENCES `user`(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='报修工单表';
+
+-- 若表已存在且 images 为 TEXT，改为 MEDIUMTEXT 以支持 base64 图片（避免 500 错误）
+ALTER TABLE `repair` MODIFY COLUMN `images` MEDIUMTEXT COMMENT '图片路径(JSON数组，可存 base64)';
 
 -- 评价表 (可评价教室或图书馆座位) - 供“我的评价”等通用场景使用
 CREATE TABLE IF NOT EXISTS `review` (
