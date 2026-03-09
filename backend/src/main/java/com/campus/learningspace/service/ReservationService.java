@@ -91,4 +91,16 @@ public class ReservationService extends ServiceImpl<ReservationMapper, Reservati
         reservation.setCheckinTime(LocalDateTime.now());
         return updateById(reservation);
     }
+
+    /**
+     * 统计某教室的签到次数（预约状态为已签到或已完成的条数，resource_type=1）
+     */
+    public long countCheckinByClassroomId(Long classroomId) {
+        if (classroomId == null) return 0;
+        LambdaQueryWrapper<Reservation> w = new LambdaQueryWrapper<>();
+        w.eq(Reservation::getResourceType, 1)
+                .eq(Reservation::getClassroomId, classroomId)
+                .in(Reservation::getStatus, 2, 3);
+        return count(w);
+    }
 }

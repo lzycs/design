@@ -27,6 +27,19 @@ export interface Result<T> {
   data: T
 }
 
+/** 教室详情（含热度星级、综合评分均值、签到次数） */
+export interface ClassroomDetailVO {
+  classroom: Classroom
+  /** 热度星级 1-5 */
+  popularityStars: number
+  /** 综合评分（历史评分平均值） */
+  averageScore: number | null
+  /** 历史评价条数 */
+  totalReviews: number
+  /** 签到次数 */
+  checkinCount: number
+}
+
 export const getClassroomList = () => {
   return request.get<any, Result<Classroom[]>>('/classroom/list')
 }
@@ -41,6 +54,10 @@ export const getAvailableClassrooms = (type?: number) => {
 
 export const getClassroomById = (id: number) => {
   return request.get<any, Result<Classroom>>(`/classroom/${id}`)
+}
+
+export const getClassroomDetail = (id: number) => {
+  return request.get<any, Result<ClassroomDetailVO>>(`/classroom/${id}/detail`)
 }
 
 export const saveClassroom = (classroom: Classroom) => {

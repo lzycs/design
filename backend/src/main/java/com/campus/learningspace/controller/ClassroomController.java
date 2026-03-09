@@ -2,6 +2,7 @@ package com.campus.learningspace.controller;
 
 import com.campus.learningspace.common.Result;
 import com.campus.learningspace.entity.Classroom;
+import com.campus.learningspace.entity.ClassroomDetailVO;
 import com.campus.learningspace.service.ClassroomService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +35,15 @@ public class ClassroomController {
     @GetMapping("/{id}")
     public Result<Classroom> getById(@PathVariable Long id) {
         return Result.success(classroomService.getById(id));
+    }
+
+    /**
+     * 教室详情（含热度星级、综合评分均值、签到次数）
+     */
+    @GetMapping("/{id}/detail")
+    public Result<ClassroomDetailVO> getDetail(@PathVariable Long id) {
+        ClassroomDetailVO vo = classroomService.getDetail(id);
+        return vo != null ? Result.success(vo) : Result.error("教室不存在");
     }
 
     @PostMapping

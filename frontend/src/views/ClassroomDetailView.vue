@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { showToast } from 'vant'
-import { getClassroomById, type Classroom } from '@/api/classroom'
+import { getClassroomDetail, type ClassroomDetailVO } from '@/api/classroom'
 import { getBuildingById, type Building } from '@/api/building'
 import {
   getClassroomSlots,
@@ -14,7 +14,8 @@ import {
 const route = useRoute()
 const router = useRouter()
 
-const classroom = ref<Classroom | null>(null)
+const detail = ref<ClassroomDetailVO | null>(null)
+const classroom = computed(() => detail.value?.classroom ?? null)
 const building = ref<Building | null>(null)
 const loading = ref(false)
 
@@ -38,8 +39,15 @@ const todayText = computed(() => formatDate(today))
 const tomorrowText = computed(() => formatDate(tomorrow))
 const dayAfterText = computed(() => formatDate(dayAfter))
 
-const environmentScore = computed(() => classroom.value?.environmentScore ?? 0)
-const totalReviews = computed(() => classroom.value?.totalReviews ?? 0)
+/** 综合评分：历史评分的平均值 */
+const averageScore = computed(() => {
+  const v = detail.value?.averageScore
+  if (v == null) return null
+  return typeof v === 'number' ? v : Number(v)
+})
+const totalReviews = computed(() => detail.value?.totalReviews ?? 0)
+/** 热度星级 1-5 */
+const popularityStars = computed(() => Math.min(5, Math.max(1, detail.value?.popularityStars ?? 0)))
 
 const isLoggedIn = computed(() => !!storedUser.value?.id)
 
@@ -77,11 +85,11 @@ const loadClassroom = async () => {
   }
   loading.value = true
   try {
-    const res = await getClassroomById(id)
-    const maybe = (res as unknown as { data?: Classroom }).data
-    classroom.value = maybe ?? null
-    if (classroom.value?.buildingId) {
-      const bRes = await getBuildingById(classroom.value.buildingId)
+    const res = await getClassroomDetail(id)
+    const maybe = (res as unknown as { data?: ClassroomDetailVO }).data
+    detail.value = maybe ?? null
+    if (detail.value?.classroom?.buildingId) {
+      const bRes = await getBuildingById(detail.value.classroom.buildingId)
       building.value = (bRes as unknown as { data?: Building }).data ?? null
     }
     await loadSlots()
@@ -201,7 +209,13 @@ onMounted(() => {
           </p>
           <p>
             <i class="icon iconfont icon-rexian" />
-            综合评分：{{ environmentScore.toFixed(1) }} 分（{{ totalReviews }} 条评价）
+            热度：<span class="star-row">
+              <span v-for="i in 5" :key="i" class="star" :class="{ filled: i <= popularityStars }">★</span>
+            </span>
+          </p>
+          <p>
+            <i class="icon iconfont icon-rexian" />
+            综合评分：{{ averageScore != null ? averageScore.toFixed(1) : '暂无' }} 分（{{ totalReviews }} 条评价）
           </p>
         </div>
         <div class="classroom-state">
@@ -331,6 +345,18 @@ onMounted(() => {
 .classroom-info p .icon {
   font-size: 14px;
   margin-right: 4px;
+}
+
+.star-row {
+  display: inline-flex;
+  gap: 2px;
+}
+.star-row .star {
+  color: #e0e0e0;
+  font-size: 16px;
+}
+.star-row .star.filled {
+  color: #f7d060;
 }
 
 .classroom-state {
