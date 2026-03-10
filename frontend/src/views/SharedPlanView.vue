@@ -37,6 +37,12 @@ const resStartTime = ref('')
 const resEndTime = ref('')
 const submitting = ref(false)
 
+// 关联研讨室：关键时间节点选择（已有 + 新增）
+type KeyNode = { title: string; datetime: string }
+const existingNodes = ref<KeyNode[]>([])
+const selectedExistingIdx = ref<number[]>([])
+const newNodes = ref<Array<KeyNode>>([])
+
 const today = new Date()
 const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000)
 const dayAfter = new Date(today.getTime() + 2 * 24 * 60 * 60 * 1000)
@@ -237,13 +243,55 @@ const openBindRoom = (p: StudyPlanVO) => {
   editingPlan.value = p
   planDate.value = p.planDate ?? todayStr()
   description.value = p.description ?? ''
-  // 关联研讨室页：不回填具体内容，仅提示用户填写（必填）
+  // 关联研讨室页：可选择已有节点 + 新增节点
+  existingNodes.value = parseKeyTimeNodes(p.keyTimeNodes).map((n) => ({
+    title: n.title,
+    datetime: n.datetime,
+  }))
+  selectedExistingIdx.value = existingNodes.value.map((_, i) => i) // 默认全选已有
+  newNodes.value = [{ title: '', datetime: '' }]
   keyTimeNodes.value = ''
   classroomId.value = null
   resDateTab.value = 'today'
   resStartTime.value = ''
   resEndTime.value = ''
   showBindRoomModal.value = true
+}
+
+const addNewNodeRow = () => {
+  newNodes.value.push({ title: '', datetime: '' })
+}
+
+const toggleExistingNode = (idx: number, checked: boolean) => {
+  const arr = selectedExistingIdx.value
+  if (checked) {
+    if (!arr.includes(idx)) arr.push(idx)
+  } else {
+    selectedExistingIdx.value = arr.filter((i) => i !== idx)
+  }
+}
+
+const removeNewNodeRow = (idx: number) => {
+  if (newNodes.value.length <= 1) {
+    newNodes.value = [{ title: '', datetime: '' }]
+    return
+  }
+  newNodes.value.splice(idx, 1)
+}
+
+const buildMergedKeyTimeNodes = () => {
+  const selected = selectedExistingIdx.value
+    .map((i) => existingNodes.value[i])
+    .filter((n) => n && (n.title || n.datetime))
+  const added = newNodes.value
+    .map((n) => ({ title: n.title.trim(), datetime: n.datetime.trim() }))
+    .filter((n) => n.title) // 新增：至少要填标题
+  const merged = [...selected, ...added]
+  // 格式：节点名|日期时间,节点名|日期时间（日期时间可为空）
+  return merged
+    .map((n) => `${n.title}|${n.datetime ?? ''}`)
+    .join(',')
+    .trim()
 }
 
 const selectResTime = (slot: { start: string; end: string }) => {
@@ -296,7 +344,8 @@ const submitCreate = async () => {
 
 const submitBindRoom = async () => {
   if (!editingPlan.value?.id || !storedUser.value?.id) return
-  if (!keyTimeNodes.value.trim()) {
+  const mergedKeyNodes = buildMergedKeyTimeNodes()
+  if (!mergedKeyNodes) {
     showToast('请填写关键时间节点')
     return
   }
@@ -312,7 +361,7 @@ const submitBindRoom = async () => {
       userId: storedUser.value.id,
       description: description.value.trim() || undefined,
       planDate: planDate.value || undefined,
-      keyTimeNodes: keyTimeNodes.value.trim() || undefined
+      keyTimeNodes: mergedKeyNodes || undefined
     }
     if (hasRes) {
       payload.classroomId = classroomId.value!
@@ -402,9 +451,6 @@ onMounted(async () => {
             class="plan-card"
           >
             <div class="plan-card-inner">
-              <div class="plan-icon-wrap">
-                <div class="plan-icon-placeholder"></div>
-              </div>
               <div class="plan-content">
                 <div class="plan-header">
                   <span class="plan-title">{{ p.title }}</span>
@@ -607,11 +653,40 @@ onMounted(async () => {
             <input v-model="planDate" type="date" class="form-date" />
 
             <label class="form-label">关键时间节点</label>
-            <input
-              v-model="keyTimeNodes"
-              class="form-input"
-              placeholder="填写关键时间节点"
-            />
+
+            <div v-if="existingNodes.length > 0" class="node-picker">
+              <div class="node-picker-title">已有节点（可多选）</div>
+              <label
+                v-for="(n, idx) in existingNodes"
+                :key="'ex-' + idx"
+                class="node-check"
+              >
+                <input
+                  type="checkbox"
+                  :checked="selectedExistingIdx.includes(idx)"
+                  @change="(e) => toggleExistingNode(idx, (e.target as HTMLInputElement).checked)"
+                />
+                <span class="node-check-text">{{ n.title }}</span>
+              </label>
+            </div>
+
+            <div class="node-picker">
+              <div class="node-picker-title">新增节点</div>
+              <div v-for="(n, idx) in newNodes" :key="'nw-' + idx" class="node-new-row">
+                <input
+                  v-model="n.title"
+                  class="form-input node-new-input"
+                  placeholder="节点名称（必填）"
+                />
+                <input
+                  v-model="n.datetime"
+                  class="form-input node-new-input"
+                  placeholder="节点时间（可选，如 2026-03-15 18:00）"
+                />
+                <button type="button" class="node-del-btn" @click="removeNewNodeRow(idx)">删除</button>
+              </div>
+              <button type="button" class="node-add-btn" @click="addNewNodeRow">+ 新增节点</button>
+            </div>
 
             <label class="form-label">关联研讨室（选填）</label>
             <select v-model="classroomId" class="form-select">
@@ -815,18 +890,6 @@ onMounted(async () => {
 .plan-card-inner {
   display: flex;
   padding: 16px;
-}
-
-.plan-icon-wrap {
-  flex-shrink: 0;
-  margin-right: 12px;
-}
-
-.plan-icon-placeholder {
-  width: 48px;
-  height: 48px;
-  border-radius: 8px;
-  background-color: #e5e6eb;
 }
 
 .plan-content {
@@ -1156,5 +1219,69 @@ onMounted(async () => {
 .submit-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* 关联研讨室：关键时间节点选择 UI */
+.node-picker {
+  margin-bottom: 16px;
+}
+
+.node-picker-title {
+  font-size: 12px;
+  color: #909399;
+  margin-bottom: 8px;
+}
+
+.node-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid #e5e6eb;
+  border-radius: 8px;
+  background: #fff;
+  margin-bottom: 8px;
+}
+
+.node-check input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+}
+
+.node-check-text {
+  font-size: 13px;
+  color: #1a1a1a;
+}
+
+.node-new-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 8px;
+  align-items: start;
+  margin-bottom: 8px;
+}
+
+.node-new-input {
+  margin-bottom: 0;
+}
+
+.node-del-btn {
+  height: 44px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid #e5e6eb;
+  background: #fff;
+  color: #f56c6c;
+  cursor: pointer;
+}
+
+.node-add-btn {
+  width: 100%;
+  height: 44px;
+  border-radius: 8px;
+  border: 1px dashed #cbd5e1;
+  background: #f5f7fa;
+  color: #4a90e2;
+  cursor: pointer;
 }
 </style>

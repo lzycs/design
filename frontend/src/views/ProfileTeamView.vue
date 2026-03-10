@@ -331,9 +331,6 @@ onMounted(async () => {
               class="collab-card"
               @click="openDetail(item)"
             >
-              <div class="collab-cover">
-                <van-icon name="friends-o" />
-              </div>
               <div class="collab-info">
                 <div class="collab-header">
                   <div class="collab-title">{{ item.title }}</div>
@@ -538,20 +535,6 @@ onMounted(async () => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   padding: 16px;
   align-items: flex-start;
-}
-
-.collab-cover {
-  width: 64px;
-  height: 64px;
-  border-radius: 8px;
-  background: #f0f7ff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 12px;
-  flex-shrink: 0;
-  font-size: 32px;
-  color: #4a90e2;
 }
 
 .collab-info {

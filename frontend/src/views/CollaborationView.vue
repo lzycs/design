@@ -306,7 +306,6 @@ onMounted(() => {
           @click="openDetail(item)"
         >
           <div class="team-header">
-            <div class="avatar"></div>
             <div class="team-title">
               {{ item.title }}
             </div>
@@ -583,15 +582,6 @@ onMounted(() => {
   display: flex;
   align-items: center;
   margin-bottom: 8px;
-}
-
-.avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #e5e6eb;
-  margin-right: 12px;
-  flex-shrink: 0;
 }
 
 .team-title {
