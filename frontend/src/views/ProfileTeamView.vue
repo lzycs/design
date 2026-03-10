@@ -10,6 +10,7 @@ import {
   type TeamRequestVO,
   type TeamMemberVO,
 } from '@/api/team'
+import { getTeamStudyPlans, type StudyPlanVO } from '@/api/studyPlan'
 import { showToast } from 'vant'
 
 interface User {
@@ -25,11 +26,19 @@ const screen = ref<'list' | 'detail' | 'create'>('list')
 const currentTeam = ref<TeamRequestVO | null>(null)
 const members = ref<TeamMemberVO[]>([])
 const membersLoading = ref(false)
+const teamPlans = ref<StudyPlanVO[]>([])
+const teamPlansLoading = ref(false)
 
 /** 筛选：全部 / 我发起的 / 我参与的 / 已完成 */
 const filterTab = ref<'all' | 'initiated' | 'joined' | 'done'>('all')
 
 const isLoggedIn = computed(() => !!storedUser.value?.id)
+
+/** 是否至少为一个小组组长（这里组长=发起人） */
+const canCreateCollab = computed(() => {
+  if (!storedUser.value?.id) return false
+  return teams.value.some((t) => t.userId === storedUser.value!.id)
+})
 
 const filteredTeams = computed(() => {
   if (!storedUser.value?.id) return []
@@ -51,13 +60,18 @@ const getStatusClass = (status?: number) => {
   return 'status-doing'
 }
 
-/** 协作进度百分比 */
-const progressPercent = computed(() => {
-  const t = currentTeam.value
-  if (!t || !t.expectedCount || t.expectedCount === 0) return 0
-  const cur = t.currentCount ?? 0
-  return Math.min(100, Math.round((cur / t.expectedCount) * 100))
-})
+const loadTeamPlans = async (teamRequestId: number) => {
+  teamPlansLoading.value = true
+  try {
+    const res = await getTeamStudyPlans(teamRequestId)
+    teamPlans.value = (res as unknown as { data?: StudyPlanVO[] }).data ?? []
+  } catch (e) {
+    console.error(e)
+    teamPlans.value = []
+  } finally {
+    teamPlansLoading.value = false
+  }
+}
 
 const formatDate = (s?: string) => {
   if (!s) return '-'
@@ -126,6 +140,7 @@ const openDetail = async (item: TeamRequestVO) => {
   currentTeam.value = item
   screen.value = 'detail'
   members.value = []
+  teamPlans.value = []
   if (!item.id) return
   membersLoading.value = true
   try {
@@ -134,6 +149,7 @@ const openDetail = async (item: TeamRequestVO) => {
     if (vo) currentTeam.value = vo
     const memRes = await getTeamMembers(item.id)
     members.value = (memRes as unknown as { data?: TeamMemberVO[] }).data ?? []
+    await loadTeamPlans(item.id)
   } catch (e) {
     console.error(e)
   } finally {
@@ -141,7 +157,43 @@ const openDetail = async (item: TeamRequestVO) => {
   }
 }
 
+const parseKeyTimeNodes = (raw?: string) => {
+  if (!raw || !raw.trim()) return []
+  return raw
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((s) => {
+      const [title = '', datetime = ''] = s.split('|').map((x) => x.trim())
+      return { title, datetime }
+    })
+}
+
+const formatTime = (t?: string) => {
+  if (!t) return ''
+  return t.length >= 8 ? t.substring(0, 5) : t
+}
+
+const formatDateNoYear = (d?: string) => {
+  if (!d) return ''
+  const m = d.match(/^\d{4}-(\d{2}-\d{2})/)
+  return m ? m[1] : d
+}
+
+/** 研讨室标签：地点 + 日期 + 时段 */
+const meetingRoomLabel = (p: StudyPlanVO) => {
+  if (!p.classroomName) return ''
+  if (p.reservationDate && (p.reservationStartTime || p.reservationEndTime)) {
+    return `${p.classroomName} (${formatDateNoYear(p.reservationDate)} ${formatTime(p.reservationStartTime)}-${formatTime(p.reservationEndTime)})`
+  }
+  return p.classroomName
+}
+
 const goCreate = () => {
+  if (!canCreateCollab.value) {
+    showToast('仅组长可创建协作')
+    return
+  }
   screen.value = 'create'
   createForm.title = ''
   createForm.description = ''
@@ -242,7 +294,7 @@ onMounted(async () => {
     <template v-if="screen === 'list'">
       <van-nav-bar title="我的协作" left-arrow @click-left="goBack">
         <template #right>
-          <span class="header-right-btn" @click="goCreate">发起协作</span>
+          <span v-if="canCreateCollab" class="header-right-btn" @click="goCreate">发起协作</span>
         </template>
       </van-nav-bar>
 
@@ -270,7 +322,7 @@ onMounted(async () => {
             <van-icon name="friends-o" class="empty-icon" />
             <div class="empty-title">暂无协作</div>
             <div class="empty-desc">你还没有发起或参与任何协作，快来创建第一个协作吧</div>
-            <button type="button" class="empty-btn" @click="goCreate">发起协作</button>
+            <button v-if="canCreateCollab" type="button" class="empty-btn" @click="goCreate">发起协作</button>
           </div>
           <div v-else class="collab-list">
             <div
@@ -342,12 +394,30 @@ onMounted(async () => {
           </div>
         </div>
 
-        <div class="progress-section">
-          <div class="section-title">协作进度</div>
-          <div class="progress-bar-container">
-            <div class="progress-bar" :style="{ width: progressPercent + '%' }"></div>
+        <div class="plan-section">
+          <div class="section-title">学习计划</div>
+          <van-loading v-if="teamPlansLoading" size="24" vertical>加载计划...</van-loading>
+          <div v-else-if="teamPlans.length === 0" class="plan-empty">该小组暂无学习计划</div>
+          <div v-else class="plan-list">
+            <div v-for="p in teamPlans" :key="p.id" class="plan-card">
+              <div class="plan-title-row">
+                <div class="plan-title">{{ p.title }}</div>
+                <div class="plan-tag" :class="{ done: p.status === 2 }">{{ p.status === 2 ? '已完成' : '进行中' }}</div>
+              </div>
+              <div class="plan-sub">{{ p.planDate || '-' }}</div>
+              <div v-if="p.description" class="plan-desc">{{ p.description }}</div>
+              <div v-if="parseKeyTimeNodes(p.keyTimeNodes).length > 0" class="plan-nodes">
+                <div class="nodes-title">关键时间节点：</div>
+                <div v-for="(n, idx) in parseKeyTimeNodes(p.keyTimeNodes)" :key="idx" class="node-item">
+                  <div class="node-dot"></div>
+                    <div class="node-text">
+                      {{ n.title }}
+                      <span v-if="meetingRoomLabel(p)" class="meeting-room-tag">{{ meetingRoomLabel(p) }}</span>
+                    </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="progress-text">当前进度：{{ progressPercent }}%</div>
         </div>
       </div>
 
@@ -631,7 +701,7 @@ onMounted(async () => {
 }
 
 .member-section,
-.progress-section {
+.plan-section {
   background: #fff;
   padding: 20px;
   border-radius: 12px;
@@ -681,26 +751,108 @@ onMounted(async () => {
   text-align: center;
 }
 
-.progress-bar-container {
-  width: 100%;
-  height: 8px;
-  background: #f5f7fa;
-  border-radius: 4px;
-  overflow: hidden;
-  margin: 8px 0;
-}
-
-.progress-bar {
-  height: 100%;
-  background: #4a90e2;
-  border-radius: 4px;
-  transition: width 0.3s;
-}
-
-.progress-text {
+.plan-empty {
   font-size: 12px;
   color: #909399;
-  text-align: right;
+}
+
+.plan-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.plan-card {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.plan-title-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.plan-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.plan-tag {
+  font-size: 12px;
+  padding: 2px 10px;
+  border-radius: 12px;
+  background: #e8f4ff;
+  color: #4a90e2;
+  flex-shrink: 0;
+}
+
+.plan-tag.done {
+  background: #e8f5e9;
+  color: #4caf50;
+}
+
+.plan-sub {
+  font-size: 12px;
+  color: #909399;
+  margin-bottom: 6px;
+}
+
+.plan-desc {
+  font-size: 12px;
+  color: #333;
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+.plan-nodes .nodes-title {
+  font-size: 12px;
+  color: #333;
+  margin-bottom: 6px;
+}
+
+.node-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px dashed #e5e6eb;
+}
+
+.node-item:last-child {
+  border-bottom: none;
+}
+
+.node-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4a90e2;
+  flex-shrink: 0;
+}
+
+.node-text {
+  font-size: 13px;
+  color: #1a1a1a;
+  font-weight: 500;
+}
+
+.meeting-room-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  background-color: #e8f4ff;
+  color: #4a90e2;
+  border-radius: 4px;
+  font-size: 11px;
+  margin-left: 8px;
+  margin-top: 4px;
 }
 
 .action-bar {

@@ -247,6 +247,13 @@ CREATE TABLE IF NOT EXISTS `classroom_feedback` (
 ALTER TABLE `classroom_feedback` MODIFY COLUMN `env_score` TINYINT NULL;
 ALTER TABLE `classroom_feedback` MODIFY COLUMN `equip_score` TINYINT NULL;
 
+-- 学习计划表：添加关键时间节点字段（若已存在可忽略）
+SET @sp_kn_exists := (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'study_plan' AND COLUMN_NAME = 'key_time_nodes');
+SET @sp_kn_sql := IF(@sp_kn_exists = 0, 'ALTER TABLE `study_plan` ADD COLUMN `key_time_nodes` TEXT COMMENT ''关键时间节点''', 'SELECT 1');
+PREPARE sp_kn_stmt FROM @sp_kn_sql;
+EXECUTE sp_kn_stmt;
+DEALLOCATE PREPARE sp_kn_stmt;
+
 -- 组队需求表
 CREATE TABLE IF NOT EXISTS `team_request` (
     `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '需求ID',
@@ -347,6 +354,7 @@ CREATE TABLE IF NOT EXISTS `study_plan` (
     `plan_date` DATE COMMENT '计划日期',
     `start_time` TIME COMMENT '开始时间',
     `end_time` TIME COMMENT '结束时间',
+    `key_time_nodes` TEXT COMMENT '关键时间节点，格式：节点名|日期时间,节点名|日期时间',
     `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态: 0-已取消, 1-进行中, 2-已完成',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -602,17 +610,42 @@ ON DUPLICATE KEY UPDATE
   `type`            = VALUES(`type`),
   `content`         = VALUES(`content`);
 
--- 插入学习计划
-INSERT INTO `study_plan` (`id`, `team_request_id`, `user_id`, `reservation_id`, `title`, `plan_date`, `start_time`, `end_time`) VALUES
-(1, 1, 1, NULL, '第三章树和图的学习', DATE_ADD(CURDATE(), INTERVAL 2 DAY), '15:00:00', '17:00:00')
+-- 共享计划关联的研讨室预约（reservation_id 10、11 供 study_plan 使用，需在 study_plan 之前插入）
+INSERT INTO `reservation` (
+  `id`, `user_id`, `resource_type`, `classroom_id`, `reservation_date`,
+  `start_time`, `end_time`, `duration`, `purpose`, `status`
+) VALUES
+(10, 2, 1, 3, DATE_ADD(CURDATE(), INTERVAL 4 DAY), '14:00:00', '16:00:00', 120, '共享学习计划-研讨室', 1),
+(11, 6, 1, 4, DATE_ADD(CURDATE(), INTERVAL 5 DAY), '10:00:00', '12:00:00', 120, '共享学习计划-研讨室', 1)
+ON DUPLICATE KEY UPDATE
+  `user_id`          = VALUES(`user_id`),
+  `resource_type`    = VALUES(`resource_type`),
+  `classroom_id`     = VALUES(`classroom_id`),
+  `reservation_date` = VALUES(`reservation_date`),
+  `start_time`       = VALUES(`start_time`),
+  `end_time`         = VALUES(`end_time`),
+  `duration`         = VALUES(`duration`),
+  `purpose`          = VALUES(`purpose`),
+  `status`           = VALUES(`status`);
+
+-- 插入学习计划（含共享学习计划测试数据，key_time_nodes 格式：节点名|日期时间,节点名|日期时间）
+INSERT INTO `study_plan` (`id`, `team_request_id`, `user_id`, `reservation_id`, `title`, `description`, `plan_date`, `start_time`, `end_time`, `key_time_nodes`, `status`) VALUES
+(1, 1, 1, NULL, '第三章树和图的学习', NULL, DATE_ADD(CURDATE(), INTERVAL 2 DAY), '15:00:00', '17:00:00', NULL, 1),
+(2, 11, 2, 10, 'Java项目实战计划', '完成SpringBoot项目开发，包含用户管理、权限控制等核心模块', DATE_ADD(CURDATE(), INTERVAL 4 DAY), '14:00:00', '16:00:00', '需求分析完成|2026-03-15 18:00,核心功能开发|2026-03-25 18:00,项目测试验收|2026-04-08 18:00', 1),
+(3, 10, 1, NULL, '考研英语复习计划', '每天背单词+真题精读，互相打卡监督，目标上岸！', DATE_ADD(CURDATE(), INTERVAL 3 DAY), '09:00:00', '11:00:00', '单词一轮完成|2026-03-20 18:00,真题一刷完成|2026-04-05 18:00', 1),
+(4, 12, 6, 11, '数据库学习计划', '从SQL基础到索引与事务，一起刷题复盘，每周至少2次讨论', DATE_ADD(CURDATE(), INTERVAL 5 DAY), '10:00:00', '12:00:00', 'SQL基础完成|2026-03-18 18:00,索引与事务|2026-03-28 18:00', 1),
+(5, 10, 2, NULL, '高数真题刷题计划', '完成近10年考研数学真题刷题，整理错题本，针对性复习', DATE_ADD(CURDATE(), INTERVAL -10 DAY), '18:00:00', '20:00:00', '真题一刷|2026-02-25 18:00,错题整理|2026-03-05 18:00', 2)
 ON DUPLICATE KEY UPDATE
   `team_request_id` = VALUES(`team_request_id`),
   `user_id`         = VALUES(`user_id`),
   `reservation_id`  = VALUES(`reservation_id`),
   `title`           = VALUES(`title`),
+  `description`     = VALUES(`description`),
   `plan_date`       = VALUES(`plan_date`),
   `start_time`      = VALUES(`start_time`),
-  `end_time`        = VALUES(`end_time`);
+  `end_time`        = VALUES(`end_time`),
+  `key_time_nodes`  = VALUES(`key_time_nodes`),
+  `status`          = VALUES(`status`);
 
 -- 插入通知消息
 INSERT INTO `notification` (`id`, `user_id`, `type`, `title`, `content`, `related_id`) VALUES

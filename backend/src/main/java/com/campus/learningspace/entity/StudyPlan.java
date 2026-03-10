@@ -28,6 +28,9 @@ public class StudyPlan {
 
     private LocalTime endTime;
 
+    /** 关键时间节点，格式：节点名|日期时间,节点名|日期时间 */
+    private String keyTimeNodes;
+
     private Integer status;
 
     @TableField(fill = FieldFill.INSERT)

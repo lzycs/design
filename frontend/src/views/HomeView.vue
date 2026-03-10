@@ -31,6 +31,10 @@ const goCollaboration = () => {
   router.push('/collaboration')
 }
 
+const goSharedPlan = () => {
+  router.push('/shared-plan')
+}
+
 const goMine = () => {
   router.push('/profile')
 }
@@ -66,7 +70,7 @@ onMounted(() => {
           <van-icon name="friends-o" class="func-icon" />
           <p>组队匹配</p>
         </div>
-        <div class="function-item">
+        <div class="function-item" @click="goSharedPlan">
           <van-icon name="notes-o" class="func-icon" />
           <p>共享计划</p>
         </div>

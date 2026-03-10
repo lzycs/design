@@ -74,6 +74,11 @@ const router = createRouter({
       name: 'feedback',
       component: () => import('../views/FeedbackView.vue'),
     },
+    {
+      path: '/shared-plan',
+      name: 'shared-plan',
+      component: () => import('../views/SharedPlanView.vue'),
+    },
   ],
 })
 
