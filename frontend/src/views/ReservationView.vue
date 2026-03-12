@@ -337,6 +337,11 @@ const finishScan = async () => {
   }
 }
 
+const goRoomCollab = (item: Reservation) => {
+  if (!item.id || item.resourceType !== 1) return
+  router.push(`/reservation/room-collab/${item.id}`)
+}
+
 onMounted(() => {
   loadAll()
 })
@@ -626,7 +631,11 @@ onMounted(() => {
               </div>
             </div>
             <div class="booking-actions">
-              <button class="action-btn btn-secondary">
+              <button
+                v-if="item.resourceType === 1"
+                class="action-btn btn-secondary"
+                @click.stop="goRoomCollab(item)"
+              >
                 查看详情
               </button>
             </div>

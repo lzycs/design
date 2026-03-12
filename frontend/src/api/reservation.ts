@@ -39,6 +39,10 @@ export const getUserReservations = (userId: number) => {
   return request.get<any, Result<Reservation[]>>(`/reservation/user/${userId}`)
 }
 
+export const getReservationById = (id: number) => {
+  return request.get<any, Result<Reservation>>(`/reservation/${id}`)
+}
+
 export interface ClassroomSlotStatus {
   label: string
   startTime: string

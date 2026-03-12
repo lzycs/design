@@ -40,6 +40,10 @@ export const getSharedPlans = (userId: number) => {
   return request.get<unknown, { data?: StudyPlanVO[] }>(`/study-plan/shared/${userId}`)
 }
 
+export const getPlansByReservation = (reservationId: number) => {
+  return request.get<unknown, { data?: StudyPlanVO[] }>(`/study-plan/by-reservation/${reservationId}`)
+}
+
 export const getTeamStudyPlans = (teamRequestId: number) => {
   return request.get<unknown, { data?: StudyPlanVO[] }>(`/study-plan/team/${teamRequestId}`)
 }

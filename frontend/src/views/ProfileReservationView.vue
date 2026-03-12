@@ -100,6 +100,11 @@ const openReservationDetail = (item: Reservation) => {
   showReservationDetail.value = true
 }
 
+const goRoomCollab = (item: Reservation) => {
+  if (!item.id) return
+  router.push(`/reservation/room-collab/${item.id}`)
+}
+
 const cancelReservation = async (item: Reservation) => {
   const ok = await showConfirmDialog({
     title: '取消预约',
@@ -301,7 +306,13 @@ onMounted(async () => {
                 </div>
               </div>
               <div class="booking-actions">
-                <button class="action-btn btn-secondary">查看详情</button>
+                <button
+                  v-if="item.resourceType === 1"
+                  class="action-btn btn-secondary"
+                  @click.stop="goRoomCollab(item)"
+                >
+                  查看详情
+                </button>
               </div>
             </div>
           </div>

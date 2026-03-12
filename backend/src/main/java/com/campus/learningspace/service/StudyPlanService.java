@@ -37,6 +37,11 @@ public class StudyPlanService extends ServiceImpl<StudyPlanMapper, StudyPlan> {
         return baseMapper.selectPlansByTeam(teamRequestId);
     }
 
+    /** 按预约查询学习计划 */
+    public List<StudyPlanVO> getPlansByReservation(Long reservationId) {
+        return baseMapper.selectPlansByReservation(reservationId);
+    }
+
     /**
      * 创建学习计划，可选同时创建研讨室预约并关联
      */

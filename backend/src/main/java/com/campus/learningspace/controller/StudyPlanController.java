@@ -40,6 +40,12 @@ public class StudyPlanController {
         return Result.success(studyPlanService.getPlansByTeam(teamRequestId));
     }
 
+    /** 按预约查询学习计划 */
+    @GetMapping("/by-reservation/{reservationId}")
+    public Result<List<StudyPlanVO>> getPlansByReservation(@PathVariable Long reservationId) {
+        return Result.success(studyPlanService.getPlansByReservation(reservationId));
+    }
+
     /** 创建学习计划，可选同时创建研讨室预约并关联 */
     @PostMapping("/create-with-reservation")
     public Result<StudyPlan> createWithReservation(@RequestBody CreateStudyPlanDTO dto) {
