@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { showToast, showConfirmDialog } from 'vant'
 import request from '@/utils/request'
+import { getTeamBadge } from '@/api/team'
 
 interface User {
   id?: number
@@ -90,6 +91,18 @@ const registerForm = ref({
 })
 
 const isLoggedIn = computed(() => !!storedUser.value)
+const teamBadgeTotal = ref(0)
+
+const loadTeamBadge = async () => {
+  if (!storedUser.value?.id) return
+  try {
+    const res = await getTeamBadge(storedUser.value.id)
+    const d = (res as unknown as { data?: { total: number } }).data
+    teamBadgeTotal.value = d?.total ?? 0
+  } catch {
+    teamBadgeTotal.value = 0
+  }
+}
 
 const loadFromStorage = () => {
   const raw = localStorage.getItem('currentUser')
@@ -193,6 +206,7 @@ onMounted(async () => {
   loadFromStorage()
   if (storedUser.value?.id) {
     await loadUserData()
+    await loadTeamBadge()
   }
 })
 </script>
@@ -268,6 +282,7 @@ onMounted(async () => {
                 <div class="menu-text">我的协作</div>
               </div>
               <div class="menu-right">
+                <div v-if="teamBadgeTotal > 0" class="menu-badge">{{ teamBadgeTotal }}</div>
                 <van-icon name="arrow" class="menu-arrow" />
               </div>
             </div>

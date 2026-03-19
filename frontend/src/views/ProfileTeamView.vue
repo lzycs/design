@@ -7,8 +7,13 @@ import {
   getTeamMembers,
   createTeamRequest,
   updateTeamStatus,
+  getPendingApplications,
+  getApplicationResults,
+  reviewApplication,
+  getTeamBadge,
   type TeamRequestVO,
   type TeamMemberVO,
+  type TeamJoinApplicationVO,
 } from '@/api/team'
 import { getTeamStudyPlans, type StudyPlanVO } from '@/api/studyPlan'
 import { showToast } from 'vant'
@@ -22,12 +27,21 @@ const router = useRouter()
 const storedUser = ref<User | null>(null)
 const teams = ref<TeamRequestVO[]>([])
 const loading = ref(false)
-const screen = ref<'list' | 'detail' | 'create'>('list')
+const screen = ref<'list' | 'detail' | 'create' | 'review'>('list')
 const currentTeam = ref<TeamRequestVO | null>(null)
 const members = ref<TeamMemberVO[]>([])
 const membersLoading = ref(false)
 const teamPlans = ref<StudyPlanVO[]>([])
 const teamPlansLoading = ref(false)
+
+// 红点 & 审核相关
+const badgePending = ref(0)  // 组长：待审核申请数
+const badgeResult = ref(0)   // 成员：有审核结果数
+const badgeTotal = computed(() => badgePending.value + badgeResult.value)
+const pendingApplications = ref<TeamJoinApplicationVO[]>([])
+const resultApplications = ref<TeamJoinApplicationVO[]>([])
+const reviewLoading = ref(false)
+const reviewSubmitting = ref<Record<number, boolean>>({})
 
 /** 筛选：全部 / 我发起的 / 我参与的 / 已完成 */
 const filterTab = ref<'all' | 'initiated' | 'joined' | 'done'>('all')
@@ -126,8 +140,60 @@ const loadTeams = async () => {
   }
 }
 
+const loadBadge = async () => {
+  if (!storedUser.value?.id) return
+  try {
+    const res = await getTeamBadge(storedUser.value.id)
+    const d = (res as unknown as { data?: { pendingCount: number; resultCount: number } }).data
+    badgePending.value = d?.pendingCount ?? 0
+    badgeResult.value = d?.resultCount ?? 0
+  } catch {
+    badgePending.value = 0
+    badgeResult.value = 0
+  }
+}
+
+const openReview = async () => {
+  screen.value = 'review'
+  reviewLoading.value = true
+  try {
+    if (!storedUser.value?.id) return
+    const userId = storedUser.value.id
+    const [pendingRes, resultRes] = await Promise.all([
+      getPendingApplications(userId),
+      getApplicationResults(userId),
+    ])
+    pendingApplications.value = (pendingRes as unknown as { data?: TeamJoinApplicationVO[] }).data ?? []
+    resultApplications.value = (resultRes as unknown as { data?: TeamJoinApplicationVO[] }).data ?? []
+  } catch (e) {
+    console.error(e)
+  } finally {
+    reviewLoading.value = false
+  }
+}
+
+const handleReview = async (app: TeamJoinApplicationVO, approve: boolean) => {
+  if (!app.id || !storedUser.value?.id) return
+  reviewSubmitting.value[app.id] = true
+  try {
+    await reviewApplication(app.id, storedUser.value.id, approve)
+    showToast(approve ? '已通过申请' : '已拒绝申请')
+    // 从待审核列表移除
+    pendingApplications.value = pendingApplications.value.filter((a) => a.id !== app.id)
+    // 刷新红点
+    await loadBadge()
+  } catch (e) {
+    console.error(e)
+    showToast('操作失败，请稍后重试')
+  } finally {
+    if (app.id) delete reviewSubmitting.value[app.id]
+  }
+}
+
 const goBack = () => {
-  if (screen.value === 'detail' || screen.value === 'create') {
+  if (screen.value === 'review') {
+    screen.value = 'list'
+  } else if (screen.value === 'detail' || screen.value === 'create') {
     screen.value = 'list'
     currentTeam.value = null
     members.value = []
@@ -284,7 +350,10 @@ const isLeader = computed(() => {
 
 onMounted(async () => {
   loadFromStorage()
-  if (storedUser.value?.id) await loadTeams()
+  if (storedUser.value?.id) {
+    await loadTeams()
+    await loadBadge()
+  }
 })
 </script>
 
@@ -294,7 +363,13 @@ onMounted(async () => {
     <template v-if="screen === 'list'">
       <van-nav-bar title="我的协作" left-arrow @click-left="goBack">
         <template #right>
-          <span v-if="canCreateCollab" class="header-right-btn" @click="goCreate">发起协作</span>
+          <div class="nav-right-wrap">
+            <span v-if="canCreateCollab" class="header-right-btn" @click="goCreate">发起协作</span>
+            <div class="bell-wrap" @click="openReview">
+              <van-icon name="bell" class="bell-icon" />
+              <span v-if="badgeTotal > 0" class="bell-dot">{{ badgeTotal > 99 ? '99+' : badgeTotal }}</span>
+            </div>
+          </div>
         </template>
       </van-nav-bar>
 
@@ -478,6 +553,90 @@ onMounted(async () => {
             提交
           </button>
         </div>
+      </div>
+    </template>
+
+    <!-- 审核页 -->
+    <template v-else-if="screen === 'review'">
+      <van-nav-bar title="加入申请审核" left-arrow @click-left="goBack" />
+
+      <div class="content-area review-content">
+        <van-loading v-if="reviewLoading" class="loading-wrap" vertical>加载中...</van-loading>
+
+        <template v-else>
+          <!-- 组长：待审核申请 -->
+          <div v-if="pendingApplications.length > 0" class="review-section">
+            <div class="review-section-title">待审核申请 ({{ pendingApplications.length }})</div>
+            <div
+              v-for="app in pendingApplications"
+              :key="app.id"
+              class="review-card"
+            >
+              <div class="review-card-header">
+                <div class="review-applicant">
+                  <van-icon name="user-o" class="review-user-icon" />
+                  <span class="review-applicant-name">{{ app.applicantName ?? '未知用户' }}</span>
+                </div>
+                <div class="review-team-tag">{{ app.teamTitle }}</div>
+              </div>
+              <div class="review-time">申请时间：{{ formatDate(app.createTime) }}</div>
+              <div v-if="app.reason" class="review-reason">
+                <span class="review-reason-label">申请理由：</span>{{ app.reason }}
+              </div>
+              <div v-else class="review-reason review-reason-empty">未填写申请理由</div>
+              <div class="review-actions">
+                <button
+                  class="review-btn review-btn-reject"
+                  :disabled="reviewSubmitting[app.id!]"
+                  @click="handleReview(app, false)"
+                >
+                  拒绝
+                </button>
+                <button
+                  class="review-btn review-btn-approve"
+                  :disabled="reviewSubmitting[app.id!]"
+                  @click="handleReview(app, true)"
+                >
+                  通过
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 成员：我的申请结果 -->
+          <div v-if="resultApplications.length > 0" class="review-section">
+            <div class="review-section-title">我的申请结果</div>
+            <div
+              v-for="app in resultApplications"
+              :key="app.id"
+              class="review-card result-card"
+            >
+              <div class="review-card-header">
+                <div class="review-team-tag">{{ app.teamTitle }}</div>
+                <div
+                  class="result-status"
+                  :class="app.status === 1 ? 'result-approved' : 'result-rejected'"
+                >
+                  {{ app.status === 1 ? '已通过' : '已拒绝' }}
+                </div>
+              </div>
+              <div class="review-time">申请时间：{{ formatDate(app.createTime) }}</div>
+              <div v-if="app.reason" class="review-reason">
+                <span class="review-reason-label">申请理由：</span>{{ app.reason }}
+              </div>
+            </div>
+          </div>
+
+          <!-- 空状态 -->
+          <div
+            v-if="pendingApplications.length === 0 && resultApplications.length === 0"
+            class="review-empty"
+          >
+            <van-icon name="checked" class="review-empty-icon" />
+            <div class="review-empty-title">暂无申请消息</div>
+            <div class="review-empty-desc">所有申请已处理完毕，目前没有新的消息</div>
+          </div>
+        </template>
       </div>
     </template>
   </div>
@@ -929,5 +1088,216 @@ onMounted(async () => {
 /* 发起协作页：底部留白，避免提交按钮被 tabbar 遮挡 */
 .create-content {
   padding-bottom: 130px;
+}
+
+/* 导航栏右侧：铃铛 + 发起协作 */
+.nav-right-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bell-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+}
+
+.bell-icon {
+  font-size: 22px;
+  color: #1a1a1a;
+}
+
+.bell-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: #f56c6c;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+/* 审核页 */
+.review-content {
+  padding-bottom: 40px;
+}
+
+.review-section {
+  margin-bottom: 16px;
+}
+
+.review-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #909399;
+  padding: 8px 0 10px;
+  letter-spacing: 0.5px;
+}
+
+.review-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 16px;
+  margin-bottom: 10px;
+}
+
+.review-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.review-applicant {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.review-user-icon {
+  font-size: 18px;
+  color: #4a90e2;
+}
+
+.review-applicant-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.review-team-tag {
+  padding: 2px 10px;
+  border-radius: 12px;
+  background: #e8f4ff;
+  color: #4a90e2;
+  font-size: 12px;
+  font-weight: 500;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.review-time {
+  font-size: 12px;
+  color: #909399;
+  margin-bottom: 8px;
+}
+
+.review-reason {
+  font-size: 13px;
+  color: #333;
+  line-height: 1.5;
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+}
+
+.review-reason-label {
+  color: #909399;
+  font-weight: 500;
+}
+
+.review-reason-empty {
+  color: #c0c4cc;
+  font-style: italic;
+}
+
+.review-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.review-btn {
+  flex: 1;
+  padding: 9px 0;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.review-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.review-btn-reject {
+  background: #f5f7fa;
+  color: #f56c6c;
+  border: 1px solid #fde2e2;
+}
+
+.review-btn-approve {
+  background: #4a90e2;
+  color: #fff;
+}
+
+/* 成员：申请结果卡片 */
+.result-card .review-card-header {
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.result-status {
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.result-approved {
+  background: #e8f5e9;
+  color: #4caf50;
+}
+
+.result-rejected {
+  background: #fde2e2;
+  color: #f56c6c;
+}
+
+/* 空状态 */
+.review-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.review-empty-icon {
+  font-size: 60px;
+  color: #4caf50;
+  margin-bottom: 16px;
+}
+
+.review-empty-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+}
+
+.review-empty-desc {
+  font-size: 14px;
+  color: #909399;
 }
 </style>

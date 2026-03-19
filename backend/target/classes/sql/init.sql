@@ -657,4 +657,34 @@ ON DUPLICATE KEY UPDATE
   `content`     = VALUES(`content`),
   `related_id`  = VALUES(`related_id`);
 
-SELECT '测试数据插入完成。' AS result;
+-- 小组加入申请表
+CREATE TABLE IF NOT EXISTS `team_join_application` (
+    `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '申请ID',
+    `team_request_id` BIGINT NOT NULL COMMENT '申请加入的小组ID',
+    `applicant_id` BIGINT NOT NULL COMMENT '申请人用户ID',
+    `reason` TEXT COMMENT '申请理由',
+    `status` TINYINT NOT NULL DEFAULT 0 COMMENT '状态: 0-待审核, 1-已通过, 2-已拒绝',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '删除标记: 0-未删除, 1-已删除',
+    INDEX idx_team_request_id (`team_request_id`),
+    INDEX idx_applicant_id (`applicant_id`),
+    INDEX idx_status (`status`),
+    FOREIGN KEY (`team_request_id`) REFERENCES `team_request`(`id`),
+    FOREIGN KEY (`applicant_id`) REFERENCES `user`(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='小组加入申请表';
+
+-- 插入加入申请测试数据
+-- 王五(id=6)申请加入「项目需求评审」(id=1，组长=张三 id=1)
+-- 王老师(id=3)申请加入「接口联调测试」(id=3，组长=李四 id=2)
+INSERT INTO `team_join_application` (`id`, `team_request_id`, `applicant_id`, `reason`, `status`) VALUES
+(1, 1, 6, '我对项目需求分析很感兴趣，希望能加入小组一起学习', 0),
+(2, 3, 3, '我是后端开发，有丰富的接口联调经验，希望参与', 0),
+(3, 3, 4, '我想学习接口联调的相关知识，请批准我加入', 0)
+ON DUPLICATE KEY UPDATE
+  `team_request_id` = VALUES(`team_request_id`),
+  `applicant_id`    = VALUES(`applicant_id`),
+  `reason`          = VALUES(`reason`),
+  `status`          = VALUES(`status`);
+
+SELECT '测试数据插入完成。' AS result; 

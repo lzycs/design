@@ -118,4 +118,64 @@ export const sendTeamMessage = (
   )
 }
 
+// ===== 加入申请相关 =====
+
+export interface TeamJoinApplication {
+  id?: number
+  teamRequestId?: number
+  applicantId?: number
+  reason?: string
+  status?: number // 0-待审核 1-已通过 2-已拒绝
+  createTime?: string
+}
+
+export interface TeamJoinApplicationVO {
+  id?: number
+  teamRequestId?: number
+  applicantId?: number
+  reason?: string
+  status?: number
+  createTime?: string
+  applicantName?: string
+  teamTitle?: string
+}
+
+/** 提交加入小组申请 */
+export const applyToJoinTeam = (teamRequestId: number, applicantId: number, reason: string) => {
+  return request.post<unknown, Result<boolean>>(`/team/request/${teamRequestId}/apply`, {
+    applicantId,
+    reason,
+  })
+}
+
+/** 组长审核申请：approve=true 通过，false 拒绝 */
+export const reviewApplication = (applicationId: number, leaderId: number, approve: boolean) => {
+  return request.post<unknown, Result<boolean>>(`/team/application/${applicationId}/review`, {
+    leaderId,
+    approve,
+  })
+}
+
+/** 获取组长的待审核申请列表 */
+export const getPendingApplications = (leaderId: number) => {
+  return request.get<unknown, Result<TeamJoinApplicationVO[]>>('/team/applications/pending', {
+    params: { leaderId },
+  })
+}
+
+/** 获取成员的申请审核结果列表 */
+export const getApplicationResults = (applicantId: number) => {
+  return request.get<unknown, Result<TeamJoinApplicationVO[]>>('/team/applications/results', {
+    params: { applicantId },
+  })
+}
+
+/** 获取红点数量 { pendingCount, resultCount, total } */
+export const getTeamBadge = (userId: number) => {
+  return request.get<unknown, Result<{ pendingCount: number; resultCount: number; total: number }>>(
+    '/team/badge',
+    { params: { userId } },
+  )
+}
+
 
