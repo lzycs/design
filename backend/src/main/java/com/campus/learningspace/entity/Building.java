@@ -13,6 +13,11 @@ public class Building {
 
     private String name;
 
+    /**
+     * 楼栋号（用于后台基础数据维护）
+     */
+    private String buildingNumber;
+
     private String address;
 
     private Integer floorCount;

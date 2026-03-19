@@ -7,6 +7,12 @@ const request = axios.create({
 
 request.interceptors.request.use(
   config => {
+    const adminToken = localStorage.getItem('adminToken')
+    // 管理端接口：只对 /admin/* 生效
+    if (adminToken && config.url && config.url.startsWith('/admin')) {
+      config.headers = config.headers || {}
+      config.headers['X-Admin-Token'] = adminToken
+    }
     return config
   },
   error => {

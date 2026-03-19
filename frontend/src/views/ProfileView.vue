@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { showToast, showConfirmDialog } from 'vant'
 import request from '@/utils/request'
 import { getTeamBadge } from '@/api/team'
@@ -65,6 +66,8 @@ interface StudyPlan {
 }
 
 const activeTab = ref<'login' | 'register'>('login')
+const router = useRouter()
+
 const loading = ref(false)
 const dataLoading = ref(false)
 
@@ -156,7 +159,14 @@ const handleLogin = async () => {
       showToast(res.message || '登录失败')
       return
     }
-    saveToStorage(res.data)
+    const user = res.data as User
+    // 管理员角色（3=超级管理员, 4=维修人员, 5=评论审核员）自动跳转管理端
+    if (user.role === 3 || user.role === 4 || user.role === 5) {
+      showToast('检测到管理员账号，正在跳转管理端...')
+      await router.push('/admin/login')
+      return
+    }
+    saveToStorage(user)
     showToast('登录成功')
     await loadUserData()
   } catch (e) {
@@ -314,6 +324,9 @@ onMounted(async () => {
               >
                 登录
               </van-button>
+              <div class="admin-entry" @click="$router.push('/admin/login')">
+                管理员入口 →
+              </div>
             </div>
           </van-tab>
           <van-tab title="注册" name="register">
@@ -464,6 +477,15 @@ onMounted(async () => {
 
 .form-button {
   margin-top: 16px;
+}
+
+.admin-entry {
+  margin-top: 16px;
+  text-align: center;
+  font-size: 13px;
+  color: #4a90e2;
+  cursor: pointer;
+  padding: 8px 0;
 }
 
 .profile-actions {

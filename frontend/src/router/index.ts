@@ -84,6 +84,41 @@ const router = createRouter({
       name: 'shared-plan',
       component: () => import('../views/SharedPlanView.vue'),
     },
+    {
+      path: '/admin/login',
+      name: 'admin-login',
+      component: () => import('../views/admin/AdminLoginView.vue'),
+    },
+    {
+      path: '/admin',
+      name: 'admin',
+      component: () => import('../views/admin/AdminAppView.vue'),
+    },
+    {
+      path: '/admin/repairs',
+      name: 'admin-repairs',
+      component: () => import('../views/admin/AdminAppView.vue'),
+    },
+    {
+      path: '/admin/reviews',
+      name: 'admin-reviews',
+      component: () => import('../views/admin/AdminAppView.vue'),
+    },
+    {
+      path: '/admin/classrooms',
+      name: 'admin-classrooms',
+      component: () => import('../views/admin/AdminAppView.vue'),
+    },
+    {
+      path: '/admin/courses',
+      name: 'admin-courses',
+      component: () => import('../views/admin/AdminAppView.vue'),
+    },
+    {
+      path: '/admin/buildings',
+      name: 'admin-buildings',
+      component: () => import('../views/admin/AdminAppView.vue'),
+    },
   ],
 })
 

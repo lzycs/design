@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { RouterView, useRoute } from 'vue-router'
-import { ref, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 const route = useRoute()
 const active = ref(0)
+
+const isAdminRoute = computed(() => route.path.startsWith('/admin'))
 
 watch(
   () => ({ path: route.path, only: route.query.only }),
@@ -32,7 +34,7 @@ watch(
 <template>
   <div class="app-container">
     <RouterView />
-    <van-tabbar v-model="active">
+    <van-tabbar v-if="!isAdminRoute" v-model="active">
       <van-tabbar-item icon="home-o" to="/">首页</van-tabbar-item>
       <van-tabbar-item icon="calendar-o" to="/reservation">预约</van-tabbar-item>
       <van-tabbar-item icon="friends-o" to="/collaboration">协作</van-tabbar-item>
@@ -44,8 +46,10 @@ watch(
 
 <style scoped>
 .app-container {
+  width: 100%;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 </style>

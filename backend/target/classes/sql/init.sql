@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS `user` (
     `student_id` VARCHAR(50) UNIQUE COMMENT '学号',
     `email` VARCHAR(255) COMMENT '邮箱',
     `phone` VARCHAR(50) COMMENT '手机号',
-    `role` TINYINT NOT NULL DEFAULT 1 COMMENT '角色: 1-学生, 2-教师, 3-管理员, 4-后勤人员',
+    `role` TINYINT NOT NULL DEFAULT 1 COMMENT '角色: 1-学生, 2-教师, 3-最大权限管理员, 4-维修人员, 5-审核评论员',
     `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态: 0-禁用, 1-正常',
     `weekly_reservation_count` INT NOT NULL DEFAULT 0 COMMENT '本周预约次数',
     `violation_count` INT NOT NULL DEFAULT 0 COMMENT '违约次数',
@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS `user` (
 CREATE TABLE IF NOT EXISTS `building` (
     `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '教学楼ID',
     `name` VARCHAR(100) NOT NULL COMMENT '教学楼名称 (如：第一教学楼)',
+    `building_number` VARCHAR(50) DEFAULT NULL COMMENT '楼栋号',
     `address` VARCHAR(255) COMMENT '地址',
     `floor_count` INT NOT NULL COMMENT '楼层数',
     `description` TEXT COMMENT '描述',
@@ -38,6 +39,23 @@ CREATE TABLE IF NOT EXISTS `building` (
     `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '删除标记: 0-未删除, 1-已删除',
     UNIQUE KEY uk_building_name (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='教学楼表';
+
+-- 兼容历史库：补齐 building_number 列（如果已存在 building 表但缺失该列）
+SET @__bn_exists := (
+  SELECT COUNT(*)
+  FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'building'
+    AND COLUMN_NAME = 'building_number'
+);
+SET @__bn_sql := IF(
+  @__bn_exists = 0,
+  'ALTER TABLE `building` ADD COLUMN `building_number` VARCHAR(50) DEFAULT NULL COMMENT ''楼栋号''',
+  'SELECT 1'
+);
+PREPARE __bn_stmt FROM @__bn_sql;
+EXECUTE __bn_stmt;
+DEALLOCATE PREPARE __bn_stmt;
 
 -- 图书馆表
 CREATE TABLE IF NOT EXISTS `library` (
@@ -386,6 +404,93 @@ CREATE TABLE IF NOT EXISTS `notification` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='通知消息表';
 
 -- ----------------------------
+-- 管理后台权限体系（角色/权限/菜单）
+-- ----------------------------
+
+-- 管理角色表
+CREATE TABLE IF NOT EXISTS `admin_role` (
+    `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '角色ID',
+    `name` VARCHAR(100) NOT NULL COMMENT '角色名称',
+    `role_type` TINYINT NOT NULL COMMENT '角色类型: 1-最大权限管理员, 2-审核评论员, 3-维修人员',
+    `user_role` TINYINT NOT NULL COMMENT '对应 user.role 值（用于登录匹配）',
+    `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '删除标记: 0-未删除, 1-已删除',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    UNIQUE KEY uk_admin_role_type (`role_type`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='管理角色表';
+
+-- 权限表
+CREATE TABLE IF NOT EXISTS `admin_permission` (
+    `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '权限ID',
+    `perm_key` VARCHAR(100) NOT NULL COMMENT '权限Key（用于校验）',
+    `name` VARCHAR(100) NOT NULL COMMENT '权限名称',
+    `description` TEXT COMMENT '权限描述',
+    `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '删除标记: 0-未删除, 1-已删除',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    UNIQUE KEY uk_admin_permission_key (`perm_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='管理权限表';
+
+-- 角色-权限关联表
+CREATE TABLE IF NOT EXISTS `admin_role_permission` (
+    `role_id` BIGINT NOT NULL COMMENT '角色ID',
+    `permission_id` BIGINT NOT NULL COMMENT '权限ID',
+    `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '删除标记: 0-未删除, 1-已删除',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    PRIMARY KEY (`role_id`, `permission_id`),
+    INDEX idx_role_id (`role_id`),
+    INDEX idx_permission_id (`permission_id`),
+    FOREIGN KEY (`role_id`) REFERENCES `admin_role`(`id`),
+    FOREIGN KEY (`permission_id`) REFERENCES `admin_permission`(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色-权限关联表';
+
+-- 菜单表（前端菜单按权限过滤）
+CREATE TABLE IF NOT EXISTS `admin_menu` (
+    `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '菜单ID',
+    `title` VARCHAR(100) NOT NULL COMMENT '菜单标题',
+    `path` VARCHAR(200) NOT NULL COMMENT '前端路由路径',
+    `permission_key` VARCHAR(100) DEFAULT NULL COMMENT '所需权限Key；为空表示所有管理员可见',
+    `sort_order` INT NOT NULL DEFAULT 0 COMMENT '排序号',
+    `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '删除标记: 0-未删除, 1-已删除',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    UNIQUE KEY uk_admin_menu_path (`path`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='管理菜单表';
+
+-- 操作日志表
+CREATE TABLE IF NOT EXISTS `admin_operation_log` (
+    `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '日志ID',
+    `admin_user_id` BIGINT NOT NULL COMMENT '操作管理员用户ID',
+    `admin_role_id` BIGINT NOT NULL COMMENT '管理员角色ID',
+    `action` VARCHAR(100) NOT NULL COMMENT '操作动作',
+    `detail` TEXT COMMENT '操作详情（JSON/文本）',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    INDEX idx_admin_user_id (`admin_user_id`),
+    INDEX idx_admin_role_id (`admin_role_id`),
+    INDEX idx_create_time (`create_time`),
+    FOREIGN KEY (`admin_user_id`) REFERENCES `user`(`id`),
+    FOREIGN KEY (`admin_role_id`) REFERENCES `admin_role`(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='管理操作日志表';
+
+-- 兼容历史库：如 admin_operation_log 已存在，补齐 update_time 字段
+SET @__aol_ut_exists := (
+  SELECT COUNT(*)
+  FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'admin_operation_log'
+    AND COLUMN_NAME = 'update_time'
+);
+SET @__aol_ut_sql := IF(
+  @__aol_ut_exists = 0,
+  'ALTER TABLE `admin_operation_log` ADD COLUMN `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT ''更新时间''',
+  'SELECT 1'
+);
+PREPARE __aol_ut_stmt FROM @__aol_ut_sql;
+EXECUTE __aol_ut_stmt;
+DEALLOCATE PREPARE __aol_ut_stmt;
+
+-- ----------------------------
 -- 插入测试数据
 -- ----------------------------
 
@@ -396,12 +501,13 @@ INSERT IGNORE INTO `user` (`username`, `password`, `real_name`, `student_id`, `e
 ('wanglaoshi', '123456', '王老师', NULL, 'wang@edu.com', '13800138003', 2, 1),
 ('admin', '123456', '管理员', NULL, 'admin@system.com', '13800138000', 3, 1),
 ('zhangshifu', '123456', '张师傅', NULL, NULL, '13800138000', 4, 1),
+('commentadmin', '123456', '评论审核员', NULL, 'commentadmin@system.com', '13800138077', 5, 1),
 ('wangwu', '123456', '王五', NULL, NULL, '13800138006', 1, 1);
 
 -- 插入教学楼数据
-INSERT IGNORE INTO `building` (`name`, `address`, `floor_count`, `description`, `latitude`, `longitude`) VALUES
-('第一教学楼', '学校东区主路1号', 5, '主教学楼，设施较新。', 39.904989, 116.405285),
-('第二教学楼', '学校西区科技路2号', 6, '以理工科实验室为主。', 39.905500, 116.406000);
+INSERT IGNORE INTO `building` (`name`, `building_number`, `address`, `floor_count`, `description`, `latitude`, `longitude`) VALUES
+('第一教学楼', 'J1', '学校东区主路1号', 5, '主教学楼，设施较新。', 39.904989, 116.405285),
+('第二教学楼', 'J2', '学校西区科技路2号', 6, '以理工科实验室为主。', 39.905500, 116.406000);
 
 -- 插入图书馆数据
 INSERT IGNORE INTO `library` (`name`, `address`, `floor_count`, `description`, `latitude`, `longitude`, `opening_hours`) VALUES
@@ -522,7 +628,8 @@ ON DUPLICATE KEY UPDATE
 INSERT INTO `repair` (`id`, `user_id`, `resource_type`, `classroom_id`, `title`, `description`, `type`, `priority`, `status`, `handler_id`, `handle_time`, `create_time`) VALUES
 (1, 1, 1, 1, '第一教学楼-101', '教室投影仪无法正常开启，开机后屏幕显示蓝屏，影响正常教学使用，请尽快处理。', 4, 2, 1, NULL, NULL, '2026-03-05 09:15:00'),
 (2, 1, 1, 3, '第一教学楼-201A', '研讨室其中一把椅子的靠背松动，存在安全隐患，需要加固或更换。', 3, 2, 2, 5, NULL, '2026-03-04 16:30:00'),
-(3, 1, 1, 4, '第二教学楼-202B', '教室空调遥控器失灵，无法调节温度，现在天气较热，影响学习环境。', 2, 2, 3, 5, '2026-03-03 17:45:00', '2026-03-03 14:20:00')
+(3, 1, 1, 4, '第二教学楼-202B', '教室空调遥控器失灵，无法调节温度，现在天气较热，影响学习环境。', 2, 2, 3, 5, '2026-03-03 17:45:00', '2026-03-03 14:20:00'),
+(4, 1, 1, 2, '第一教学楼-102', '教室白板划痕严重，影响教学展示，需要重新处理或更换。', 3, 2, 4, 5, '2026-03-02 15:20:00', '2026-03-02 10:10:00')
 ON DUPLICATE KEY UPDATE
   `user_id`       = VALUES(`user_id`),
   `resource_type` = VALUES(`resource_type`),
@@ -537,8 +644,10 @@ ON DUPLICATE KEY UPDATE
   `create_time`   = VALUES(`create_time`);
 
 -- 插入评价
-INSERT INTO `review` (`id`, `user_id`, `resource_type`, `classroom_id`, `reservation_id`, `score`, `content`, `tags`) VALUES
-(1, 1, 1, 3, 1, 5, '研讨室很安静，设备齐全，适合小组讨论。', '["安静", "设备好"]')
+INSERT INTO `review` (`id`, `user_id`, `resource_type`, `classroom_id`, `reservation_id`, `score`, `content`, `tags`, `status`) VALUES
+(1, 1, 1, 3, 1, 5, '研讨室很安静，设备齐全，适合小组讨论。', '["安静", "设备好"]', 1),
+(2, 1, 1, 1, 2, 2, '教室设备有点老化，投影仪偶尔卡顿。希望后续能优化网络和设备。', '["设备老化", "网络问题"]', 0),
+(3, 2, 1, 4, 1, 1, '空调异味比较明显，影响体验。', '["卫生问题"]', 2)
 ON DUPLICATE KEY UPDATE
   `user_id`        = VALUES(`user_id`),
   `resource_type`  = VALUES(`resource_type`),
@@ -546,7 +655,46 @@ ON DUPLICATE KEY UPDATE
   `reservation_id` = VALUES(`reservation_id`),
   `score`          = VALUES(`score`),
   `content`        = VALUES(`content`),
-  `tags`           = VALUES(`tags`);
+  `tags`           = VALUES(`tags`),
+  `status`         = VALUES(`status`);
+
+-- 管理后台角色/权限/菜单初始化
+INSERT INTO `admin_role` (`id`, `name`, `role_type`, `user_role`, `deleted`) VALUES
+(1, '最大权限管理员', 1, 3, 0),
+(2, '审核评论员', 2, 5, 0),
+(3, '维修人员', 3, 4, 0)
+ON DUPLICATE KEY UPDATE
+  `name` = VALUES(`name`),
+  `user_role` = VALUES(`user_role`);
+
+INSERT INTO `admin_permission` (`id`, `perm_key`, `name`, `description`, `deleted`) VALUES
+(1, 'repair:process', '报修处理', '查看报修单并更新报修状态、接收报修通知', 0),
+(2, 'review:audit', '评价审核', '查看待审核评价并进行审核/驳回', 0),
+(3, 'base:manage', '基础数据管理', '教室、课程表等基础数据管理', 0)
+ON DUPLICATE KEY UPDATE
+  `name` = VALUES(`name`),
+  `description` = VALUES(`description`);
+
+INSERT INTO `admin_role_permission` (`role_id`, `permission_id`, `deleted`) VALUES
+(1, 1, 0),
+(1, 2, 0),
+(1, 3, 0),
+(2, 2, 0),
+(3, 1, 0)
+ON DUPLICATE KEY UPDATE
+  `deleted` = VALUES(`deleted`);
+
+INSERT INTO `admin_menu` (`id`, `title`, `path`, `permission_key`, `sort_order`, `deleted`) VALUES
+(1, '管理概览', '/admin', NULL, 0, 0),
+(6, '教学楼信息管理', '/admin/buildings', 'base:manage', 25, 0),
+(2, '报修管理', '/admin/repairs', 'repair:process', 10, 0),
+(3, '评价审核管理', '/admin/reviews', 'review:audit', 20, 0),
+(4, '教室信息管理', '/admin/classrooms', 'base:manage', 30, 0),
+(5, '课程表管理', '/admin/courses', 'base:manage', 40, 0)
+ON DUPLICATE KEY UPDATE
+  `title` = VALUES(`title`),
+  `permission_key` = VALUES(`permission_key`),
+  `sort_order` = VALUES(`sort_order`);
 
 -- 插入组队需求（与「我的协作」页面对应：项目需求评审、UI设计稿确认、接口联调测试；status 0-已关闭 1-招募中 2-已满员，前端展示为 进行中/已完成）
 -- 使用 ON DUPLICATE KEY UPDATE 避免 REPLACE 删除行时触发 study_plan 外键约束
@@ -556,7 +704,7 @@ INSERT INTO `team_request` (`id`, `user_id`, `title`, `description`, `tags`, `ex
 (3, 2, '接口联调测试', '前后端接口联调，测试各接口的可用性和数据准确性，修复联调中发现的问题', NULL, 4, 2, '2026-03-09 10:00:00', '2026-03-18 18:00:00', 1, '2026-03-09 10:00:00', '2026-03-09 12:00:00'),
 -- 协作广场示例小组：考研英语复习 / XX项目开发 / 数据库学习
 (10, 1, '考研英语复习', '每天背单词 + 真题精读，互相打卡监督，目标上岸！', '["考研","英语","真题","打卡"]', 6, 2, '2026-03-06 09:00:00', '2026-06-01 18:00:00', 1, '2026-03-06 09:00:00', '2026-03-06 09:00:00'),
-(11, 2, 'XX项目开发', '一起完成“校园学习空间”项目，分工前后端/测试/文档，定期开会同步进度。', '["项目开发","前端","后端","联调"]', 5, 5, '2026-03-06 14:00:00', '2026-04-10 18:00:00', 2, '2026-03-06 14:00:00', '2026-03-07 18:00:00'),
+(11, 2, '校园项目开发', '一起完成“校园学习空间”项目，分工前后端/测试/文档，定期开会同步进度。', '["项目开发","前端","后端","联调"]', 5, 5, '2026-03-06 14:00:00', '2026-04-10 18:00:00', 2, '2026-03-06 14:00:00', '2026-03-07 18:00:00'),
 (12, 6, '数据库学习', '从 SQL 基础到索引与事务，一起刷题复盘，每周至少 2 次讨论。', '["数据库","SQL","MySQL","刷题"]', 4, 2, '2026-03-07 10:00:00', '2026-05-01 18:00:00', 1, '2026-03-07 10:00:00', '2026-03-07 10:00:00')
 ON DUPLICATE KEY UPDATE
   `user_id` = VALUES(`user_id`),
