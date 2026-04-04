@@ -22,6 +22,17 @@ public class ReservationService extends ServiceImpl<ReservationMapper, Reservati
     @Autowired
     private TimeSlotService timeSlotService;
 
+    @Autowired
+    private ReservationLimitService reservationLimitService;
+
+    @Override
+    public boolean save(Reservation entity) {
+        if (entity != null && entity.getId() == null) {
+            reservationLimitService.assertNewReservationAllowed(entity);
+        }
+        return super.save(entity);
+    }
+
     /**
      * 用户预约列表（含资源名称等展示字段）
      */

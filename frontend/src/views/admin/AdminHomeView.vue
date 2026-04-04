@@ -65,6 +65,7 @@ onMounted(loadOverview)
           <button class="action-btn primary-btn" style="padding: 12px 0" @click="router.push('/admin/classrooms')">新增教室</button>
           <button class="action-btn primary-btn" style="padding: 12px 0" @click="router.push('/admin/courses')">导入课程表</button>
           <button class="action-btn primary-btn" style="padding: 12px 0" @click="router.push('/admin/reviews')">审核评价</button>
+          <button class="action-btn primary-btn" style="padding: 12px 0" @click="router.push('/admin/reservation-limits')">预约上限</button>
         </div>
       </div>
 

@@ -1,8 +1,10 @@
 package com.campus.learningspace.controller;
 
 import com.campus.learningspace.common.Result;
+import com.campus.learningspace.dto.ReservationLimitVO;
 import com.campus.learningspace.entity.Reservation;
 import com.campus.learningspace.entity.ReservationVO;
+import com.campus.learningspace.service.ReservationLimitService;
 import com.campus.learningspace.service.ReservationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -19,6 +21,17 @@ public class ReservationController {
 
     @Autowired
     private ReservationService reservationService;
+
+    @Autowired
+    private ReservationLimitService reservationLimitService;
+
+    /**
+     * 当前预约规则（每人每周次数上限、单次最长分钟数），供用户端展示
+     */
+    @GetMapping("/limits")
+    public Result<ReservationLimitVO> getReservationLimits() {
+        return Result.success(reservationLimitService.getEffectiveLimits());
+    }
 
     @GetMapping("/user/{userId}")
     public Result<List<ReservationVO>> getUserReservations(@PathVariable Long userId) {
@@ -42,7 +55,7 @@ public class ReservationController {
         return Result.success(reservationService.getClassroomSlotStatuses(classroomId, date));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:\\d+}")
     public Result<Reservation> getById(@PathVariable Long id) {
         return Result.success(reservationService.getById(id));
     }

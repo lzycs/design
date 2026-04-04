@@ -334,9 +334,10 @@ const submitCreate = async () => {
     showToast('创建成功')
     showCreateModal.value = false
     await loadPlans()
-  } catch (e) {
+  } catch (e: unknown) {
     console.error(e)
-    showToast('创建失败，请稍后重试')
+    const ax = e as { response?: { data?: { message?: string } } }
+    showToast(ax.response?.data?.message ?? '创建失败，请稍后重试')
   } finally {
     submitting.value = false
   }
@@ -374,9 +375,10 @@ const submitBindRoom = async () => {
     showBindRoomModal.value = false
     editingPlan.value = null
     await loadPlans()
-  } catch (e) {
+  } catch (e: unknown) {
     console.error(e)
-    showToast('保存失败，请稍后重试')
+    const ax = e as { response?: { data?: { message?: string } } }
+    showToast(ax.response?.data?.message ?? '保存失败，请稍后重试')
   } finally {
     submitting.value = false
   }

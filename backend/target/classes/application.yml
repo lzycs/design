@@ -1,6 +1,12 @@
 server:
   port: 8080
 
+# 预约规则默认值（库表无配置行时使用；正常以 reservation_limit_config 为准）
+app:
+  reservation:
+    max-per-week: 4
+    max-duration-minutes: 240
+
 spring:
   application:
     name: campus-learning-space

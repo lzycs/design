@@ -219,9 +219,10 @@ const submitReservation = async (payload: ReservationPayload | null) => {
     showToast('预约成功')
     await Promise.all([loadUserReservations(), reloadSlotsForCurrentDate()])
     statusTab.value = 'pending'
-  } catch (e) {
+  } catch (e: unknown) {
     console.error(e)
-    showToast('预约失败，请稍后重试')
+    const ax = e as { response?: { data?: { message?: string } } }
+    showToast(ax.response?.data?.message ?? '预约失败，请稍后重试')
   }
 }
 

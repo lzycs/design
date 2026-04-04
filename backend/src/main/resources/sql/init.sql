@@ -182,6 +182,16 @@ CREATE TABLE IF NOT EXISTS `reservation` (
     FOREIGN KEY (`library_seat_id`) REFERENCES `library_seat`(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='预约记录表';
 
+-- 预约上限配置（单例 id=1：每人每周次数上限、单次最长分钟数，管理端可修改）
+CREATE TABLE IF NOT EXISTS `reservation_limit_config` (
+    `id` TINYINT NOT NULL PRIMARY KEY DEFAULT 1 COMMENT '固定为1',
+    `max_per_week` INT NOT NULL DEFAULT 4 COMMENT '每人每周最多有效预约次数（待签到/已签到/已完成）',
+    `max_duration_minutes` INT NOT NULL DEFAULT 240 COMMENT '单次预约最长时长(分钟)',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='预约上限配置';
+
+INSERT IGNORE INTO `reservation_limit_config` (`id`, `max_per_week`, `max_duration_minutes`) VALUES (1, 4, 240);
+
 -- 报修工单表 (可报修教室或图书馆座位)
 CREATE TABLE IF NOT EXISTS `repair` (
     `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '工单ID',

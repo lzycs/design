@@ -8,7 +8,9 @@ import {
   getClassroomSlots,
   type ClassroomSlotStatus,
   createReservation,
-  type ReservationPayload
+  getReservationLimits,
+  type ReservationPayload,
+  type ReservationLimitVO,
 } from '@/api/reservation'
 
 const route = useRoute()
@@ -21,9 +23,40 @@ const loading = ref(false)
 
 const dateTab = ref<'today' | 'tomorrow' | 'dayAfter'>('today')
 const slots = ref<ClassroomSlotStatus[]>([])
-const selectedLabel = ref<string | null>(null)
+/** 已选时段 label，支持多选（须为时间上连续的一段） */
+const selectedLabels = ref<string[]>([])
+/** 选时段时的校验说明（页内提示，避免误触确认后才看到 Toast） */
+const selectionHint = ref('')
 
 const storedUser = ref<{ id: number } | null>(null)
+
+const reservationLimits = ref<ReservationLimitVO | null>(null)
+
+const formatDurationRule = (minutes: number) => {
+  if (minutes % 60 === 0) return `${minutes / 60}小时`
+  return `${minutes}分钟`
+}
+
+const ruleTipText = computed(() => {
+  const L = reservationLimits.value
+  if (!L) return '温馨提示：预约须遵守平台规则（加载规则失败时可稍后重试）'
+  return `温馨提示：可勾选多个相邻时段合并为一次预约；每人每周最多 ${L.maxPerWeek} 次，合并后单次最长 ${formatDurationRule(L.maxDurationMinutes)}（周一至周日计一周，取消不计入）`
+})
+
+const loadReservationLimits = async () => {
+  try {
+    const res = await getReservationLimits()
+    if (res.code === 200 && res.data) {
+      const d = res.data
+      reservationLimits.value = {
+        maxPerWeek: Number(d.maxPerWeek ?? 4),
+        maxDurationMinutes: Number(d.maxDurationMinutes ?? 240),
+      }
+    }
+  } catch {
+    reservationLimits.value = null
+  }
+}
 
 const today = new Date()
 const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000)
@@ -122,62 +155,183 @@ const loadSlots = async () => {
     } else {
       slots.value = []
     }
+    selectedLabels.value = []
+    selectionHint.value = ''
   } catch (e) {
     console.error(e)
     slots.value = []
+    selectedLabels.value = []
+    selectionHint.value = ''
   }
 }
 
-const toggleTime = (slot: ClassroomSlotStatus) => {
-  if (slot.status !== 'available') return
-  selectedLabel.value = selectedLabel.value === slot.label ? null : slot.label
+/** 后端可能返回字符串 / 数组等，统一成可解析的时间串 */
+const normalizeTimeRaw = (raw: unknown): string => {
+  if (raw == null) return ''
+  if (typeof raw === 'string') return raw.trim()
+  if (Array.isArray(raw) && raw.length >= 2) {
+    const h = Number(raw[0]) || 0
+    const m = Number(raw[1]) || 0
+    const s = raw.length >= 3 ? Number(raw[2]) || 0 : 0
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+  }
+  return String(raw).trim()
 }
 
-const buildReservationPayload = (slot: ClassroomSlotStatus): ReservationPayload | null => {
+/** 从 0 点起的秒数（含秒，避免 09:59:59 与 10:00:00 被误判为不连续） */
+const timeToSeconds = (raw: unknown): number => {
+  const t = normalizeTimeRaw(raw)
+  if (!t) return 0
+  const parts = t.split(':').map((x) => parseInt(x, 10))
+  const h = Number.isFinite(parts[0]) ? parts[0]! : 0
+  const m = Number.isFinite(parts[1]) ? parts[1]! : 0
+  const s = Number.isFinite(parts[2]) ? parts[2]! : 0
+  return h * 3600 + m * 60 + s
+}
+
+/** 预约时长（分钟，四舍五入，至少 1） */
+const durationMinutesBetween = (startRaw: unknown, endRaw: unknown): number => {
+  const sec = Math.max(0, timeToSeconds(endRaw) - timeToSeconds(startRaw))
+  return Math.max(1, Math.round(sec / 60))
+}
+
+type MergedSelection =
+  | { ok: false; reason: string }
+  | { ok: true; startTime: string; endTime: string; duration: number }
+
+const mergedSelection = computed((): MergedSelection => {
+  const labelSet = new Set(selectedLabels.value.filter(Boolean))
+  if (labelSet.size === 0) {
+    return { ok: false, reason: '' }
+  }
+
+  const byLabel = new Map<string, ClassroomSlotStatus>()
+  for (const s of slots.value) {
+    if (labelSet.has(s.label) && s.status === 'available') {
+      byLabel.set(s.label, s)
+    }
+  }
+  if (byLabel.size !== labelSet.size) {
+    return { ok: false, reason: '部分已选时段已不可约，请重新选择' }
+  }
+
+  const picked = Array.from(byLabel.values())
+  const sorted = [...picked].sort(
+    (a, b) => timeToSeconds(a.startTime) - timeToSeconds(b.startTime)
+  )
+
+  const GAP_TOLERANCE_SEC = 120
+
+  for (let i = 1; i < sorted.length; i++) {
+    const prev = sorted[i - 1]!
+    const cur = sorted[i]!
+    const gap = timeToSeconds(cur.startTime) - timeToSeconds(prev.endTime)
+    if (gap < 0 || gap > GAP_TOLERANCE_SEC) {
+      return { ok: false, reason: '请选择时间上连续相邻的时段（中间不能空档）' }
+    }
+  }
+
+  const first = sorted[0]!
+  const last = sorted[sorted.length - 1]!
+  const startTime = normalizeTimeRaw(first.startTime)
+  const endTime = normalizeTimeRaw(last.endTime)
+  const duration = durationMinutesBetween(first.startTime, last.endTime)
+  if (duration <= 0) {
+    return { ok: false, reason: '时段时长无效' }
+  }
+
+  const maxMin = reservationLimits.value?.maxDurationMinutes
+  const maxNum = Number(maxMin)
+  if (Number.isFinite(maxNum) && maxNum > 0 && duration > maxNum) {
+    return {
+      ok: false,
+      reason: `合并后时长 ${formatDurationRule(duration)}，超过单次上限 ${formatDurationRule(maxNum)}`,
+    }
+  }
+  return { ok: true, startTime, endTime, duration }
+})
+
+const toggleTime = (timeSlot: ClassroomSlotStatus) => {
+  if (timeSlot.status !== 'available') return
+  const prev = [...selectedLabels.value]
+  const i = prev.indexOf(timeSlot.label)
+  if (i >= 0) {
+    selectedLabels.value = prev.filter((_, j) => j !== i)
+    selectionHint.value = ''
+    return
+  }
+  const next = [...prev, timeSlot.label]
+  selectedLabels.value = next
+  const merged = mergedSelection.value
+  if (merged.ok) {
+    selectionHint.value = ''
+    return
+  }
+  // 超过单次时长上限：撤销本次勾选，保留原选择
+  if (merged.reason?.includes('超过单次上限')) {
+    selectedLabels.value = prev
+    selectionHint.value = merged.reason
+    return
+  }
+  // 不连续等情况：以当前点击的时段作为新起点（常见预期是改选该格）
+  selectedLabels.value = [timeSlot.label]
+  const again = mergedSelection.value
+  if (!again.ok) {
+    selectedLabels.value = []
+    selectionHint.value = again.reason || '当前时段无法预约'
+  } else {
+    selectionHint.value = ''
+  }
+}
+
+const buildMergedReservationPayload = (
+  startTime: string,
+  endTime: string,
+  duration: number
+): ReservationPayload | null => {
   if (!storedUser.value?.id || !classroom.value?.id) {
     showToast('请先登录后再预约')
     return null
   }
-  const start = slot.startTime ?? ''
-  const end = slot.endTime ?? ''
-  const [shStr = '0', smStr = '0'] = start.split(':')
-  const [ehStr = '0', emStr = '0'] = end.split(':')
-  const sh = Number(shStr)
-  const sm = Number(smStr)
-  const eh = Number(ehStr)
-  const em = Number(emStr)
-  const duration = (eh * 60 + em) - (sh * 60 + sm)
   return {
     userId: storedUser.value.id,
     resourceType: 1,
     classroomId: classroom.value.id,
     reservationDate: getCurrentDate(),
-    startTime: start,
-    endTime: end,
+    startTime,
+    endTime,
     duration,
-    purpose: '教室自习/研讨'
+    purpose: '教室自习/研讨',
   }
 }
 
 const confirmReserve = async () => {
-  if (!selectedLabel.value) {
+  selectionHint.value = ''
+  if (selectedLabels.value.length === 0) {
     showToast('请先选择预约时段')
     return
   }
-  const slot = slots.value.find((s) => s.label === selectedLabel.value && s.status === 'available')
-  if (!slot) {
-    showToast('当前时段不可预约')
+  const merged = mergedSelection.value
+  if (!merged.ok) {
+    selectionHint.value = merged.reason || '请选择有效的连续时段'
     return
   }
-  const payload = buildReservationPayload(slot)
+  const payload = buildMergedReservationPayload(
+    merged.startTime,
+    merged.endTime,
+    merged.duration
+  )
   if (!payload) return
   try {
     await createReservation(payload)
     showToast('预约成功')
+    selectedLabels.value = []
+    selectionHint.value = ''
     await loadSlots()
-  } catch (e) {
+  } catch (e: unknown) {
     console.error(e)
-    showToast('预约失败，请稍后重试')
+    const ax = e as { response?: { data?: { message?: string } } }
+    showToast(ax.response?.data?.message ?? '预约失败，请稍后重试')
   }
 }
 
@@ -185,8 +339,14 @@ const goBack = () => {
   router.back()
 }
 
+const clearSlotSelection = () => {
+  selectedLabels.value = []
+  selectionHint.value = ''
+}
+
 onMounted(() => {
   loadUserFromStorage()
+  loadReservationLimits()
   loadClassroom()
 })
 </script>
@@ -223,6 +383,7 @@ onMounted(() => {
 
       <div class="card book-card">
         <div class="book-title">预约时段选择</div>
+        <div class="book-sub">可勾选多个<strong>相邻</strong>时段，合并为一次预约，总时长不超过单次上限</div>
 
         <div class="date-picker">
           <div
@@ -231,7 +392,7 @@ onMounted(() => {
             @click="
               () => {
                 dateTab = 'today'
-                selectedLabel = null
+                clearSlotSelection()
                 loadSlots()
               }
             "
@@ -245,7 +406,7 @@ onMounted(() => {
             @click="
               () => {
                 dateTab = 'tomorrow'
-                selectedLabel = null
+                clearSlotSelection()
                 loadSlots()
               }
             "
@@ -259,7 +420,7 @@ onMounted(() => {
             @click="
               () => {
                 dateTab = 'dayAfter'
-                selectedLabel = null
+                clearSlotSelection()
                 loadSlots()
               }
             "
@@ -271,24 +432,28 @@ onMounted(() => {
 
         <div class="time-picker">
           <div
-            v-for="slot in slots"
-            :key="slot.label"
+            v-for="timeSlot in slots"
+            :key="timeSlot.label"
             class="time-item"
             :class="{
-              active: selectedLabel === slot.label,
-              disabled: slot.status === 'occupied'
+              active: selectedLabels.includes(timeSlot.label),
+              disabled: timeSlot.status === 'occupied'
             }"
-            @click="toggleTime(slot)"
+            @click.stop="toggleTime(timeSlot)"
           >
-            {{ slot.label }}
+            {{ timeSlot.label }}
           </div>
         </div>
 
-        <div class="tip-text">
-          温馨提示：每人每周最多预约4次，单次最长4小时
+        <div v-if="selectionHint" class="selection-hint">
+          {{ selectionHint }}
         </div>
 
-        <button class="btn btn-yellow" @click="confirmReserve">
+        <div class="tip-text">
+          {{ ruleTipText }}
+        </div>
+
+        <button type="button" class="btn btn-yellow" @click.stop="confirmReserve">
           确认预约
         </button>
       </div>
@@ -304,6 +469,7 @@ onMounted(() => {
 .detail-page {
   background-color: #f5f5f5;
   min-height: 100vh;
+  padding-bottom: 72px;
 }
 
 .page-inner {
@@ -374,7 +540,19 @@ onMounted(() => {
   font-size: 16px;
   color: #1a1a1a;
   font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.book-sub {
+  font-size: 12px;
+  color: #909399;
+  line-height: 1.5;
   margin-bottom: 16px;
+}
+
+.book-sub strong {
+  color: #4a90e2;
+  font-weight: 600;
 }
 
 .date-picker {
@@ -435,6 +613,13 @@ onMounted(() => {
 .time-item.active {
   background-color: #4a90e2;
   color: #ffffff;
+}
+
+.selection-hint {
+  font-size: 12px;
+  color: #ee0a24;
+  line-height: 1.5;
+  margin: -8px 0 12px;
 }
 
 .btn {

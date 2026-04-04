@@ -267,12 +267,13 @@ onMounted(() => {
 <template>
   <div class="collaboration">
     <div class="phone-container">
-      <!-- 标题栏 -->
-      <div class="page-header">
-        <div class="placeholder"></div>
-        <div class="page-title">协作广场</div>
-        <div class="header-action" @click="openCreate">发起小组</div>
-      </div>
+      <!-- 顶栏：与下方内容共用同一水平内边距，标题真正居中 -->
+      <header class="page-header">
+        <h1 class="page-header__title">协作广场</h1>
+        <button type="button" class="page-header__action" @click="openCreate">
+          发起小组
+        </button>
+      </header>
 
       <!-- 分类标签 -->
       <div class="category-bar">
@@ -488,59 +489,96 @@ onMounted(() => {
 </template>
 
 <style scoped>
+/* ------------------------------------------------------------------ *
+ * 协作页：单一水平基准线
+ * --collab-inset-left / right 统管顶栏、分类条、列表及卡片的左右对齐
+ * ------------------------------------------------------------------ */
 .collaboration {
+  --collab-page-gutter: 16px;
+  --collab-inset-left: max(
+    var(--collab-page-gutter),
+    env(safe-area-inset-left, 0px)
+  );
+  --collab-inset-right: max(
+    var(--collab-page-gutter),
+    env(safe-area-inset-right, 0px)
+  );
+
   min-height: 100vh;
+  height: 100vh;
+  box-sizing: border-box;
+  padding-bottom: 72px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   background-color: #f5f7fa;
 }
 
 .phone-container {
+  flex: 1;
+  min-height: 0;
   width: 100%;
   max-width: 375px;
   margin: 0 auto;
-  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   background-color: #f5f7fa;
-  padding-bottom: 72px;
 }
 
+/* 顶栏：三列网格，左列留空、标题居中、操作贴右，与下方共用 inset */
 .page-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  padding: 10px 20px;
+  column-gap: 8px;
+  padding: 12px var(--collab-inset-right) 12px var(--collab-inset-left);
   background-color: #ffffff;
-  border-bottom: 1px solid #f5f7fa;
+  border-bottom: 1px solid #f0f2f5;
   position: sticky;
   top: 0;
   z-index: 10;
+  box-sizing: border-box;
 }
 
-.placeholder {
-  width: 24px;
-}
-
-.header-action {
-  font-size: 14px;
-  color: #4a90e2;
-  font-weight: 500;
-  cursor: pointer;
-  width: 70px;
-  text-align: right;
-}
-
-.page-title {
-  font-size: 16px;
+.page-header__title {
+  grid-column: 2;
+  justify-self: center;
+  margin: 0;
+  max-width: 100%;
+  font-size: 17px;
   font-weight: 600;
   color: #1a1a1a;
-  flex: 1;
+  line-height: 1.3;
   text-align: center;
+}
+
+.page-header__action {
+  grid-column: 3;
+  justify-self: end;
+  margin: 0;
+  padding: 4px 0;
+  border: none;
+  background: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: #4a90e2;
+  line-height: 1.3;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
 }
 
 .category-bar {
   display: flex;
-  padding: 12px 20px;
+  align-items: center;
+  padding: 12px var(--collab-inset-right) 12px var(--collab-inset-left);
   background-color: #ffffff;
   overflow-x: auto;
   white-space: nowrap;
-  border-bottom: 1px solid #f5f7fa;
+  border-bottom: 1px solid #f0f2f5;
+  box-sizing: border-box;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .category-bar::-webkit-scrollbar {
@@ -548,14 +586,18 @@ onMounted(() => {
 }
 
 .category-item {
-  padding: 6px 16px;
+  padding: 6px 14px;
   font-size: 14px;
   color: #909399;
   background-color: #f5f7fa;
   border-radius: 20px;
-  margin-right: 12px;
+  margin-right: 10px;
   cursor: pointer;
   flex-shrink: 0;
+}
+
+.category-item:last-child {
+  margin-right: 0;
 }
 
 .category-item.active {
@@ -564,18 +606,37 @@ onMounted(() => {
 }
 
 .team-list {
-  padding: 16px 20px;
-  max-height: calc(100vh - 140px);
+  flex: 1;
+  min-height: 0;
+  padding: 12px var(--collab-inset-right) 16px var(--collab-inset-left);
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  box-sizing: border-box;
+}
+
+.team-list :deep(.van-empty) {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.team-list::-webkit-scrollbar {
+  display: none;
 }
 
 .team-card {
   background-color: #ffffff;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  padding: 16px;
-  margin-bottom: 12px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
   cursor: pointer;
+  box-sizing: border-box;
+}
+
+.team-card:last-child {
+  margin-bottom: 0;
 }
 
 .team-header {

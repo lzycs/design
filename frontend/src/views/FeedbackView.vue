@@ -322,7 +322,7 @@ onMounted(() => {
           <select v-model="repairFaultType" class="form-select">
             <option value="air">空调故障</option>
             <option value="projector">投影仪故障</option>
-            <option value="furniture">家具损坏</option>
+            <option value="furniture">桌椅损坏</option>
             <option value="power">水电问题</option>
             <option value="network">网络故障</option>
             <option value="other">其他问题</option>

@@ -119,6 +119,11 @@ const router = createRouter({
       name: 'admin-buildings',
       component: () => import('../views/admin/AdminAppView.vue'),
     },
+    {
+      path: '/admin/reservation-limits',
+      name: 'admin-reservation-limits',
+      component: () => import('../views/admin/AdminAppView.vue'),
+    },
   ],
 })
 

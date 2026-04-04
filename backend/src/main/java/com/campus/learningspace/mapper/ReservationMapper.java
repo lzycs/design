@@ -6,6 +6,7 @@ import com.campus.learningspace.entity.ReservationVO;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface ReservationMapper extends BaseMapper<Reservation> {
@@ -46,4 +47,21 @@ public interface ReservationMapper extends BaseMapper<Reservation> {
             ORDER BY r.create_time DESC
             """)
     List<ReservationVO> selectUserReservations(@Param("userId") Long userId);
+
+    /**
+     * 统计用户在日期区间内「有效」预约条数（待签到/已签到/已完成），用于每周次数上限
+     */
+    @Select("""
+            SELECT COUNT(*)
+            FROM reservation r
+            WHERE r.deleted = 0
+              AND r.user_id = #{userId}
+              AND r.reservation_date >= #{startDate}
+              AND r.reservation_date <= #{endDate}
+              AND r.status IN (1, 2, 3)
+            """)
+    long countUserActiveReservationsBetween(
+            @Param("userId") Long userId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
 }

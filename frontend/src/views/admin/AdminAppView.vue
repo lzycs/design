@@ -9,6 +9,7 @@ import AdminReviewView from '@/views/admin/AdminReviewView.vue'
 import AdminClassroomView from '@/views/admin/AdminClassroomView.vue'
 import AdminCourseView from '@/views/admin/AdminCourseView.vue'
 import AdminBuildingView from '@/views/admin/AdminBuildingView.vue'
+import AdminReservationLimitView from '@/views/admin/AdminReservationLimitView.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -71,6 +72,7 @@ const viewMap: Record<string, Component> = {
   '/admin/classrooms': AdminClassroomView,
   '/admin/courses': AdminCourseView,
   '/admin/buildings': AdminBuildingView,
+  '/admin/reservation-limits': AdminReservationLimitView,
 }
 
 const currentView = computed(() => {

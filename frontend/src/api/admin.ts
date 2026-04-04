@@ -189,3 +189,17 @@ export const deleteAdminBuilding = (id: number) => {
   return request.delete<unknown, Result<boolean>>(`/admin/buildings/${id}`)
 }
 
+/** 预约上限（每人每周次数、单次最长分钟） */
+export interface AdminReservationLimitVO {
+  maxPerWeek: number
+  maxDurationMinutes: number
+}
+
+export const getAdminReservationLimits = () => {
+  return request.get<unknown, Result<AdminReservationLimitVO>>('/admin/reservation-limits')
+}
+
+export const updateAdminReservationLimits = (payload: AdminReservationLimitVO) => {
+  return request.put<unknown, Result<AdminReservationLimitVO>>('/admin/reservation-limits', payload)
+}
+

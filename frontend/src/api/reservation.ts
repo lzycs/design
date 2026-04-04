@@ -31,6 +31,16 @@ export interface Result<T> {
   data: T
 }
 
+/** 预约规则：每周次数上限、单次最长分钟数 */
+export interface ReservationLimitVO {
+  maxPerWeek: number
+  maxDurationMinutes: number
+}
+
+export const getReservationLimits = () => {
+  return request.get<any, Result<ReservationLimitVO>>('/reservation/limits')
+}
+
 export const createReservation = (payload: ReservationPayload) => {
   return request.post<any, Result<boolean>>('/reservation', payload)
 }
