@@ -136,7 +136,12 @@ export interface TeamJoinApplicationVO {
   reason?: string
   status?: number
   createTime?: string
+  reviewerId?: number
+  reviewTime?: string
+  rejectReason?: string
   applicantName?: string
+  applicantStudentId?: string
+  reviewerName?: string
   teamTitle?: string
 }
 
@@ -149,10 +154,16 @@ export const applyToJoinTeam = (teamRequestId: number, applicantId: number, reas
 }
 
 /** 组长审核申请：approve=true 通过，false 拒绝 */
-export const reviewApplication = (applicationId: number, leaderId: number, approve: boolean) => {
+export const reviewApplication = (
+  applicationId: number,
+  leaderId: number,
+  approve: boolean,
+  rejectReason?: string,
+) => {
   return request.post<unknown, Result<boolean>>(`/team/application/${applicationId}/review`, {
     leaderId,
     approve,
+    rejectReason,
   })
 }
 
@@ -166,6 +177,13 @@ export const getPendingApplications = (leaderId: number) => {
 /** 获取成员的申请审核结果列表 */
 export const getApplicationResults = (applicantId: number) => {
   return request.get<unknown, Result<TeamJoinApplicationVO[]>>('/team/applications/results', {
+    params: { applicantId },
+  })
+}
+
+/** 获取成员待处理申请（用于禁用重复申请） */
+export const getPendingByApplicant = (applicantId: number) => {
+  return request.get<unknown, Result<TeamJoinApplicationVO[]>>('/team/applications/pending-by-applicant', {
     params: { applicantId },
   })
 }

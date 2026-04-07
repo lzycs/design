@@ -35,6 +35,11 @@ const router = createRouter({
       component: () => import('../views/ClassroomDetailView.vue'),
     },
     {
+      path: '/reservation/classroom/:id/reviews',
+      name: 'classroom-reviews',
+      component: () => import('../views/ClassroomReviewsView.vue'),
+    },
+    {
       path: '/reservation/room-collab/:reservationId',
       name: 'room-collab',
       component: () => import('../views/RoomCollabView.vue'),

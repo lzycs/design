@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -42,7 +43,7 @@ public class TeamJoinApplicationService extends ServiceImpl<TeamJoinApplicationM
      * 组长审核申请：approve=true 通过，false 拒绝
      */
     @Transactional(rollbackFor = Exception.class)
-    public boolean review(Long applicationId, Long leaderId, boolean approve) {
+    public boolean review(Long applicationId, Long leaderId, boolean approve, String rejectReason) {
         TeamJoinApplication app = getById(applicationId);
         if (app == null || app.getStatus() != 0) {
             return false;
@@ -54,11 +55,32 @@ public class TeamJoinApplicationService extends ServiceImpl<TeamJoinApplicationM
             return false;
         }
         app.setStatus(approve ? 1 : 2);
-        updateById(app);
+        app.setReviewerId(leaderId);
+        app.setReviewTime(LocalDateTime.now());
+        app.setRejectReason(approve ? null : rejectReason);
+        if (!updateById(app)) {
+            return false;
+        }
 
         if (approve) {
             // 通过则自动加入小组
-            teamRequestService.joinTeam(app.getTeamRequestId(), app.getApplicantId());
+            boolean joinOk = teamRequestService.joinTeam(app.getTeamRequestId(), app.getApplicantId());
+            if (!joinOk) {
+                return false;
+            }
+            // 同步清空该用户在其他小组的未处理申请
+            LambdaQueryWrapper<TeamJoinApplication> clearQw = new LambdaQueryWrapper<>();
+            clearQw.eq(TeamJoinApplication::getApplicantId, app.getApplicantId())
+                    .eq(TeamJoinApplication::getStatus, 0)
+                    .eq(TeamJoinApplication::getDeleted, 0)
+                    .ne(TeamJoinApplication::getId, app.getId());
+            List<TeamJoinApplication> others = list(clearQw);
+            for (TeamJoinApplication other : others) {
+                other.setDeleted(1);
+            }
+            if (!others.isEmpty()) {
+                updateBatchById(others);
+            }
         }
         return true;
     }
@@ -71,6 +93,11 @@ public class TeamJoinApplicationService extends ServiceImpl<TeamJoinApplicationM
     /** 成员的申请结果列表 */
     public List<TeamJoinApplicationVO> getResultsForApplicant(Long applicantId) {
         return baseMapper.selectResultsByApplicant(applicantId);
+    }
+
+    /** 成员的待处理申请列表 */
+    public List<TeamJoinApplicationVO> getPendingForApplicant(Long applicantId) {
+        return baseMapper.selectPendingByApplicant(applicantId);
     }
 
     /** 组长未处理申请数量（用于红点） */

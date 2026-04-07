@@ -80,7 +80,7 @@ const averageScore = computed(() => {
   if (v == null) return null
   return typeof v === 'number' ? v : Number(v)
 })
-const totalReviews = computed(() => detail.value?.totalReviews ?? 0)
+const approvedReviewCount = computed(() => approvedFeedbackList.value.length)
 const hasApprovedFeedback = computed(() => approvedFeedbackList.value.length > 0)
 /** 热度星级 1-5 */
 const popularityStars = computed(() => Math.min(5, Math.max(1, detail.value?.popularityStars ?? 0)))
@@ -362,6 +362,18 @@ const clearSlotSelection = () => {
   selectionHint.value = ''
 }
 
+const goAllReviews = () => {
+  if (!classroom.value?.id) return
+  if (!hasApprovedFeedback.value) {
+    showToast('暂无评价')
+    return
+  }
+  router.push({
+    name: 'classroom-reviews',
+    params: { id: classroom.value.id },
+  })
+}
+
 onMounted(() => {
   loadUserFromStorage()
   loadReservationLimits()
@@ -389,32 +401,24 @@ onMounted(() => {
               <span v-for="i in 5" :key="i" class="star" :class="{ filled: i <= popularityStars }">★</span>
             </span>
           </p>
-          <p>
+          <p class="score-line">
             <i class="icon iconfont icon-rexian" />
-            综合评分：{{ averageScore != null ? averageScore.toFixed(1) : '暂无' }} 分（{{ totalReviews }} 条评价）
+            <span class="score-text-main">
+              综合评分：{{ averageScore != null ? averageScore.toFixed(1) : '暂无' }} 分（{{ approvedReviewCount }} 条评价）
+            </span>
+            <button
+              type="button"
+              class="all-reviews-link"
+              :class="{ disabled: !hasApprovedFeedback }"
+              @click.stop="goAllReviews"
+            >
+              查看全部评价
+            </button>
           </p>
         </div>
         <div class="classroom-state">
           {{ slots.some((s) => s.status === 'available') ? '空闲' : '约满' }}
         </div>
-      </div>
-
-      <div class="card review-card">
-        <div class="book-title">评价展示</div>
-        <div v-if="hasApprovedFeedback" class="review-list">
-          <div v-for="item in approvedFeedbackList" :key="item.id" class="review-item">
-            <div class="review-item-head">
-              <div class="review-item-score">综合 {{ item.averageScore?.toFixed(1) ?? '0.0' }} 分</div>
-              <div class="review-item-time">{{ item.updatedAt || item.createdAt }}</div>
-            </div>
-            <div class="review-item-stars">
-              <span>环境 {{ item.envScore.toFixed(1) }} 分</span>
-              <span>设备 {{ item.equipScore.toFixed(1) }} 分</span>
-            </div>
-            <div class="review-item-content">{{ item.content || '该用户未填写文字评价。' }}</div>
-          </div>
-        </div>
-        <div v-else class="review-empty">暂无审核通过的评价，提交后的评价需经 commentadmin 审核通过后才展示。</div>
       </div>
 
       <div class="card book-card">
@@ -520,61 +524,6 @@ onMounted(() => {
   margin-bottom: 16px;
 }
 
-.review-card {
-  margin-bottom: 16px;
-}
-
-.review-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.review-item {
-  padding: 14px;
-  border-radius: 12px;
-  background: #f8fbff;
-  border: 1px solid #e2ecff;
-}
-
-.review-item-head {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 8px;
-}
-
-.review-item-score {
-  font-size: 15px;
-  font-weight: 600;
-  color: #1f3f75;
-}
-
-.review-item-time {
-  font-size: 12px;
-  color: #8a94a6;
-}
-
-.review-item-stars {
-  display: flex;
-  gap: 12px;
-  font-size: 12px;
-  color: #4f5d75;
-  margin-bottom: 8px;
-}
-
-.review-item-content {
-  font-size: 14px;
-  color: #2d3648;
-  line-height: 1.6;
-}
-
-.review-empty {
-  font-size: 13px;
-  line-height: 1.6;
-  color: #7d8798;
-}
-
 .classroom-header {
   display: flex;
   justify-content: space-between;
@@ -595,6 +544,40 @@ onMounted(() => {
   display: flex;
   align-items: center;
   margin-bottom: 4px;
+}
+
+.score-line {
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.score-text-main {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.all-reviews-link {
+  margin-left: 2px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  color: #4a90e2;
+  font-size: 14px;
+  line-height: 1.2;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.all-reviews-link:hover,
+.all-reviews-link:active {
+  color: #3a7ed3;
+  text-decoration: underline;
+}
+
+.all-reviews-link.disabled {
+  color: #c0c4cc;
+  cursor: not-allowed;
+  text-decoration: none;
 }
 
 .classroom-info p .icon {

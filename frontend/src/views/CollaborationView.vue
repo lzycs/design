@@ -3,13 +3,15 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   getActiveTeamRequests,
-  joinTeam,
+  applyToJoinTeam,
   createTeamRequest,
   type TeamRequestVO,
   getTeamMembers,
   type TeamMemberVO,
+  getPendingByApplicant,
+  type TeamJoinApplicationVO,
 } from '@/api/team'
-import { showToast } from 'vant'
+import { showConfirmDialog, showToast } from 'vant'
 
 type CategoryKey = 'all' | 'exam' | 'project' | 'postgrad' | 'language'
 
@@ -31,6 +33,7 @@ const showDetail = ref(false)
 const currentTeam = ref<TeamRequestVO | null>(null)
 const joining = ref(false)
 const members = ref<TeamMemberVO[]>([])
+const myPendingApplications = ref<TeamJoinApplicationVO[]>([])
 
 const storedUser = ref<{ id: number; username?: string } | null>(null)
 
@@ -135,6 +138,20 @@ const loadTeams = async () => {
   }
 }
 
+const loadApplyState = async () => {
+  if (!storedUser.value?.id) {
+    myPendingApplications.value = []
+    return
+  }
+  try {
+    const pendingRes = await getPendingByApplicant(storedUser.value.id)
+    myPendingApplications.value = pendingRes.data ?? []
+  } catch (e) {
+    console.error('加载申请状态失败', e)
+    myPendingApplications.value = []
+  }
+}
+
 const openDetail = (item: TeamRequestVO) => {
   currentTeam.value = item
   members.value = []
@@ -221,37 +238,56 @@ const submitCreate = async () => {
   }
 }
 
-const handleJoin = async () => {
+const hasPendingForCurrentTeam = computed(() => {
+  if (!currentTeam.value?.id) return false
+  return myPendingApplications.value.some((a) => a.teamRequestId === currentTeam.value?.id && a.status === 0)
+})
+
+const isMemberOfCurrentTeam = computed(() => {
+  if (!storedUser.value?.id) return false
+  return members.value.some((m) => m.userId === storedUser.value?.id)
+})
+
+const handleApplyJoin = async () => {
   if (!isLoggedIn.value || !storedUser.value?.id) {
-    window.alert('请先登录后再加入小组')
+    showToast('请先登录后再申请加入小组')
     router.push('/profile')
     return
   }
   if (!currentTeam.value?.id) return
+  if (hasPendingForCurrentTeam.value) {
+    showToast('你已提交过该小组申请，请等待组长审批')
+    return
+  }
+  if (isMemberOfCurrentTeam.value) {
+    showToast('你已经是该小组成员')
+    return
+  }
   if (
     currentTeam.value.expectedCount &&
     currentTeam.value.currentCount &&
     currentTeam.value.currentCount >= currentTeam.value.expectedCount
   ) {
-    window.alert('该小组已满员')
+    showToast('该小组已满员')
     return
   }
+  const confirm = await showConfirmDialog({
+    title: '申请加入',
+    message: `确认申请加入“${currentTeam.value.title ?? '该小组'}”吗？`,
+  }).catch(() => false)
+  if (!confirm) return
+
   joining.value = true
   try {
-    await joinTeam(currentTeam.value.id, {
-      userId: storedUser.value.id,
-    })
-    showToast('加入小组成功！')
-    if (currentTeam.value) {
-      currentTeam.value.currentCount =
-        (currentTeam.value.currentCount ?? 0) + 1
-    }
+    await applyToJoinTeam(currentTeam.value.id, storedUser.value.id, '')
+    showToast('申请已提交，等待组长审批')
+    await loadApplyState()
   } catch (e) {
-    console.error('加入小组失败', e)
+    console.error('申请加入失败', e)
     const msg =
       (e as any)?.response?.data?.message ||
       (e as any)?.response?.data?.msg ||
-      '加入失败，请稍后重试'
+      '申请失败，请稍后重试'
     showToast(msg)
   } finally {
     joining.value = false
@@ -261,6 +297,7 @@ const handleJoin = async () => {
 onMounted(() => {
   loadUserFromStorage()
   loadTeams()
+  loadApplyState()
 })
 </script>
 
@@ -383,22 +420,28 @@ onMounted(() => {
               class="join-btn"
               :disabled="
                 joining ||
+                hasPendingForCurrentTeam ||
+                isMemberOfCurrentTeam ||
                 (currentTeam.expectedCount &&
                   currentTeam.currentCount &&
                   currentTeam.currentCount >= currentTeam.expectedCount) ||
                 currentTeam.status === 2
               "
-              @click.stop="handleJoin"
+              @click.stop="handleApplyJoin"
             >
               {{
                 joining
-                  ? '加入中...'
-                  : currentTeam.status === 2 ||
-                      (currentTeam.expectedCount &&
-                        currentTeam.currentCount &&
-                        currentTeam.currentCount >= currentTeam.expectedCount)
-                    ? '已满员'
-                    : '加入小组'
+                  ? '提交中...'
+                  : hasPendingForCurrentTeam
+                    ? '等待组长审核'
+                    : isMemberOfCurrentTeam
+                      ? '你已经是该小组成员'
+                      : currentTeam.status === 2 ||
+                          (currentTeam.expectedCount &&
+                            currentTeam.currentCount &&
+                            currentTeam.currentCount >= currentTeam.expectedCount)
+                        ? '已满员'
+                        : '申请加入'
               }}
             </button>
             <button class="chat-btn" @click.stop="goChat">

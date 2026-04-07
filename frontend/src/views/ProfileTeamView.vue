@@ -174,9 +174,10 @@ const openReview = async () => {
 
 const handleReview = async (app: TeamJoinApplicationVO, approve: boolean) => {
   if (!app.id || !storedUser.value?.id) return
+  const rejectReason = approve ? '' : (window.prompt('可选：填写拒绝原因（留空则不填写）') ?? '').trim()
   reviewSubmitting.value[app.id] = true
   try {
-    await reviewApplication(app.id, storedUser.value.id, approve)
+    await reviewApplication(app.id, storedUser.value.id, approve, rejectReason)
     showToast(approve ? '已通过申请' : '已拒绝申请')
     // 从待审核列表移除
     pendingApplications.value = pendingApplications.value.filter((a) => a.id !== app.id)
@@ -575,7 +576,10 @@ onMounted(async () => {
               <div class="review-card-header">
                 <div class="review-applicant">
                   <van-icon name="user-o" class="review-user-icon" />
-                  <span class="review-applicant-name">{{ app.applicantName ?? '未知用户' }}</span>
+                  <span class="review-applicant-name">
+                    {{ app.applicantName ?? '未知用户' }}
+                    <span v-if="app.applicantStudentId" class="review-applicant-id">（{{ app.applicantStudentId }}）</span>
+                  </span>
                 </div>
                 <div class="review-team-tag">{{ app.teamTitle }}</div>
               </div>
@@ -621,8 +625,12 @@ onMounted(async () => {
                 </div>
               </div>
               <div class="review-time">申请时间：{{ formatDate(app.createTime) }}</div>
+              <div v-if="app.reviewTime" class="review-time">审批时间：{{ formatDateTime(app.reviewTime) }}</div>
               <div v-if="app.reason" class="review-reason">
                 <span class="review-reason-label">申请理由：</span>{{ app.reason }}
+              </div>
+              <div v-if="app.status === 2 && app.rejectReason" class="review-reason">
+                <span class="review-reason-label">拒绝原因：</span>{{ app.rejectReason }}
               </div>
             </div>
           </div>
@@ -1176,6 +1184,12 @@ onMounted(async () => {
   font-size: 15px;
   font-weight: 600;
   color: #1a1a1a;
+}
+
+.review-applicant-id {
+  font-size: 12px;
+  font-weight: 400;
+  color: #909399;
 }
 
 .review-team-tag {

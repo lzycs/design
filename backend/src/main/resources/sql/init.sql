@@ -853,6 +853,55 @@ CREATE TABLE IF NOT EXISTS `team_join_application` (
     FOREIGN KEY (`applicant_id`) REFERENCES `user`(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='小组加入申请表';
 
+-- 兼容历史库：补齐审批信息字段
+SET @__tja_reviewer_id_exists := (
+  SELECT COUNT(*)
+  FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'team_join_application'
+    AND COLUMN_NAME = 'reviewer_id'
+);
+SET @__tja_reviewer_id_sql := IF(
+  @__tja_reviewer_id_exists = 0,
+  'ALTER TABLE `team_join_application` ADD COLUMN `reviewer_id` BIGINT NULL COMMENT ''审批人用户ID''',
+  'SELECT 1'
+);
+PREPARE __tja_stmt1 FROM @__tja_reviewer_id_sql;
+EXECUTE __tja_stmt1;
+DEALLOCATE PREPARE __tja_stmt1;
+
+SET @__tja_review_time_exists := (
+  SELECT COUNT(*)
+  FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'team_join_application'
+    AND COLUMN_NAME = 'review_time'
+);
+SET @__tja_review_time_sql := IF(
+  @__tja_review_time_exists = 0,
+  'ALTER TABLE `team_join_application` ADD COLUMN `review_time` DATETIME NULL COMMENT ''审批时间''',
+  'SELECT 1'
+);
+PREPARE __tja_stmt2 FROM @__tja_review_time_sql;
+EXECUTE __tja_stmt2;
+DEALLOCATE PREPARE __tja_stmt2;
+
+SET @__tja_reject_reason_exists := (
+  SELECT COUNT(*)
+  FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'team_join_application'
+    AND COLUMN_NAME = 'reject_reason'
+);
+SET @__tja_reject_reason_sql := IF(
+  @__tja_reject_reason_exists = 0,
+  'ALTER TABLE `team_join_application` ADD COLUMN `reject_reason` TEXT NULL COMMENT ''拒绝原因''',
+  'SELECT 1'
+);
+PREPARE __tja_stmt3 FROM @__tja_reject_reason_sql;
+EXECUTE __tja_stmt3;
+DEALLOCATE PREPARE __tja_stmt3;
+
 -- 插入加入申请测试数据
 -- 王五(id=6)申请加入「项目需求评审」(id=1，组长=张三 id=1)
 -- 王老师(id=3)申请加入「接口联调测试」(id=3，组长=李四 id=2)

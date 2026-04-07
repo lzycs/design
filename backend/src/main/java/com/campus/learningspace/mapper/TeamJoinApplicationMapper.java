@@ -16,10 +16,13 @@ public interface TeamJoinApplicationMapper extends BaseMapper<TeamJoinApplicatio
     @Select("""
             SELECT a.id, a.team_request_id AS teamRequestId, a.applicant_id AS applicantId,
                    a.reason, a.status, a.create_time AS createTime,
-                   u.real_name AS applicantName,
+                   a.reviewer_id AS reviewerId, a.review_time AS reviewTime, a.reject_reason AS rejectReason,
+                   u.real_name AS applicantName, u.student_id AS applicantStudentId,
+                   ur.real_name AS reviewerName,
                    t.title AS teamTitle
             FROM team_join_application a
             LEFT JOIN `user` u ON a.applicant_id = u.id AND u.deleted = 0
+            LEFT JOIN `user` ur ON a.reviewer_id = ur.id AND ur.deleted = 0
             LEFT JOIN team_request t ON a.team_request_id = t.id AND t.deleted = 0
             WHERE a.deleted = 0 AND a.team_request_id = #{teamRequestId} AND a.status = 0
             ORDER BY a.create_time ASC
@@ -32,12 +35,15 @@ public interface TeamJoinApplicationMapper extends BaseMapper<TeamJoinApplicatio
     @Select("""
             SELECT a.id, a.team_request_id AS teamRequestId, a.applicant_id AS applicantId,
                    a.reason, a.status, a.create_time AS createTime,
-                   u.real_name AS applicantName,
+                   a.reviewer_id AS reviewerId, a.review_time AS reviewTime, a.reject_reason AS rejectReason,
+                   u.real_name AS applicantName, u.student_id AS applicantStudentId,
+                   ur.real_name AS reviewerName,
                    t.title AS teamTitle
             FROM team_join_application a
             INNER JOIN team_member m ON a.team_request_id = m.team_request_id
                 AND m.user_id = #{leaderId} AND m.role = 1 AND m.deleted = 0
             LEFT JOIN `user` u ON a.applicant_id = u.id AND u.deleted = 0
+            LEFT JOIN `user` ur ON a.reviewer_id = ur.id AND ur.deleted = 0
             LEFT JOIN team_request t ON a.team_request_id = t.id AND t.deleted = 0
             WHERE a.deleted = 0 AND a.status = 0
             ORDER BY a.create_time ASC
@@ -50,15 +56,34 @@ public interface TeamJoinApplicationMapper extends BaseMapper<TeamJoinApplicatio
     @Select("""
             SELECT a.id, a.team_request_id AS teamRequestId, a.applicant_id AS applicantId,
                    a.reason, a.status, a.create_time AS createTime,
-                   u.real_name AS applicantName,
+                   a.reviewer_id AS reviewerId, a.review_time AS reviewTime, a.reject_reason AS rejectReason,
+                   u.real_name AS applicantName, u.student_id AS applicantStudentId,
+                   ur.real_name AS reviewerName,
                    t.title AS teamTitle
             FROM team_join_application a
             LEFT JOIN `user` u ON a.applicant_id = u.id AND u.deleted = 0
+            LEFT JOIN `user` ur ON a.reviewer_id = ur.id AND ur.deleted = 0
             LEFT JOIN team_request t ON a.team_request_id = t.id AND t.deleted = 0
             WHERE a.deleted = 0 AND a.applicant_id = #{applicantId} AND a.status IN (1, 2)
             ORDER BY a.create_time DESC
             """)
     List<TeamJoinApplicationVO> selectResultsByApplicant(@Param("applicantId") Long applicantId);
+
+    @Select("""
+            SELECT a.id, a.team_request_id AS teamRequestId, a.applicant_id AS applicantId,
+                   a.reason, a.status, a.create_time AS createTime,
+                   a.reviewer_id AS reviewerId, a.review_time AS reviewTime, a.reject_reason AS rejectReason,
+                   u.real_name AS applicantName, u.student_id AS applicantStudentId,
+                   ur.real_name AS reviewerName,
+                   t.title AS teamTitle
+            FROM team_join_application a
+            LEFT JOIN `user` u ON a.applicant_id = u.id AND u.deleted = 0
+            LEFT JOIN `user` ur ON a.reviewer_id = ur.id AND ur.deleted = 0
+            LEFT JOIN team_request t ON a.team_request_id = t.id AND t.deleted = 0
+            WHERE a.deleted = 0 AND a.applicant_id = #{applicantId} AND a.status = 0
+            ORDER BY a.create_time DESC
+            """)
+    List<TeamJoinApplicationVO> selectPendingByApplicant(@Param("applicantId") Long applicantId);
 
     /**
      * 统计组长有多少待审核申请

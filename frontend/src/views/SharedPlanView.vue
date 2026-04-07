@@ -481,26 +481,12 @@ onMounted(async () => {
                 </div>
                 <div class="action-group">
                   <button
-                    v-if="statusTag(p).text === '进行中' || statusTag(p).text === '已过期'"
-                    type="button"
-                    class="action-btn primary-btn"
-                  >
-                    编辑
-                  </button>
-                  <button
                     v-if="(statusTag(p).text === '进行中' || statusTag(p).text === '已过期') && canBindRoom(p)"
                     type="button"
                     class="action-btn success-btn"
                     @click="openBindRoom(p)"
                   >
                     关联研讨室
-                  </button>
-                  <button
-                    v-if="statusTag(p).text === '已完成'"
-                    type="button"
-                    class="action-btn detail-btn"
-                  >
-                    查看详情
                   </button>
                 </div>
               </div>
@@ -1041,11 +1027,6 @@ onMounted(async () => {
 .success-btn {
   background-color: #4caf50;
   color: #fff;
-}
-
-.detail-btn {
-  background-color: #f5f7fa;
-  color: #909399;
 }
 
 /* 创建计划弹层内复用 */

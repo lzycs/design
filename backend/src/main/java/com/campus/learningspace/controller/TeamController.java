@@ -147,7 +147,8 @@ public class TeamController {
         }
         Long leaderId = Long.valueOf(leaderIdObj.toString());
         boolean approve = Boolean.parseBoolean(body.getOrDefault("approve", "false").toString());
-        boolean ok = teamJoinApplicationService.review(applicationId, leaderId, approve);
+        String rejectReason = body.getOrDefault("rejectReason", "").toString();
+        boolean ok = teamJoinApplicationService.review(applicationId, leaderId, approve, rejectReason);
         return ok ? Result.success(true) : Result.error(400, "审核失败（权限不足或申请已处理）");
     }
 
@@ -169,6 +170,16 @@ public class TeamController {
     public Result<List<TeamJoinApplicationVO>> getApplicationResults(
             @RequestParam Long applicantId) {
         return Result.success(teamJoinApplicationService.getResultsForApplicant(applicantId));
+    }
+
+    /**
+     * 获取成员待处理申请（用于前端控制“申请加入”按钮）
+     * GET /api/team/applications/pending-by-applicant?applicantId=xxx
+     */
+    @GetMapping("/applications/pending-by-applicant")
+    public Result<List<TeamJoinApplicationVO>> getPendingByApplicant(
+            @RequestParam Long applicantId) {
+        return Result.success(teamJoinApplicationService.getPendingForApplicant(applicantId));
     }
 
     /**

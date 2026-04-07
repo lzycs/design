@@ -26,6 +26,15 @@ public class TeamJoinApplication {
     /** 状态: 0-待审核, 1-已通过, 2-已拒绝 */
     private Integer status;
 
+    /** 审批人ID（组长） */
+    private Long reviewerId;
+
+    /** 审批时间 */
+    private LocalDateTime reviewTime;
+
+    /** 拒绝原因（可选） */
+    private String rejectReason;
+
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
