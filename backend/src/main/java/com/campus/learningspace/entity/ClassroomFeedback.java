@@ -9,6 +9,11 @@ import java.time.LocalDateTime;
 @TableName("classroom_feedback")
 public class ClassroomFeedback {
 
+    public static final int STATUS_PENDING_EVALUATION = 1;
+    public static final int STATUS_PENDING_AUDIT = 2;
+    public static final int STATUS_APPROVED = 3;
+    public static final int STATUS_REJECTED = 4;
+
     @TableId(type = IdType.AUTO)
     private Long id;
 
@@ -34,7 +39,7 @@ public class ClassroomFeedback {
     private String content;
 
     /**
-     * 状态: 1-待评价(预留), 2-已评价
+     * 状态: 1-待评价, 2-待审核, 3-审核通过, 4-审核驳回
      */
     private Integer status;
 

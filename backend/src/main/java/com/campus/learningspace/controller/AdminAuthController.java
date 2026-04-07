@@ -5,13 +5,13 @@ import com.campus.learningspace.entity.AdminLoginResponse;
 import com.campus.learningspace.entity.AdminMenu;
 import com.campus.learningspace.entity.AdminOverviewVO;
 import com.campus.learningspace.entity.Classroom;
+import com.campus.learningspace.entity.ClassroomFeedback;
 import com.campus.learningspace.entity.Repair;
-import com.campus.learningspace.entity.Review;
 import com.campus.learningspace.service.AdminAuthService;
 import com.campus.learningspace.service.AdminPermissionService;
+import com.campus.learningspace.service.ClassroomFeedbackService;
 import com.campus.learningspace.service.ClassroomService;
 import com.campus.learningspace.service.RepairService;
-import com.campus.learningspace.service.ReviewService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,18 +25,18 @@ public class AdminAuthController {
     private final AdminAuthService adminAuthService;
     private final AdminPermissionService adminPermissionService;
     private final RepairService repairService;
-    private final ReviewService reviewService;
+    private final ClassroomFeedbackService classroomFeedbackService;
     private final ClassroomService classroomService;
 
     public AdminAuthController(AdminAuthService adminAuthService,
                                 AdminPermissionService adminPermissionService,
                                 RepairService repairService,
-                                ReviewService reviewService,
+                                ClassroomFeedbackService classroomFeedbackService,
                                 ClassroomService classroomService) {
         this.adminAuthService = adminAuthService;
         this.adminPermissionService = adminPermissionService;
         this.repairService = repairService;
-        this.reviewService = reviewService;
+        this.classroomFeedbackService = classroomFeedbackService;
         this.classroomService = classroomService;
     }
 
@@ -95,10 +95,10 @@ public class AdminAuthController {
         }
 
         if (adminPermissionService.hasPermission(session, "review:audit")) {
-            LambdaQueryWrapper<Review> w = new LambdaQueryWrapper<>();
-            w.eq(Review::getStatus, 0);
-            w.eq(Review::getDeleted, 0);
-            long pending = reviewService.count(w);
+            LambdaQueryWrapper<ClassroomFeedback> w = new LambdaQueryWrapper<>();
+            w.eq(ClassroomFeedback::getStatus, ClassroomFeedback.STATUS_PENDING_AUDIT);
+            w.eq(ClassroomFeedback::getDeleted, 0);
+            long pending = classroomFeedbackService.count(w);
             vo.setPendingReviewCount((int) pending);
         } else {
             vo.setPendingReviewCount(0);

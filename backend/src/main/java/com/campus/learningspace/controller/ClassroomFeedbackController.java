@@ -11,6 +11,8 @@ import com.campus.learningspace.service.ReservationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -55,25 +57,27 @@ public class ClassroomFeedbackController {
     }
 
     /**
-     * 已评价列表
+     * 已评价列表（含待审核/审核通过/审核驳回）
      */
     @GetMapping
     public Result<List<FeedbackVO>> getEvaluated(@RequestParam Long userId) {
         List<ClassroomFeedback> list = feedbackService.getEvaluatedByUser(userId);
         List<FeedbackVO> result = new ArrayList<>();
         for (ClassroomFeedback fb : list) {
-            FeedbackVO vo = new FeedbackVO();
-            vo.setId(fb.getId());
-            vo.setUserId(fb.getUserId());
-            vo.setClassroomId(fb.getClassroomId());
-            Classroom classroom = classroomService.getById(fb.getClassroomId());
-            vo.setClassroomName(classroom != null ? classroom.getName() : "");
-            vo.setEnvScore(fb.getEnvScore() != null ? fb.getEnvScore() : 0);
-            vo.setEquipScore(fb.getEquipScore() != null ? fb.getEquipScore() : 0);
-            vo.setContent(fb.getContent());
-            vo.setStatus(fb.getStatus());
-            vo.setCreatedAt(fb.getCreateTime());
-            result.add(vo);
+            result.add(toFeedbackVO(fb));
+        }
+        return Result.success(result);
+    }
+
+    /**
+     * 教室审核通过评价列表
+     */
+    @GetMapping("/classroom/{classroomId}/approved")
+    public Result<List<FeedbackVO>> getApprovedByClassroom(@PathVariable Long classroomId) {
+        List<ClassroomFeedback> list = feedbackService.getApprovedByClassroomId(classroomId);
+        List<FeedbackVO> result = new ArrayList<>();
+        for (ClassroomFeedback fb : list) {
+            result.add(toFeedbackVO(fb));
         }
         return Result.success(result);
     }
@@ -97,11 +101,8 @@ public class ClassroomFeedbackController {
         }
         existing.setEnvScore(env);
         existing.setEquipScore(equip);
-        if (payload.getContent() != null) {
-            existing.setContent(payload.getContent());
-        }
-        // 更新为已评价
-        existing.setStatus(2);
+        existing.setContent(payload.getContent());
+        existing.setStatus(ClassroomFeedback.STATUS_PENDING_AUDIT);
         if (existing.getUsedEndTime() == null) {
             existing.setUsedEndTime(LocalDateTime.now());
         }
@@ -145,7 +146,7 @@ public class ClassroomFeedbackController {
             fb.setUserId(userId);
             fb.setClassroomId(r.getClassroomId());
             fb.setReservationId(r.getId());
-            fb.setStatus(1);
+            fb.setStatus(ClassroomFeedback.STATUS_PENDING_EVALUATION);
 
             LocalDate date = r.getReservationDate();
             LocalTime start = r.getStartTime();
@@ -159,6 +160,40 @@ public class ClassroomFeedbackController {
 
             feedbackService.save(fb);
         }
+    }
+
+    private FeedbackVO toFeedbackVO(ClassroomFeedback fb) {
+        FeedbackVO vo = new FeedbackVO();
+        vo.setId(fb.getId());
+        vo.setUserId(fb.getUserId());
+        vo.setClassroomId(fb.getClassroomId());
+        Classroom classroom = classroomService.getById(fb.getClassroomId());
+        vo.setClassroomName(classroom != null ? classroom.getName() : "");
+        vo.setEnvScore(fb.getEnvScore() != null ? fb.getEnvScore() : 0);
+        vo.setEquipScore(fb.getEquipScore() != null ? fb.getEquipScore() : 0);
+        vo.setContent(fb.getContent());
+        vo.setStatus(fb.getStatus());
+        vo.setCreatedAt(fb.getCreateTime());
+        vo.setUpdatedAt(fb.getUpdateTime());
+        vo.setAverageScore(calcAverageScore(fb.getEnvScore(), fb.getEquipScore()));
+        return vo;
+    }
+
+    private BigDecimal calcAverageScore(Integer envScore, Integer equipScore) {
+        if (envScore == null && equipScore == null) {
+            return null;
+        }
+        int total = 0;
+        int count = 0;
+        if (envScore != null) {
+            total += envScore;
+            count++;
+        }
+        if (equipScore != null) {
+            total += equipScore;
+            count++;
+        }
+        return count == 0 ? null : BigDecimal.valueOf((double) total / count).setScale(1, RoundingMode.HALF_UP);
     }
 
     // ================== VO 定义 ==================
@@ -239,6 +274,8 @@ public class ClassroomFeedbackController {
         private String content;
         private Integer status;
         private LocalDateTime createdAt;
+        private LocalDateTime updatedAt;
+        private BigDecimal averageScore;
 
         public Long getId() {
             return id;
@@ -311,6 +348,21 @@ public class ClassroomFeedbackController {
         public void setCreatedAt(LocalDateTime createdAt) {
             this.createdAt = createdAt;
         }
+
+        public LocalDateTime getUpdatedAt() {
+            return updatedAt;
+        }
+
+        public void setUpdatedAt(LocalDateTime updatedAt) {
+            this.updatedAt = updatedAt;
+        }
+
+        public BigDecimal getAverageScore() {
+            return averageScore;
+        }
+
+        public void setAverageScore(BigDecimal averageScore) {
+            this.averageScore = averageScore;
+        }
     }
 }
-

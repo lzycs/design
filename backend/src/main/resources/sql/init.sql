@@ -256,7 +256,7 @@ CREATE TABLE IF NOT EXISTS `classroom_feedback` (
     `env_score` TINYINT NULL COMMENT '整体环境评分 1-5（待评价时可为空）',
     `equip_score` TINYINT NULL COMMENT '设备设施评分 1-5（待评价时可为空）',
     `content` TEXT COMMENT '评价内容',
-    `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态: 1-待评价(预留), 2-已评价',
+    `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态: 1-待评价, 2-待审核, 3-审核通过, 4-审核驳回',
     `used_start_time` DATETIME COMMENT '使用开始时间',
     `used_end_time` DATETIME COMMENT '使用结束时间',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
@@ -667,6 +667,27 @@ ON DUPLICATE KEY UPDATE
   `content`        = VALUES(`content`),
   `tags`           = VALUES(`tags`),
   `status`         = VALUES(`status`);
+
+-- 插入教室评价测试数据（用于前端评价流转与审核）
+INSERT INTO `classroom_feedback` (
+  `id`, `user_id`, `classroom_id`, `reservation_id`, `env_score`, `equip_score`, `content`, `status`, `used_start_time`, `used_end_time`, `create_time`, `update_time`
+) VALUES
+(1, 1, 1, 2, NULL, NULL, NULL, 1, DATE_FORMAT(CONCAT(CURDATE(), ' 08:00:00'), '%Y-%m-%d %H:%i:%s'), DATE_FORMAT(CONCAT(CURDATE(), ' 10:00:00'), '%Y-%m-%d %H:%i:%s'), NOW(), NOW()),
+(2, 1, 3, 3, 5, 4, '研讨室整体安静，白板和显示设备都比较顺手。', 2, DATE_FORMAT(CONCAT(DATE_ADD(CURDATE(), INTERVAL -1 DAY), ' 10:00:00'), '%Y-%m-%d %H:%i:%s'), DATE_FORMAT(CONCAT(DATE_ADD(CURDATE(), INTERVAL -1 DAY), ' 12:00:00'), '%Y-%m-%d %H:%i:%s'), NOW(), NOW()),
+(3, 2, 6, NULL, 4, 4, '会议室空间宽敞，网络稳定，整体体验不错。', 3, DATE_FORMAT(CONCAT(DATE_ADD(CURDATE(), INTERVAL -2 DAY), ' 14:00:00'), '%Y-%m-%d %H:%i:%s'), DATE_FORMAT(CONCAT(DATE_ADD(CURDATE(), INTERVAL -2 DAY), ' 16:00:00'), '%Y-%m-%d %H:%i:%s'), NOW(), NOW()),
+(4, 2, 4, NULL, 2, 3, '空调噪音偏大，讨论时会受到影响。', 4, DATE_FORMAT(CONCAT(DATE_ADD(CURDATE(), INTERVAL -3 DAY), ' 16:00:00'), '%Y-%m-%d %H:%i:%s'), DATE_FORMAT(CONCAT(DATE_ADD(CURDATE(), INTERVAL -3 DAY), ' 18:00:00'), '%Y-%m-%d %H:%i:%s'), NOW(), NOW())
+ON DUPLICATE KEY UPDATE
+  `user_id` = VALUES(`user_id`),
+  `classroom_id` = VALUES(`classroom_id`),
+  `reservation_id` = VALUES(`reservation_id`),
+  `env_score` = VALUES(`env_score`),
+  `equip_score` = VALUES(`equip_score`),
+  `content` = VALUES(`content`),
+  `status` = VALUES(`status`),
+  `used_start_time` = VALUES(`used_start_time`),
+  `used_end_time` = VALUES(`used_end_time`),
+  `create_time` = VALUES(`create_time`),
+  `update_time` = VALUES(`update_time`);
 
 -- 管理后台角色/权限/菜单初始化
 INSERT INTO `admin_role` (`id`, `name`, `role_type`, `user_role`, `deleted`) VALUES

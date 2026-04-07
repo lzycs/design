@@ -16,6 +16,11 @@ const statusFilters: { label: string; value: number | null }[] = [
   { label: '已驳回', value: 2 },
 ]
 
+const scoreText = (score: number | null | undefined) => {
+  if (score == null) return '暂无评分'
+  return `${score}星综合评分`
+}
+
 const loadReviews = async () => {
   loading.value = true
   try {
@@ -123,8 +128,8 @@ onMounted(loadReviews)
                 {{ statusLabel(item.status) }}
               </div>
             </div>
-            <div class="list-meta">{{ item.score }}星评价 | {{ item.createTime?.slice(0, 10) }}</div>
-            <div class="list-desc">{{ item.content }}</div>
+            <div class="list-meta">{{ scoreText(item.score) }} | {{ item.createTime?.slice(0, 10) }}</div>
+            <div class="list-desc">{{ item.content || '用户未填写文字评价' }}</div>
 
             <div v-if="item.status === 0" class="action-group">
               <button class="action-btn success-btn" @click="handleAudit(item, true)">

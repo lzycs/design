@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { showToast } from 'vant'
 import { getClassroomDetail, type ClassroomDetailVO } from '@/api/classroom'
+import { getApprovedClassroomFeedback, type FeedbackItem } from '@/api/feedback'
 import { getBuildingById, type Building } from '@/api/building'
 import {
   getClassroomSlots,
@@ -20,6 +21,7 @@ const detail = ref<ClassroomDetailVO | null>(null)
 const classroom = computed(() => detail.value?.classroom ?? null)
 const building = ref<Building | null>(null)
 const loading = ref(false)
+const approvedFeedbackList = ref<FeedbackItem[]>([])
 
 const dateTab = ref<'today' | 'tomorrow' | 'dayAfter'>('today')
 const slots = ref<ClassroomSlotStatus[]>([])
@@ -79,6 +81,7 @@ const averageScore = computed(() => {
   return typeof v === 'number' ? v : Number(v)
 })
 const totalReviews = computed(() => detail.value?.totalReviews ?? 0)
+const hasApprovedFeedback = computed(() => approvedFeedbackList.value.length > 0)
 /** 热度星级 1-5 */
 const popularityStars = computed(() => Math.min(5, Math.max(1, detail.value?.popularityStars ?? 0)))
 
@@ -119,6 +122,11 @@ const loadClassroom = async () => {
     const res = await getClassroomDetail(id)
     const maybe = (res as unknown as { data?: ClassroomDetailVO }).data
     detail.value = maybe ?? null
+    if (detail.value?.classroom?.id) {
+      await loadApprovedFeedback(detail.value.classroom.id)
+    } else {
+      approvedFeedbackList.value = []
+    }
     if (detail.value?.classroom?.buildingId) {
       const bRes = await getBuildingById(detail.value.classroom.buildingId)
       building.value = (bRes as unknown as { data?: Building }).data ?? null
@@ -126,6 +134,16 @@ const loadClassroom = async () => {
     await loadSlots()
   } finally {
     loading.value = false
+  }
+}
+
+const loadApprovedFeedback = async (classroomId: number) => {
+  try {
+    const res = await getApprovedClassroomFeedback(classroomId)
+    approvedFeedbackList.value = Array.isArray(res.data) ? res.data : []
+  } catch (e) {
+    console.error(e)
+    approvedFeedbackList.value = []
   }
 }
 
@@ -381,6 +399,24 @@ onMounted(() => {
         </div>
       </div>
 
+      <div class="card review-card">
+        <div class="book-title">评价展示</div>
+        <div v-if="hasApprovedFeedback" class="review-list">
+          <div v-for="item in approvedFeedbackList" :key="item.id" class="review-item">
+            <div class="review-item-head">
+              <div class="review-item-score">综合 {{ item.averageScore?.toFixed(1) ?? '0.0' }} 分</div>
+              <div class="review-item-time">{{ item.updatedAt || item.createdAt }}</div>
+            </div>
+            <div class="review-item-stars">
+              <span>环境 {{ item.envScore.toFixed(1) }} 分</span>
+              <span>设备 {{ item.equipScore.toFixed(1) }} 分</span>
+            </div>
+            <div class="review-item-content">{{ item.content || '该用户未填写文字评价。' }}</div>
+          </div>
+        </div>
+        <div v-else class="review-empty">暂无审核通过的评价，提交后的评价需经 commentadmin 审核通过后才展示。</div>
+      </div>
+
       <div class="card book-card">
         <div class="book-title">预约时段选择</div>
         <div class="book-sub">可勾选多个<strong>相邻</strong>时段，合并为一次预约，总时长不超过单次上限</div>
@@ -482,6 +518,61 @@ onMounted(() => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   padding: 16px;
   margin-bottom: 16px;
+}
+
+.review-card {
+  margin-bottom: 16px;
+}
+
+.review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.review-item {
+  padding: 14px;
+  border-radius: 12px;
+  background: #f8fbff;
+  border: 1px solid #e2ecff;
+}
+
+.review-item-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.review-item-score {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f3f75;
+}
+
+.review-item-time {
+  font-size: 12px;
+  color: #8a94a6;
+}
+
+.review-item-stars {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: #4f5d75;
+  margin-bottom: 8px;
+}
+
+.review-item-content {
+  font-size: 14px;
+  color: #2d3648;
+  line-height: 1.6;
+}
+
+.review-empty {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #7d8798;
 }
 
 .classroom-header {

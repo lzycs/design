@@ -14,6 +14,12 @@ import {
   type CreateRepairPayload
 } from '../api/feedback'
 
+const FEEDBACK_STATUS_LABEL: Record<number, string> = {
+  2: '待审核',
+  3: '审核通过',
+  4: '审核不通过'
+}
+
 const router = useRouter()
 const route = useRoute()
 
@@ -95,6 +101,22 @@ const filteredEvaluatedList = computed(() => {
 
 const classroomNameById = (id: number) => {
   return classrooms.value.find(c => c.id === id)?.name ?? ''
+}
+
+const evaluationStatusLabel = (status: number) => FEEDBACK_STATUS_LABEL[status] ?? '未知状态'
+
+const evaluationStatusClass = (status: number) => {
+  if (status === 2) return 'status-pending'
+  if (status === 3) return 'status-approved'
+  if (status === 4) return 'status-rejected'
+  return 'status-unknown'
+}
+
+const evaluationStatusHint = (status: number) => {
+  if (status === 2) return '评价提交后将由 commentadmin 账号审核，通过后才会展示在教室详情页。'
+  if (status === 3) return '该评价已通过审核，当前已在教室详情页展示。'
+  if (status === 4) return '该评价未通过审核，记录保留但不会在教室详情页展示。'
+  return ''
 }
 
 const loadUserFromStorage = () => {
@@ -237,7 +259,7 @@ const onSubmitEvaluation = async () => {
       equipScore: evalEquipScore.value,
       content: evalContent.value.trim() || undefined
     })
-    window.alert('评价提交成功！感谢你的反馈')
+    window.alert('评价已提交，当前状态为待审核，审核通过后才会展示在教室详情页。')
     showEvalForm.value = false
     await loadFeedbackData()
   } catch (e) {
@@ -427,8 +449,13 @@ onMounted(() => {
           data-status="evaluated"
         >
           <div class="evaluation-header">
-            <div class="evaluation-classroom">{{ item.classroomName }}</div>
-            <div class="evaluation-time">评价时间：{{ item.createdAt }}</div>
+            <div>
+              <div class="evaluation-classroom">{{ item.classroomName }}</div>
+              <div class="evaluation-time">评价时间：{{ item.createdAt }}</div>
+            </div>
+            <div class="evaluation-status" :class="evaluationStatusClass(item.status)">
+              {{ evaluationStatusLabel(item.status) }}
+            </div>
           </div>
 
           <div class="evaluation-category">
@@ -464,6 +491,10 @@ onMounted(() => {
 
           <div v-if="item.content" class="evaluation-content">
             {{ item.content }}
+          </div>
+
+          <div class="evaluation-audit-hint">
+            {{ evaluationStatusHint(item.status) }}
           </div>
 
           <div class="evaluation-actions">
@@ -847,6 +878,35 @@ onMounted(() => {
   color: #909399;
 }
 
+.evaluation-status {
+  min-width: 72px;
+  text-align: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-pending {
+  background: #fff7e8;
+  color: #d48806;
+}
+
+.status-approved {
+  background: #edf9f1;
+  color: #2b8a3e;
+}
+
+.status-rejected {
+  background: #fff1f0;
+  color: #cf1322;
+}
+
+.status-unknown {
+  background: #f2f3f5;
+  color: #86909c;
+}
+
 .evaluation-category {
   display: flex;
   flex-direction: column;
@@ -872,6 +932,13 @@ onMounted(() => {
   padding: 8px 12px;
   background-color: #f9f9f9;
   border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.evaluation-audit-hint {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #7b8190;
   margin-bottom: 12px;
 }
 

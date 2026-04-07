@@ -4,12 +4,11 @@ import com.campus.learningspace.common.Result;
 import com.campus.learningspace.entity.AdminOperationLog;
 import com.campus.learningspace.entity.AdminReviewAuditRequest;
 import com.campus.learningspace.entity.AdminReviewVO;
-import com.campus.learningspace.entity.Review;
-import com.campus.learningspace.mapper.ReviewMapper;
+import com.campus.learningspace.entity.ClassroomFeedback;
 import com.campus.learningspace.service.AdminAuthService;
 import com.campus.learningspace.service.AdminOperationLogService;
 import com.campus.learningspace.service.AdminPermissionService;
-import com.campus.learningspace.service.ReviewService;
+import com.campus.learningspace.service.ClassroomFeedbackService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -22,19 +21,16 @@ public class AdminReviewController {
 
     private final AdminAuthService adminAuthService;
     private final AdminPermissionService adminPermissionService;
-    private final ReviewService reviewService;
-    private final ReviewMapper reviewMapper;
+    private final ClassroomFeedbackService classroomFeedbackService;
     private final AdminOperationLogService adminOperationLogService;
 
     public AdminReviewController(AdminAuthService adminAuthService,
                                   AdminPermissionService adminPermissionService,
-                                  ReviewService reviewService,
-                                  ReviewMapper reviewMapper,
+                                  ClassroomFeedbackService classroomFeedbackService,
                                   AdminOperationLogService adminOperationLogService) {
         this.adminAuthService = adminAuthService;
         this.adminPermissionService = adminPermissionService;
-        this.reviewService = reviewService;
-        this.reviewMapper = reviewMapper;
+        this.classroomFeedbackService = classroomFeedbackService;
         this.adminOperationLogService = adminOperationLogService;
     }
 
@@ -48,16 +44,16 @@ public class AdminReviewController {
             return Result.error(403, "没有评价审核权限");
         }
 
-        List<AdminReviewVO> all = reviewMapper.selectAdminReviewList();
+        List<AdminReviewVO> all = classroomFeedbackService.getAdminReviewList();
         List<AdminReviewVO> filtered = new ArrayList<>();
         String kw = keyword == null ? null : keyword.trim().toLowerCase();
         for (AdminReviewVO vo : all) {
             if (status != null && vo.getStatus() != null && !status.equals(vo.getStatus())) continue;
             if (kw != null && !kw.isEmpty()) {
-                String id = vo.getReviewerName() == null ? "" : vo.getReviewerName().toLowerCase();
+                String reviewerName = vo.getReviewerName() == null ? "" : vo.getReviewerName().toLowerCase();
                 String location = vo.getLocation() == null ? "" : vo.getLocation().toLowerCase();
                 String content = vo.getContent() == null ? "" : vo.getContent().toLowerCase();
-                if (!id.contains(kw) && !location.contains(kw) && !content.contains(kw)) continue;
+                if (!reviewerName.contains(kw) && !location.contains(kw) && !content.contains(kw)) continue;
             }
             filtered.add(vo);
         }
@@ -75,25 +71,27 @@ public class AdminReviewController {
         }
         if (req == null || req.getApprove() == null) return Result.error(400, "approve不能为空");
 
-        Review existing = reviewService.getById(id);
+        ClassroomFeedback existing = classroomFeedbackService.getById(id);
         if (existing == null || existing.getDeleted() != null && existing.getDeleted() == 1) {
             return Result.error(404, "评价不存在");
         }
+        if (!Integer.valueOf(ClassroomFeedback.STATUS_PENDING_AUDIT).equals(existing.getStatus())) {
+            return Result.error(400, "仅待审核评价可执行审核操作");
+        }
 
         Integer oldStatus = existing.getStatus();
-        existing.setStatus(req.getApprove() ? 1 : 2);
-        boolean ok = reviewService.updateById(existing);
+        existing.setStatus(req.getApprove() ? ClassroomFeedback.STATUS_APPROVED : ClassroomFeedback.STATUS_REJECTED);
+        boolean ok = classroomFeedbackService.updateById(existing);
         if (!ok) return Result.success(false);
 
         AdminOperationLog log = new AdminOperationLog();
         log.setAdminUserId(session.adminUserId());
         log.setAdminRoleId(session.adminRoleId());
-        log.setAction("REVIEW_AUDIT");
-        log.setDetail("reviewId=" + existing.getId() + ", oldStatus=" + oldStatus + ", newStatus=" + existing.getStatus()
+        log.setAction("CLASSROOM_FEEDBACK_AUDIT");
+        log.setDetail("feedbackId=" + existing.getId() + ", oldStatus=" + oldStatus + ", newStatus=" + existing.getStatus()
                 + ", remark=" + (req.getRemark() == null ? "" : req.getRemark()));
         adminOperationLogService.save(log);
 
         return Result.success(true);
     }
 }
-

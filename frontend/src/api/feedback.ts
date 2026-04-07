@@ -18,12 +18,6 @@ export interface CreateRepairPayload {
   images?: string
 }
 
-export const createRepair = (payload: CreateRepairPayload) => {
-  // 实际路径为 http://localhost:8080/api/repair
-  return request.post<any, Result<boolean>>('/repair', payload)
-}
-
-// 待评价教室项
 export interface PendingFeedbackItem {
   id: number
   userId: number
@@ -34,7 +28,6 @@ export interface PendingFeedbackItem {
   status: number
 }
 
-// 已评价项
 export interface FeedbackItem {
   id: number
   userId: number
@@ -45,23 +38,30 @@ export interface FeedbackItem {
   content?: string
   status: number
   createdAt: string
+  updatedAt?: string
+  averageScore?: number | null
 }
 
-// 获取待评价列表
+export const createRepair = (payload: CreateRepairPayload) => {
+  return request.post<any, Result<boolean>>('/repair', payload)
+}
+
 export const getPendingFeedback = (userId: number) => {
   return request.get<any, Result<PendingFeedbackItem[]>>('/feedback/pending', {
     params: { userId }
   })
 }
 
-// 获取已评价列表
 export const getFeedbackList = (userId: number) => {
   return request.get<any, Result<FeedbackItem[]>>('/feedback', {
     params: { userId }
   })
 }
 
-// 提交/更新评价
+export const getApprovedClassroomFeedback = (classroomId: number) => {
+  return request.get<any, Result<FeedbackItem[]>>(`/feedback/classroom/${classroomId}/approved`)
+}
+
 export const submitFeedback = (
   id: number,
   data: { envScore: number; equipScore: number; content?: string }
@@ -69,7 +69,6 @@ export const submitFeedback = (
   return request.put<any, Result<boolean>>(`/feedback/${id}`, data)
 }
 
-// 删除评价
 export const deleteFeedback = (id: number) => {
   return request.delete<any, Result<boolean>>(`/feedback/${id}`)
 }
