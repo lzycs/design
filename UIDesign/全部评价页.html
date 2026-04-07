@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全部评价 - 101多媒体教室</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+        }
+
+        /* 顶部导航栏 */
+        .nav-bar {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background-color: #fff;
+            border-bottom: 1px solid #e5e5e5;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-back {
+            width: 24px;
+            height: 24px;
+            margin-right: 12px;
+            cursor: pointer;
+        }
+
+        .nav-title {
+            font-size: 18px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        /* 主容器 */
+        .container {
+            padding: 16px;
+        }
+
+        /* 评分统计卡片 */
+        .score-card {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .score-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 16px;
+        }
+
+        .score-stats {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .main-score {
+            font-size: 32px;
+            font-weight: 600;
+            color: #333;
+            margin-right: 20px;
+        }
+
+        .score-detail {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .score-item {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .score-label {
+            width: 60px;
+        }
+
+        .score-bar {
+            width: 120px;
+            height: 6px;
+            background-color: #f0f0f0;
+            border-radius: 3px;
+            margin: 0 8px;
+            overflow: hidden;
+        }
+
+        .score-fill {
+            height: 100%;
+            background-color: #1677ff;
+            border-radius: 3px;
+        }
+
+        .score-text {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .total-reviews {
+            font-size: 14px;
+            color: #999;
+            padding-top: 8px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        /* 评价筛选栏 */
+        .filter-bar {
+            display: flex;
+            align-items: center;
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 8px 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .filter-item {
+            padding: 6px 12px;
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-right: 8px;
+        }
+
+        .filter-item.active {
+            background-color: #e8f4ff;
+            color: #1677ff;
+            font-weight: 500;
+        }
+
+        /* 评价列表 */
+        .review-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .review-card {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .review-time {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .review-score {
+            display: flex;
+            gap: 12px;
+        }
+
+        .review-score-item {
+            display: flex;
+            align-items: center;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .review-score-item .score {
+            color: #333;
+            font-weight: 500;
+            margin-left: 4px;
+        }
+
+        .review-content {
+            font-size: 15px;
+            color: #333;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        .review-divider {
+            height: 1px;
+            background-color: #f0f0f0;
+            margin: 12px 0;
+        }
+
+        /* 无评价状态 */
+        .empty-state {
+            text-align: center;
+            padding: 40px 0;
+            background-color: #fff;
+            border-radius: 8px;
+        }
+
+        .empty-icon {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 12px;
+            opacity: 0.3;
+        }
+
+        .empty-text {
+            font-size: 14px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <div class="nav-bar">
+        <svg class="nav-back" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <h1 class="nav-title">全部评价</h1>
+    </div>
+
+    <div class="container">
+        <!-- 评分统计卡片 -->
+        <div class="score-card">
+            <h2 class="score-title">101多媒体教室 评价统计</h2>
+            <div class="score-stats">
+                <div class="main-score">5.0</div>
+                <div class="score-detail">
+                    <div class="score-item">
+                        <span class="score-label">环境</span>
+                        <div class="score-bar">
+                            <div class="score-fill" style="width: 100%"></div>
+                        </div>
+                        <span class="score-text">5.0</span>
+                    </div>
+                    <div class="score-item">
+                        <span class="score-label">设备</span>
+                        <div class="score-bar">
+                            <div class="score-fill" style="width: 100%"></div>
+                        </div>
+                        <span class="score-text">5.0</span>
+                    </div>
+                </div>
+            </div>
+            <div class="total-reviews">共 2 条评价</div>
+        </div>
+
+        <!-- 评价筛选栏 -->
+        <div class="filter-bar">
+            <div class="filter-item active">全部</div>
+            <div class="filter-item">最新</div>
+            <div class="filter-item">好评</div>
+            <div class="filter-item">中评</div>
+            <div class="filter-item">差评</div>
+        </div>
+
+        <!-- 评价列表 -->
+        <div class="review-list">
+            <!-- 评价1 -->
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-score">
+                        <div class="review-score-item">综合：<span class="score">5.0</span></div>
+                        <div class="review-score-item">环境：<span class="score">5.0</span></div>
+                        <div class="review-score-item">设备：<span class="score">5.0</span></div>
+                    </div>
+                    <div class="review-time">2026-03-19 23:57:29</div>
+                </div>
+                <div class="review-content">非常好</div>
+            </div>
+
+            <!-- 分割线 -->
+            <div class="review-divider"></div>
+
+            <!-- 评价2 -->
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-score">
+                        <div class="review-score-item">综合：<span class="score">5.0</span></div>
+                        <div class="review-score-item">环境：<span class="score">5.0</span></div>
+                        <div class="review-score-item">设备：<span class="score">5.0</span></div>
+                    </div>
+                    <div class="review-time">2026-03-14 17:29:16</div>
+                </div>
+                <div class="review-content">该用户未填写文字评价</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 筛选项点击切换样式
+        const filterItems = document.querySelectorAll('.filter-item');
+        filterItems.forEach(item => {
+            item.addEventListener('click', () => {
+                filterItems.forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+            });
+        });
+
+        // 返回按钮点击事件
+        const backBtn = document.querySelector('.nav-back');
+        backBtn.addEventListener('click', () => {
+            window.history.back(); // 返回上一页
+        });
+    </script>
+</body>
+</html>
