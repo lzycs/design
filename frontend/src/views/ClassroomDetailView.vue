@@ -42,7 +42,7 @@ const formatDurationRule = (minutes: number) => {
 const ruleTipText = computed(() => {
   const L = reservationLimits.value
   if (!L) return '温馨提示：预约须遵守平台规则（加载规则失败时可稍后重试）'
-  return `温馨提示：可勾选多个相邻时段合并为一次预约；每人每周最多 ${L.maxPerWeek} 次，合并后单次最长 ${formatDurationRule(L.maxDurationMinutes)}（周一至周日计一周，取消不计入）`
+  return `温馨提示：可勾选多个相邻时段合并为一次预约；合并后单次最长 ${formatDurationRule(L.maxDurationMinutes)}`
 })
 
 const loadReservationLimits = async () => {

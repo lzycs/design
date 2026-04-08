@@ -7,12 +7,10 @@ import com.campus.learningspace.dto.ReservationLimitVO;
 import com.campus.learningspace.entity.Reservation;
 import com.campus.learningspace.entity.ReservationLimitConfig;
 import com.campus.learningspace.mapper.ReservationLimitConfigMapper;
-import com.campus.learningspace.mapper.ReservationMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 
 @Service
@@ -20,9 +18,6 @@ public class ReservationLimitService {
 
     @Autowired
     private ReservationLimitConfigMapper reservationLimitConfigMapper;
-
-    @Autowired
-    private ReservationMapper reservationMapper;
 
     @Autowired
     private ReservationProperties reservationProperties;
@@ -38,7 +33,7 @@ public class ReservationLimitService {
     }
 
     /**
-     * 新建预约前校验：单次时长、自然周内次数（周一至周日，按预约日 reservation_date 计入当周）
+     * 新建预约前校验：仅保留单次时长限制，不再限制每周预约次数
      */
     public void assertNewReservationAllowed(Reservation r) {
         if (r.getUserId() == null) {
@@ -59,13 +54,6 @@ public class ReservationLimitService {
         LocalDate resDate = r.getReservationDate();
         if (resDate == null) {
             throw new ReservationRuleException("请选择预约日期");
-        }
-        LocalDate weekStart = resDate.with(DayOfWeek.MONDAY);
-        LocalDate weekEnd = weekStart.plusDays(6);
-        long count = reservationMapper.countUserActiveReservationsBetween(r.getUserId(), weekStart, weekEnd);
-        if (count >= limits.getMaxPerWeek()) {
-            throw new ReservationRuleException(
-                    "每人每周最多预约 " + limits.getMaxPerWeek() + " 次，您本周已达上限");
         }
     }
 
