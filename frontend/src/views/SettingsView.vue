@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 
 const notificationsEnabled = ref(true)
 const darkModeEnabled = ref(false)
@@ -8,7 +10,7 @@ const darkModeEnabled = ref(false)
 
 <template>
   <div class="settings">
-    <van-nav-bar title="设置" />
+    <van-nav-bar title="设置" left-arrow @click-left="router.back()" />
     
     <van-cell-group inset>
       <van-cell title="通知提醒">

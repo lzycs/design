@@ -15,6 +15,7 @@ export interface StudyPlanVO {
   updateTime?: string
   keyTimeNodes?: string
   teamTitle?: string
+  buildingName?: string
   classroomName?: string
   reservationDate?: string
   reservationStartTime?: string

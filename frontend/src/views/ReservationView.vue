@@ -56,6 +56,30 @@ const formatDate = (d: Date) => {
   return `${m}/${day}`
 }
 
+const formatDisplayDate = (value?: string) => {
+  if (!value) return ''
+  const match = value.match(/^(\d{4}-\d{2}-\d{2})/)
+  return match ? match[1] : value.replace('T', ' ')
+}
+
+const formatDisplayTime = (value?: string) => {
+  if (!value) return ''
+  const normalized = value.includes('T') ? value.split('T')[1] : value
+  return normalized.length >= 5 ? normalized.slice(0, 5) : normalized
+}
+
+const formatDisplayTimeRange = (start?: string, end?: string) => {
+  const startText = formatDisplayTime(start)
+  const endText = formatDisplayTime(end)
+  if (startText && endText) return `${startText}-${endText}`
+  return startText || endText
+}
+
+const formatDisplayDateTime = (value?: string) => {
+  if (!value) return ''
+  return value.replace('T', ' ')
+}
+
 const todayText = computed(() => formatDate(today))
 const tomorrowText = computed(() => formatDate(tomorrow))
 const dayAfterText = computed(() => formatDate(dayAfter))
@@ -400,7 +424,7 @@ onMounted(() => {
 
 <template>
   <div class="reservation">
-    <van-nav-bar title="预约中心" />
+    <van-nav-bar title="预约中心" left-arrow @click-left="router.back()" />
 
     <div class="page" v-if="isLoggedIn">
       <div class="page-title">预约中心</div>
@@ -571,7 +595,7 @@ onMounted(() => {
                   }}
                 </div>
                 <div class="booking-subtitle">
-                  {{ item.reservationDate }} {{ item.startTime }}-{{ item.endTime }}
+                  {{ formatDisplayDate(item.reservationDate) }} {{ formatDisplayTimeRange(item.startTime, item.endTime) }}
                 </div>
               </div>
               <div class="booking-status status-pending">待签到</div>
@@ -579,11 +603,11 @@ onMounted(() => {
             <div class="booking-detail">
               <div class="detail-row">
                 <span class="detail-label">预约日期：</span>
-                <span>{{ item.reservationDate }}</span>
+                <span>{{ formatDisplayDate(item.reservationDate) }}</span>
               </div>
               <div class="detail-row">
                 <span class="detail-label">预约时段：</span>
-                <span>{{ item.startTime }}-{{ item.endTime }}</span>
+                <span>{{ formatDisplayTimeRange(item.startTime, item.endTime) }}</span>
               </div>
             </div>
             <div class="booking-actions">
@@ -615,7 +639,7 @@ onMounted(() => {
                   }}
                 </div>
                 <div class="booking-subtitle">
-                  {{ item.reservationDate }} {{ item.startTime }}-{{ item.endTime }}
+                  {{ formatDisplayDate(item.reservationDate) }} {{ formatDisplayTimeRange(item.startTime, item.endTime) }}
                 </div>
               </div>
               <div class="booking-status status-checked">已签到</div>
@@ -623,15 +647,15 @@ onMounted(() => {
             <div class="booking-detail">
               <div class="detail-row">
                 <span class="detail-label">预约日期：</span>
-                <span>{{ item.reservationDate }}</span>
+                <span>{{ formatDisplayDate(item.reservationDate) }}</span>
               </div>
               <div class="detail-row">
                 <span class="detail-label">预约时段：</span>
-                <span>{{ item.startTime }}-{{ item.endTime }}</span>
+                <span>{{ formatDisplayTimeRange(item.startTime, item.endTime) }}</span>
               </div>
               <div class="detail-row" v-if="(item as any).checkinTime">
                 <span class="detail-label">签到时间：</span>
-                <span>{{ (item as any).checkinTime }}</span>
+                <span>{{ formatDisplayDateTime((item as any).checkinTime) }}</span>
               </div>
             </div>
             <div class="booking-actions">
@@ -664,7 +688,7 @@ onMounted(() => {
                   }}
                 </div>
                 <div class="booking-subtitle">
-                  {{ item.reservationDate }} {{ item.startTime }}-{{ item.endTime }}
+                  {{ formatDisplayDate(item.reservationDate) }} {{ formatDisplayTimeRange(item.startTime, item.endTime) }}
                 </div>
               </div>
               <div class="booking-status status-cancelled">已取消</div>
@@ -672,11 +696,11 @@ onMounted(() => {
             <div class="booking-detail">
               <div class="detail-row">
                 <span class="detail-label">预约日期：</span>
-                <span>{{ item.reservationDate }}</span>
+                <span>{{ formatDisplayDate(item.reservationDate) }}</span>
               </div>
               <div class="detail-row">
                 <span class="detail-label">预约时段：</span>
-                <span>{{ item.startTime }}-{{ item.endTime }}</span>
+                <span>{{ formatDisplayTimeRange(item.startTime, item.endTime) }}</span>
               </div>
             </div>
             <div class="booking-actions">

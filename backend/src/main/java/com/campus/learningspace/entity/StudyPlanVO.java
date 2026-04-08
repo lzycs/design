@@ -28,6 +28,8 @@ public class StudyPlanVO {
     private String keyTimeNodes;
     /** 所属小组名称 */
     private String teamTitle;
+    /** 关联教学楼名称 */
+    private String buildingName;
     /** 关联研讨室名称（来自 reservation + classroom） */
     private String classroomName;
     /** 研讨室预约日期（用于展示） */

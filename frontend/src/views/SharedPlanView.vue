@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { showToast } from 'vant'
 import { getUserTeams, type TeamRequestVO } from '@/api/team'
 import { getAvailableClassrooms, type Classroom } from '@/api/classroom'
+import { getBuildingList, type Building } from '@/api/building'
 import {
   getSharedPlans,
   createStudyPlanWithReservation,
@@ -17,6 +18,7 @@ const storedUser = ref<{ id: number } | null>(null)
 const plans = ref<StudyPlanVO[]>([])
 const teams = ref<TeamRequestVO[]>([])
 const seminarRooms = ref<Classroom[]>([])
+const buildings = ref<Building[]>([])
 const loading = ref(false)
 const filterTab = ref<'all' | 'ongoing' | 'completed' | 'expired' | 'mine'>('all')
 const searchKeyword = ref('')
@@ -98,12 +100,18 @@ const loadTeams = async () => {
 
 const loadSeminarRooms = async () => {
   try {
-    const res = await getAvailableClassrooms(2)
-    const data = (res as { data?: Classroom[] }).data
-    seminarRooms.value = Array.isArray(data) ? data : []
+    const [roomRes, buildingRes] = await Promise.all([
+      getAvailableClassrooms(2),
+      getBuildingList(),
+    ])
+    const roomData = (roomRes as { data?: Classroom[] }).data
+    seminarRooms.value = Array.isArray(roomData) ? roomData : []
+    const buildingData = (buildingRes as { data?: Building[] }).data
+    buildings.value = Array.isArray(buildingData) ? buildingData : []
   } catch (e) {
     console.error(e)
     seminarRooms.value = []
+    buildings.value = []
   }
 }
 
@@ -205,11 +213,12 @@ const parseKeyTimeNodes = (raw?: string): { title: string; datetime: string }[] 
 
 /** 研讨室标签文案：研讨室名 (日期 时段)，日期去年份、时间去秒 */
 const meetingRoomLabel = (p: StudyPlanVO) => {
-  if (!p.classroomName) return ''
+  const roomText = [p.buildingName, p.classroomName].filter(Boolean).join(' - ')
+  if (!roomText) return ''
   if (p.reservationDate && (p.reservationStartTime || p.reservationEndTime)) {
-    return `${p.classroomName} (${formatDateNoYear(p.reservationDate)} ${formatTime(p.reservationStartTime)}-${formatTime(p.reservationEndTime)})`
+    return `${roomText} (${formatDateNoYear(p.reservationDate)} ${formatTime(p.reservationStartTime)}-${formatTime(p.reservationEndTime)})`
   }
-  return p.classroomName
+  return roomText
 }
 
 /** 计划日期范围展示：日期去年份、时间去秒 */
@@ -294,12 +303,15 @@ const buildMergedKeyTimeNodes = () => {
     .trim()
 }
 
+const seminarRoomOptionLabel = (room: Classroom) => {
+  const buildingName = buildings.value.find((item) => item.id === room.buildingId)?.name
+  return `${buildingName ? `${buildingName} - ` : ''}${room.name} (容纳${room.capacity}人)`
+}
+
 const selectResTime = (slot: { start: string; end: string }) => {
   resStartTime.value = slot.start
   resEndTime.value = slot.end
 }
-
-const submitCreate = async () => {
   if (!teamRequestId.value || !title.value.trim()) {
     showToast('请选择所属小组并填写计划名称')
     return
@@ -544,7 +556,7 @@ onMounted(async () => {
             <select v-model="classroomId" class="form-select">
               <option :value="null">暂不关联</option>
               <option v-for="r in seminarRooms" :key="r.id" :value="r.id">
-                {{ r.name }} (容纳{{ r.capacity }}人)
+                {{ seminarRoomOptionLabel(r) }}
               </option>
             </select>
 
@@ -680,7 +692,7 @@ onMounted(async () => {
             <select v-model="classroomId" class="form-select">
               <option :value="null">暂不关联</option>
               <option v-for="r in seminarRooms" :key="r.id" :value="r.id">
-                {{ r.name }} (容纳{{ r.capacity }}人)
+                {{ seminarRoomOptionLabel(r) }}
               </option>
             </select>
 

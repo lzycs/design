@@ -28,6 +28,7 @@ const categories: { key: CategoryKey; label: string }[] = [
 ]
 
 const activeCategory = ref<CategoryKey>('all')
+const selectableCategories = categories.filter((item) => item.key !== 'all')
 const teams = ref<TeamRequestVO[]>([])
 const loading = ref(false)
 
@@ -51,7 +52,7 @@ const createForm = ref({
   expectedCount: 5,
   startTime: '',
   endTime: '',
-  tagsText: '',
+  category: '' as '' | Exclude<CategoryKey, 'all'>,
 })
 const creating = ref(false)
 
@@ -184,7 +185,7 @@ const openCreate = () => {
     expectedCount: 5,
     startTime: '',
     endTime: '',
-    tagsText: '',
+    category: '',
   }
   showCreate.value = true
 }
@@ -204,13 +205,10 @@ const submitCreate = async () => {
   }
   creating.value = true
   try {
-    const tags = createForm.value.tagsText.trim()
-      ? JSON.stringify(
-          createForm.value.tagsText
-            .split(/[，,]/)
-            .map((t) => t.trim())
-            .filter(Boolean),
-        )
+    const tags = createForm.value.category
+      ? JSON.stringify([
+          categories.find((item) => item.key === createForm.value.category)?.label ?? createForm.value.category,
+        ])
       : undefined
     await createTeamRequest({
       userId: storedUser.value.id,
@@ -383,6 +381,9 @@ onMounted(() => {
     <div class="phone-container">
       <!-- 顶栏：与下方内容共用同一水平内边距，标题真正居中 -->
       <header class="page-header">
+        <button type="button" class="page-header__back" @click="router.back()" aria-label="返回上一页">
+          <span>‹</span>
+        </button>
         <h1 class="page-header__title">协作广场</h1>
         <button type="button" class="page-header__action" @click="openCreate">
           发起小组
@@ -614,8 +615,17 @@ onMounted(() => {
             <input v-model="createForm.endTime" class="form-input" type="datetime-local" />
           </div>
           <div class="form-item">
-            <div class="form-label">标签（可选，逗号分隔）</div>
-            <input v-model="createForm.tagsText" class="form-input" type="text" placeholder="英语,考研,刷题" />
+            <div class="form-label">标签</div>
+            <select v-model="createForm.category" class="form-input form-select">
+              <option value="">请选择分类</option>
+              <option
+                v-for="item in selectableCategories"
+                :key="item.key"
+                :value="item.key"
+              >
+                {{ item.label }}
+              </option>
+            </select>
           </div>
           <div class="create-btn-row">
             <button class="create-btn" :disabled="creating" @click="submitCreate">
@@ -690,6 +700,24 @@ onMounted(() => {
   color: #1a1a1a;
   line-height: 1.3;
   text-align: center;
+}
+
+.page-header__back {
+  grid-column: 1;
+  justify-self: start;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 14px;
+  background: #f5f7fa;
+  color: #4a5568;
+  font-size: 22px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .page-header__action {
@@ -1027,6 +1055,18 @@ onMounted(() => {
   padding: 0 12px;
   font-size: 14px;
   box-sizing: border-box;
+  background-color: #ffffff;
+}
+
+.create-form .form-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 36px;
+  background-image: linear-gradient(45deg, transparent 50%, #9ca3af 50%), linear-gradient(135deg, #9ca3af 50%, transparent 50%);
+  background-position: calc(100% - 18px) calc(50% - 2px), calc(100% - 12px) calc(50% - 2px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
 }
 
 .create-form .form-textarea {

@@ -19,6 +19,7 @@ public interface StudyPlanMapper extends BaseMapper<StudyPlan> {
                    sp.plan_date AS planDate, sp.start_time AS startTime, sp.end_time AS endTime,
                    sp.key_time_nodes AS keyTimeNodes, sp.status, sp.create_time AS createTime, sp.update_time AS updateTime,
                    tr.title AS teamTitle,
+                   b.name AS buildingName,
                    c.name AS classroomName,
                    r.reservation_date AS reservationDate, r.start_time AS reservationStartTime, r.end_time AS reservationEndTime
             FROM study_plan sp
@@ -26,6 +27,7 @@ public interface StudyPlanMapper extends BaseMapper<StudyPlan> {
             LEFT JOIN team_request tr ON sp.team_request_id = tr.id AND tr.deleted = 0
             LEFT JOIN reservation r ON sp.reservation_id = r.id AND r.deleted = 0
             LEFT JOIN classroom c ON r.classroom_id = c.id AND c.deleted = 0
+            LEFT JOIN building b ON c.building_id = b.id AND b.deleted = 0
             WHERE sp.deleted = 0
             ORDER BY sp.plan_date DESC, sp.start_time DESC
             """)

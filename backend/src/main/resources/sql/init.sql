@@ -928,13 +928,13 @@ ON DUPLICATE KEY UPDATE
   `type`            = VALUES(`type`),
   `content`         = VALUES(`content`);
 
--- 共享计划关联的研讨室预约（reservation_id 10、11 供 study_plan 使用，需在 study_plan 之前插入）
+-- 共享计划关联的研讨室预约（reservation_id 10、11 供 study_plan 使用，均关联研讨室并占用预约页时段）
 INSERT INTO `reservation` (
   `id`, `user_id`, `resource_type`, `classroom_id`, `reservation_date`,
   `start_time`, `end_time`, `duration`, `purpose`, `status`
 ) VALUES
-(10, 2, 1, 3, DATE_ADD(CURDATE(), INTERVAL 4 DAY), '14:00:00', '16:00:00', 120, '共享学习计划-研讨室', 1),
-(11, 6, 1, 4, DATE_ADD(CURDATE(), INTERVAL 5 DAY), '10:00:00', '12:00:00', 120, '共享学习计划-研讨室', 1)
+(10, 2, 1, 5, DATE_ADD(CURDATE(), INTERVAL 1 DAY), '14:00:00', '16:00:00', 120, '共享学习计划-研讨室', 1),
+(11, 6, 1, 6, DATE_ADD(CURDATE(), INTERVAL 2 DAY), '10:00:00', '12:00:00', 120, '共享学习计划-研讨室', 1)
 ON DUPLICATE KEY UPDATE
   `user_id`          = VALUES(`user_id`),
   `resource_type`    = VALUES(`resource_type`),
@@ -946,12 +946,12 @@ ON DUPLICATE KEY UPDATE
   `purpose`          = VALUES(`purpose`),
   `status`           = VALUES(`status`);
 
--- 插入学习计划（含共享学习计划测试数据，key_time_nodes 格式：节点名|日期时间,节点名|日期时间）
+-- 插入学习计划（含共享学习计划测试数据；关联预约的数据仅绑定研讨室）
 INSERT INTO `study_plan` (`id`, `team_request_id`, `user_id`, `reservation_id`, `title`, `description`, `plan_date`, `start_time`, `end_time`, `key_time_nodes`, `status`) VALUES
 (1, 1, 1, NULL, '第三章树和图的学习', NULL, DATE_ADD(CURDATE(), INTERVAL 2 DAY), '15:00:00', '17:00:00', NULL, 1),
-(2, 11, 2, 10, 'Java项目实战计划', '完成SpringBoot项目开发，包含用户管理、权限控制等核心模块', DATE_ADD(CURDATE(), INTERVAL 4 DAY), '14:00:00', '16:00:00', '需求分析完成|2026-03-15 18:00,核心功能开发|2026-03-25 18:00,项目测试验收|2026-04-08 18:00', 1),
+(2, 11, 2, 10, 'Java项目实战计划', '完成SpringBoot项目开发，包含用户管理、权限控制等核心模块', DATE_ADD(CURDATE(), INTERVAL 1 DAY), '14:00:00', '16:00:00', '需求分析完成|2026-03-15 18:00,核心功能开发|2026-03-25 18:00,项目测试验收|2026-04-08 18:00', 1),
 (3, 10, 1, NULL, '考研英语复习计划', '每天背单词+真题精读，互相打卡监督，目标上岸！', DATE_ADD(CURDATE(), INTERVAL 3 DAY), '09:00:00', '11:00:00', '单词一轮完成|2026-03-20 18:00,真题一刷完成|2026-04-05 18:00', 1),
-(4, 12, 6, 11, '数据库学习计划', '从SQL基础到索引与事务，一起刷题复盘，每周至少2次讨论', DATE_ADD(CURDATE(), INTERVAL 5 DAY), '10:00:00', '12:00:00', 'SQL基础完成|2026-03-18 18:00,索引与事务|2026-03-28 18:00', 1),
+(4, 12, 6, 11, '数据库学习计划', '从SQL基础到索引与事务，一起刷题复盘，每周至少2次讨论', DATE_ADD(CURDATE(), INTERVAL 2 DAY), '10:00:00', '12:00:00', 'SQL基础完成|2026-03-18 18:00,索引与事务|2026-03-28 18:00', 1),
 (5, 10, 2, NULL, '高数真题刷题计划', '完成近10年考研数学真题刷题，整理错题本，针对性复习', DATE_ADD(CURDATE(), INTERVAL -10 DAY), '18:00:00', '20:00:00', '真题一刷|2026-02-25 18:00,错题整理|2026-03-05 18:00', 2)
 ON DUPLICATE KEY UPDATE
   `team_request_id` = VALUES(`team_request_id`),

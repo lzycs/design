@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { getClassroomsByBuilding, type Classroom } from '@/api/classroom'
 import { Cell, CellGroup, Tag, showToast } from 'vant'
 
 const route = useRoute()
+const router = useRouter()
 const buildingId = Number(route.params.buildingId)
 const classrooms = ref<Classroom[]>([])
 
@@ -69,7 +71,7 @@ onMounted(() => {
 
 <template>
   <div class="classrooms">
-    <van-nav-bar title="教室列表" />
+    <van-nav-bar title="教室列表" left-arrow @click-left="router.back()" />
     
     <CellGroup>
       <Cell
