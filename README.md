@@ -1,67 +1,138 @@
-## 校园学习空间综合服务平台
+# 校园学习空间综合服务平台
 
-面向高校场景的学习空间平台，提供预约、报修、评价、协作组队、学习计划和后台管理等能力。
+面向高校场景的学习空间综合服务平台，覆盖学习空间预约、扫码签到、教室评价、报修反馈、协作组队、学习计划以及后台管理等功能。
 
-- 前端：Vue 3 + Vite + TypeScript + Vant
-- 后端：Spring Boot + MyBatis-Plus + MySQL
-- 构建：npm（前端）、Maven（后端）
+## 技术栈
 
----
+### 前端
+- Vue 3
+- Vite 7
+- TypeScript
+- Vue Router
+- Pinia
+- Vant
+- Axios
+- ECharts
 
-## 当前功能（按模块）
-
-### 1) 学习空间预约
-
-- 支持普通教室、研讨室、图书馆座位预约。
-- 预约页支持日期切换（今天/明天/后天）和时间段选择。
-- 教室详情支持连续时段合并预约，并根据预约规则校验时长上限。
-- 预约相关状态流转：待签到、已签到、已完成、已取消等。
-
-### 2) 教室评价体系
-
-- 仅展示“审核通过”的教室评价。
-- 教室详情页在“综合评分”后提供 `查看全部评价` 入口。
-- 新增“全部评价页”（路由：`/reservation/classroom/:id/reviews`），只展示当前教室已审核评价。
-- 无评价时入口仍显示，点击给出“暂无评价”提示，不跳转。
-
-### 3) 报修与反馈
-
-- 用户可提交教室报修单，查看个人报修记录。
-- 后台支持报修单处理与状态更新。
-- 评价与反馈走审核流程，前台展示受审核状态控制。
-
-### 4) 协作广场与小组审批
-
-- 协作广场可浏览小组、发起小组、查看成员并进入小组聊天。
-- 用户可申请加入小组（支持加入多个小组，不做总数量限制）。
-- 同一用户对同一小组“待审批”申请不可重复提交。
-- 组长可在“我的协作-审核页”审批申请（通过/拒绝，拒绝原因可选）。
-- 审批后状态会同步到申请人侧，并在“我的协作”入口显示红点/角标。
-
-### 5) 学习计划
-
-- 支持创建学习计划并关联小组。
-- 组长可对计划执行“关联研讨室”，并配置关键时间节点。
-- 学习计划页支持筛选（全部、进行中、已完成、已过期、我的创建）。
-- 说明：当前页面已移除无效的“编辑/查看详情”按钮，仅保留可用操作。
-
-### 6) 个人中心与后台
-
-- 个人中心包含：我的预约、我的评价、我的报修、我的协作等入口。
-- 后台支持：登录、报修管理、评价审核、教室/课程/教学楼管理、预约上限配置等。
+### 后端
+- Spring Boot 3.1
+- MyBatis-Plus
+- MySQL 8.x
+- Redis
+- WebSocket
+- Maven
 
 ---
 
-## 关键前端路由
+## 当前已实现功能
 
+### 1. 首页与基础浏览
+- 首页提供校园学习空间服务入口。
+- 支持查看教学楼列表与详情。
+- 支持楼宇导航与导航详情页。
+- 支持按教学楼查看教室列表。
+
+### 2. 学习空间预约
+- 支持预约教室与图书馆座位。
+- 预约页支持日期切换与资源分类浏览。
+- 教室详情页支持查看时段占用情况。
+- 支持连续时段预约。
+- 支持读取预约规则：
+  - 每周预约次数上限
+  - 单次预约最长时长
+- 支持查看个人预约记录。
+- 支持预约签到。
+- 支持为预约生成二维码。
+- 支持扫码核销预约二维码。
+- 支持查询二维码状态。
+
+### 3. 教室评价与反馈
+- 支持查询待评价记录。
+- 支持提交教室评价。
+- 支持查看个人评价记录。
+- 支持删除个人评价。
+- 教室详情页支持展示审核通过的评价。
+- 支持“查看全部评价”页面。
+- 支持用户提交报修。
+- 支持查看个人报修记录。
+
+### 4. 协作组队
+- 支持查看活跃协作小组。
+- 支持查看小组详情与成员列表。
+- 支持发起协作小组。
+- 支持加入小组、退出小组、删除自己创建的小组。
+- 支持提交加入申请。
+- 支持组长审核申请（通过/拒绝）。
+- 支持申请结果查询。
+- 支持待处理申请查询。
+- 支持协作红点角标提醒。
+- 支持进入研讨室协作页面。
+
+### 5. 学习计划
+- 支持共享学习计划页。
+- 支持按协作小组查询学习计划。
+- 支持按预约查询关联学习计划。
+- 支持创建“学习计划 + 教室预约”联动记录。
+- 支持更新学习计划。
+- 支持在计划中关联研讨室、日期、时间段与关键时间节点。
+
+### 6. 扫码设备授权
+- 管理端支持生成扫码设备配对 token。
+- 设备端支持扫码授权绑定设备 UID。
+- 管理端支持查看扫码设备列表。
+- 管理端支持启用/停用扫码设备。
+- 管理端支持删除扫码设备。
+- 支持预约扫码核销场景。
+
+### 7. 后台管理
+- 支持管理员登录。
+- 支持按权限返回后台菜单。
+- 支持后台概览统计。
+- 支持报修工单管理。
+- 支持评价审核。
+- 支持教室管理。
+- 支持课程管理。
+- 支持教学楼管理。
+- 支持预约限制配置管理。
+- 支持扫码设备管理。
+
+---
+
+## 主要前端路由
+
+### 用户端
+- `/`：首页
+- `/classrooms/:buildingId`：教学楼教室列表
+- `/building-nav`：楼宇导航
+- `/building-nav/:id`：楼宇导航详情
 - `/reservation`：预约中心
+- `/reservation/building/:buildingId/:type`：按楼宇查看可预约资源
 - `/reservation/classroom/:id`：教室详情
-- `/reservation/classroom/:id/reviews`：全部评价页
+- `/reservation/classroom/:id/reviews`：教室全部评价
+- `/reservation/room-collab/:reservationId`：研讨室在线协作
 - `/collaboration`：协作广场
+- `/shared-plan`：共享学习计划
+- `/feedback`：反馈/评价
 - `/profile`：个人中心
-- `/profile/teams`：我的协作（含申请审核页）
-- `/shared-plan`：学习计划
-- `/admin/login`、`/admin/*`：后台相关页面
+- `/profile/info`：个人信息
+- `/profile/reservations`：我的预约
+- `/profile/repairs`：我的报修
+- `/profile/reviews`：我的评价
+- `/profile/teams`：我的协作
+- `/profile/plans`：我的计划
+- `/scan-device`：扫码设备授权页
+- `/scan-reservation`：预约扫码页
+
+### 管理端
+- `/admin/login`：后台登录
+- `/admin`：后台首页
+- `/admin/repairs`：报修管理
+- `/admin/reviews`：评价审核
+- `/admin/classrooms`：教室管理
+- `/admin/courses`：课程管理
+- `/admin/buildings`：教学楼管理
+- `/admin/reservation-limits`：预约规则管理
+- `/admin/scan-devices`：扫码设备管理
 
 ---
 
@@ -69,42 +140,70 @@
 
 ```text
 TestA/
-├── backend/
+├── backend/                         # Spring Boot 后端
 │   ├── src/main/java/com/campus/learningspace/
-│   │   ├── controller/
-│   │   ├── service/
-│   │   ├── mapper/
-│   │   ├── entity/
-│   │   └── common/
-│   ├── src/main/resources/sql/init.sql
+│   │   ├── common/                  # 通用返回、异常
+│   │   ├── config/                  # 跨域、MyBatis、配置项
+│   │   ├── controller/              # 接口控制器
+│   │   ├── dto/                     # DTO
+│   │   ├── entity/                  # 实体/VO
+│   │   ├── mapper/                  # MyBatis-Plus Mapper
+│   │   ├── service/                 # 业务服务
+│   │   └── task/                    # 定时任务
+│   ├── src/main/resources/
+│   │   ├── application.yml          # 后端配置
+│   │   └── sql/init.sql             # 初始化脚本
 │   └── pom.xml
-├── frontend/
-│   ├── src/views/
-│   ├── src/api/
-│   ├── src/router/
-│   └── package.json
+├── frontend/                        # Vue 前端
+│   ├── src/api/                     # 前端接口封装
+│   ├── src/router/                  # 路由配置
+│   ├── src/utils/                   # 请求与公共地址工具
+│   ├── src/views/                   # 页面视图
+│   ├── .env.example                 # 前端环境变量示例
+│   ├── package.json
+│   └── vite.config.ts
+├── UIDesign/                        # UI 原型/设计稿
 └── README.md
 ```
 
 ---
 
-## 本地启动
+## 本地开发环境
 
-### 1. 后端
+### 必需环境
+- Node.js 20+
+- npm
+- JDK 21
+- Maven 3.9+
+- MySQL 8.x
+- Redis 6+
 
-1) 准备环境：JDK 21、MySQL 8.x  
-2) 执行数据库脚本：`backend/src/main/resources/sql/init.sql`  
-3) 配置 `backend/src/main/resources/application.yml` 数据库连接  
-4) 启动：
+---
+
+## 启动方式
+
+### 1. 初始化数据库
+1. 创建数据库：`campus_learning_space`
+2. 执行初始化脚本：`backend/src/main/resources/sql/init.sql`
+3. 修改 `backend/src/main/resources/application.yml` 中的数据库连接信息
+
+### 2. 启动 Redis
+后端当前依赖 Redis，请先确保本地 Redis 已启动，默认配置为：
+- Host: `localhost`
+- Port: `6379`
+- DB: `0`
+
+### 3. 启动后端
 
 ```bash
 cd backend
 mvn spring-boot:run
 ```
 
-后端默认端口：`8080`
+后端默认地址：`http://localhost:8080`
+接口基址默认：`http://localhost:8080/api`
 
-### 2. 前端
+### 4. 启动前端
 
 ```bash
 cd frontend
@@ -114,11 +213,65 @@ npm run dev
 
 前端默认地址：`http://localhost:5173`
 
+如果需要让同一局域网内的手机或其他设备访问前端，可使用：
+
+```bash
+npm run dev:lan
+```
+
+该命令会以 `0.0.0.0:5173` 启动前端。
+
 ---
 
-## 测试账号（init.sql 内置）
+## 前端环境变量
 
-- 学生：`zhangsan / 123456`、`lisi / 123456`、`wangwu / 123456`
+`frontend/.env.example` 当前包含：
+
+```env
+VITE_API_BASE_URL=http://localhost:8080/api
+VITE_PUBLIC_WEB_ORIGIN=http://localhost:5173
+```
+
+说明：
+- `VITE_API_BASE_URL`：前端请求后端接口的基础地址。
+- `VITE_PUBLIC_WEB_ORIGIN`：用于二维码、跨设备访问等场景生成外部可访问地址。
+
+如果要让手机访问二维码链接，建议把 `VITE_PUBLIC_WEB_ORIGIN` 改成你电脑的局域网地址，例如：
+
+```env
+VITE_PUBLIC_WEB_ORIGIN=http://192.168.1.100:5173
+```
+
+如果前端也需要让同一 Wi‑Fi 下的其他设备访问，通常还需要把 `VITE_API_BASE_URL` 一并改成后端所在电脑的局域网地址，例如：
+
+```env
+VITE_API_BASE_URL=http://192.168.1.100:8080/api
+```
+
+---
+
+## 默认配置说明
+
+### 后端默认端口
+- 应用端口：`8080`
+
+### 前端默认端口
+- 开发端口：`5173`
+
+### 预约规则默认值
+当数据库中没有预约规则配置时，后端默认使用：
+- 每周最多预约：`4` 次
+- 单次最长预约：`240` 分钟
+
+---
+
+## 测试账号
+
+初始化脚本内置以下账号：
+
+- 学生：`zhangsan / 123456`
+- 学生：`lisi / 123456`
+- 学生：`wangwu / 123456`
 - 教师：`wanglaoshi / 123456`
 - 管理员：`admin / 123456`
 - 维修人员：`zhangshifu / 123456`
@@ -126,9 +279,17 @@ npm run dev
 
 ---
 
-## 开发约定（简要）
+## 开发说明
 
-- 前端统一使用 `src/api/*` 封装接口，页面在 `src/views/*`。
-- 登录态通过 `localStorage.currentUser` 维护。
-- 后端统一返回 `Result<T>`，数据表普遍使用逻辑删除字段 `deleted`。
+- 前端接口统一封装在 `frontend/src/api/*`。
+- 前端请求实例位于 `frontend/src/utils/request.ts`。
+- 前端支持通过 `VITE_PUBLIC_WEB_ORIGIN` 生成跨设备可访问链接。
+- 管理端 token 通过请求头 `X-Admin-Token` 传递。
+- 后端统一返回 `Result<T>`。
+- 数据表普遍使用逻辑删除字段 `deleted`。
 
+---
+
+## 当前状态说明
+
+本项目已具备完整的用户端 + 管理端基础业务闭环，包含预约、评价、报修、协作、学习计划、扫码设备与后台管理等核心模块，可继续在此基础上完善权限、消息通知、部署与生产环境配置。
