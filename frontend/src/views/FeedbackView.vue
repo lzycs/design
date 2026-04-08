@@ -2,7 +2,6 @@
 import { onMounted, ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { showToast } from 'vant'
-import { getAvailableClassrooms, type Classroom as ApiClassroom } from '../api/classroom'
 import {
   createRepair,
   getPendingFeedback,
@@ -13,6 +12,7 @@ import {
   type FeedbackItem,
   type CreateRepairPayload
 } from '../api/feedback'
+import { getUserReservations, type Reservation } from '../api/reservation'
 
 const FEEDBACK_STATUS_LABEL: Record<number, string> = {
   2: '待审核',
@@ -30,11 +30,14 @@ const isEvaluationOnly = computed(() => route.query.tab === 'evaluation' && rout
 // 评价筛选：全部 / 待评价 / 已评价
 const evalFilter = ref<'all' | 'pending' | 'evaluated'>('all')
 
-// 教室下拉：从后端 /api/classroom/available 获取
-const classrooms = ref<ApiClassroom[]>([])
+// 已签到教室列表（与评价列表同源：仅本人已签到/已完成的教室）
+const signedClassroomList = ref<Reservation[]>([])
 
 // 一键报修表单
+const showRepairForm = ref(false)
 const repairClassroomId = ref<number | null>(null)
+const repairClassroomName = ref('')
+const repairReservationTime = ref('')
 const repairFaultType = ref('air')
 const repairDesc = ref('')
 const repairPhotos = ref<string[]>([])
@@ -99,10 +102,6 @@ const filteredEvaluatedList = computed(() => {
   return []
 })
 
-const classroomNameById = (id: number) => {
-  return classrooms.value.find(c => c.id === id)?.name ?? ''
-}
-
 const evaluationStatusLabel = (status: number) => FEEDBACK_STATUS_LABEL[status] ?? '未知状态'
 
 const evaluationStatusClass = (status: number) => {
@@ -132,17 +131,20 @@ const loadUserFromStorage = () => {
   }
 }
 
-const loadClassrooms = async () => {
+const loadSignedClassrooms = async () => {
+  if (!currentUserId.value) {
+    signedClassroomList.value = []
+    return
+  }
   try {
-    const res = await getAvailableClassrooms()
-    const list = res.data ?? []
-    classrooms.value = Array.isArray(list) ? list : []
-    if (repairClassroomId.value == null && classrooms.value.length > 0) {
-      repairClassroomId.value = classrooms.value[0]?.id ?? null
-    }
+    const res = await getUserReservations(currentUserId.value)
+    const list = (res.data ?? []).filter(
+      (r) => r.resourceType === 1 && (r.status === 2 || r.status === 3) && !!r.classroomId
+    )
+    signedClassroomList.value = list
   } catch (e) {
-    console.error('加载教室列表失败', e)
-    classrooms.value = []
+    console.error('加载已签到教室失败', e)
+    signedClassroomList.value = []
   }
 }
 
@@ -191,12 +193,11 @@ const onSubmitRepair = async () => {
     }
     const type = faultTypeMap[repairFaultType.value] ?? 6
 
-    const classroomName = classroomNameById(repairClassroomId.value)
     const payload: CreateRepairPayload = {
       userId: currentUserId.value,
       resourceType: 1,
       classroomId: repairClassroomId.value,
-      title: classroomName ? `${classroomName} 报修` : '教室报修',
+      title: repairClassroomName.value ? `${repairClassroomName.value} 报修` : '教室报修',
       description: repairDesc.value.trim(),
       type,
       priority: 2,
@@ -210,6 +211,7 @@ const onSubmitRepair = async () => {
     }
     repairDesc.value = ''
     repairPhotos.value = []
+    showRepairForm.value = false
     showToast('报修工单提交成功')
     router.push('/profile/repairs')
   } catch (e) {
@@ -233,8 +235,19 @@ const openEvalForm = (item: PendingFeedbackItem | FeedbackItem) => {
   evalClassroomName.value =
     'classroomName' in item && item.classroomName
       ? item.classroomName
-      : classroomNameById(item.classroomId)
+      : ''
   showEvalForm.value = true
+}
+
+const openRepairForm = (item: Reservation) => {
+  if (!item.classroomId) return
+  repairClassroomId.value = item.classroomId
+  repairClassroomName.value = item.resourceName || `教室 #${item.classroomId}`
+  repairReservationTime.value = `${item.reservationDate || ''} ${item.startTime || ''}-${item.endTime || ''}`.trim()
+  repairFaultType.value = 'air'
+  repairDesc.value = ''
+  repairPhotos.value = []
+  showRepairForm.value = true
 }
 
 // 星级点击
@@ -290,7 +303,7 @@ const goBackToProfile = () => router.push('/profile')
 
 onMounted(() => {
   loadUserFromStorage()
-  loadClassrooms()
+  loadSignedClassrooms()
   loadFeedbackData()
   if (route.query.tab === 'evaluation' || route.query.only === '1') {
     activeTopTab.value = 'evaluation'
@@ -327,41 +340,75 @@ onMounted(() => {
 
     <!-- 一键报修表单区域（仅反馈页且选了一键报修时显示） -->
     <div v-if="!isEvaluationOnly && activeTopTab === 'repair'" class="form-area">
-      <div class="form-card">
-        <!-- 选择教室 -->
-        <div class="form-item">
-          <label class="form-label">选择教室</label>
-          <select v-model="repairClassroomId" class="form-select">
-            <option v-for="c in classrooms" :key="c.id" :value="c.id">
-              {{ c.name }}
-            </option>
-          </select>
+      <div class="eval-filter-bar repair-tip">
+        仅支持报修你已签到过的教室
+      </div>
+      <div class="pending-list">
+        <div
+          v-for="item in signedClassroomList"
+          :key="item.id"
+          class="classroom-card"
+          data-status="pending"
+        >
+          <div class="classroom-header">
+            <div class="classroom-name">{{ item.resourceName || `教室 #${item.classroomId}` }}</div>
+            <div class="classroom-status">已签到</div>
+          </div>
+          <div class="classroom-time">
+            使用时间：{{ item.reservationDate }} {{ item.startTime }} - {{ item.endTime }}
+          </div>
+          <button class="go-eval-btn" @click="openRepairForm(item)">去报修</button>
         </div>
-
-        <!-- 故障类型 -->
-        <div class="form-item">
-          <label class="form-label">故障类型</label>
-          <select v-model="repairFaultType" class="form-select">
-            <option value="air">空调故障</option>
-            <option value="projector">投影仪故障</option>
-            <option value="furniture">桌椅损坏</option>
-            <option value="power">水电问题</option>
-            <option value="network">网络故障</option>
-            <option value="other">其他问题</option>
-          </select>
+        <div v-if="signedClassroomList.length === 0" class="empty-repair-text">
+          暂无可报修教室（需先完成签到）
         </div>
+      </div>
+    </div>
 
-        <!-- 问题描述 -->
-        <div class="form-item">
-          <label class="form-label">问题描述</label>
-          <textarea
-            v-model="repairDesc"
-            class="form-textarea"
-            placeholder="请详细描述故障情况，便于后勤人员处理"
-          />
+    <!-- 报修表单弹层（从已签到教室卡片进入） -->
+    <div v-if="showRepairForm" class="evaluation-form-mask">
+      <div class="evaluation-form-panel">
+        <div class="page-header">
+          <a
+            href="javascript:void(0)"
+            class="back-btn"
+            @click="showRepairForm = false"
+            style="text-decoration: none;"
+          >
+            <span class="back-icon">&lt;</span>
+          </a>
+          <div class="page-header-title">提交报修</div>
+          <div style="width: 24px;"></div>
         </div>
-
-        <!-- 上传照片（可选，base64 存入工单） -->
+        <div class="form-area">
+          <div class="form-card">
+            <div class="form-item">
+              <label class="form-label">教室名称</label>
+              <div class="form-select readonly">{{ repairClassroomName }}</div>
+            </div>
+            <div class="form-item">
+              <label class="form-label">使用时间</label>
+              <div class="form-select readonly">{{ repairReservationTime }}</div>
+            </div>
+            <div class="form-item">
+              <label class="form-label">故障类型</label>
+              <select v-model="repairFaultType" class="form-select">
+                <option value="air">空调故障</option>
+                <option value="projector">投影仪故障</option>
+                <option value="furniture">桌椅损坏</option>
+                <option value="power">水电问题</option>
+                <option value="network">网络故障</option>
+                <option value="other">其他问题</option>
+              </select>
+            </div>
+            <div class="form-item">
+              <label class="form-label">问题描述</label>
+              <textarea
+                v-model="repairDesc"
+                class="form-textarea"
+                placeholder="请详细描述故障情况，便于后勤人员处理"
+              />
+            </div>
         <div class="form-item">
           <label class="form-label">上传照片（可选，最多 {{ maxRepairPhotos }} 张）</label>
           <div class="upload-area">
@@ -386,8 +433,9 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- 提交按钮 -->
-        <button class="submit-btn" @click="onSubmitRepair">提交报修工单</button>
+            <button class="submit-btn" @click="onSubmitRepair">提交报修工单</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -790,6 +838,12 @@ onMounted(() => {
   margin: -20px -20px 20px;
 }
 
+.repair-tip {
+  display: block;
+  font-size: 13px;
+  color: #6b7280;
+}
+
 .filter-item {
   padding: 6px 16px;
   font-size: 14px;
@@ -850,6 +904,13 @@ onMounted(() => {
   border-radius: 6px;
   font-size: 12px;
   cursor: pointer;
+}
+
+.empty-repair-text {
+  margin-top: 12px;
+  text-align: center;
+  color: #909399;
+  font-size: 13px;
 }
 
 .evaluation-card {
@@ -996,6 +1057,7 @@ onMounted(() => {
   justify-content: center;
   align-items: flex-end;
   z-index: 100;
+  overflow: hidden;
 }
 
 .evaluation-form-panel {
@@ -1003,7 +1065,23 @@ onMounted(() => {
   background: #f5f7fa;
   max-height: 90%;
   border-radius: 16px 16px 0 0;
-  overflow: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.evaluation-form-panel .form-area {
+  max-height: calc(90vh - 56px);
+  overflow-y: auto;
+  padding-bottom: 120px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.evaluation-form-panel::-webkit-scrollbar,
+.evaluation-form-panel .form-area::-webkit-scrollbar {
+  display: none;
 }
 </style>
 

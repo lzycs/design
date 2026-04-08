@@ -2,9 +2,13 @@ package com.campus.learningspace.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.campus.learningspace.entity.StudyPlan;
 import com.campus.learningspace.entity.TeamMember;
+import com.campus.learningspace.entity.TeamMessage;
 import com.campus.learningspace.entity.TeamRequest;
 import com.campus.learningspace.entity.TeamRequestVO;
+import com.campus.learningspace.entity.TeamJoinApplication;
+import com.campus.learningspace.mapper.TeamJoinApplicationMapper;
 import com.campus.learningspace.mapper.TeamRequestMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,6 +22,12 @@ public class TeamRequestService extends ServiceImpl<TeamRequestMapper, TeamReque
 
     @Autowired
     private TeamMemberService teamMemberService;
+    @Autowired
+    private TeamMessageService teamMessageService;
+    @Autowired
+    private StudyPlanService studyPlanService;
+    @Autowired
+    private TeamJoinApplicationMapper teamJoinApplicationMapper;
 
     public List<TeamRequest> getActiveRequests() {
         LambdaQueryWrapper<TeamRequest> wrapper = new LambdaQueryWrapper<>();
@@ -169,6 +179,46 @@ public class TeamRequestService extends ServiceImpl<TeamRequestMapper, TeamReque
         }
         updateById(req);
         return true;
+    }
+
+    /**
+     * 删除小组：仅组长（创建者）可操作，执行级联逻辑删除。
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public boolean deleteTeamByLeader(Long requestId, Long userId) {
+        if (requestId == null || userId == null) return false;
+        TeamRequest req = getById(requestId);
+        if (req == null || (req.getDeleted() != null && req.getDeleted() == 1)) return false;
+
+        boolean isLeader = (req.getUserId() != null && req.getUserId().equals(userId))
+                || teamMemberService.isLeader(requestId, userId);
+        if (!isLeader) return false;
+
+        // 1) 小组成员逻辑删除
+        LambdaQueryWrapper<TeamMember> memberW = new LambdaQueryWrapper<>();
+        memberW.eq(TeamMember::getTeamRequestId, requestId)
+                .eq(TeamMember::getDeleted, 0);
+        teamMemberService.remove(memberW);
+
+        // 2) 加入申请逻辑删除
+        teamJoinApplicationMapper.delete(new LambdaQueryWrapper<TeamJoinApplication>()
+                .eq(TeamJoinApplication::getTeamRequestId, requestId)
+                .eq(TeamJoinApplication::getDeleted, 0));
+
+        // 3) 学习计划逻辑删除
+        LambdaQueryWrapper<StudyPlan> planW = new LambdaQueryWrapper<>();
+        planW.eq(StudyPlan::getTeamRequestId, requestId)
+                .eq(StudyPlan::getDeleted, 0);
+        studyPlanService.remove(planW);
+
+        // 4) 历史消息逻辑删除（即使前端已下线聊天，也保持数据一致）
+        LambdaQueryWrapper<TeamMessage> msgW = new LambdaQueryWrapper<>();
+        msgW.eq(TeamMessage::getTeamRequestId, requestId)
+                .eq(TeamMessage::getDeleted, 0);
+        teamMessageService.remove(msgW);
+
+        // 5) 小组逻辑删除
+        return removeById(requestId);
     }
 }
 

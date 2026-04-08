@@ -5,6 +5,7 @@ import { showToast, showConfirmDialog } from 'vant'
 import QRCode from 'qrcode'
 import { buildPublicUrl, isLikelyLocalhostOrigin } from '@/utils/publicUrl'
 import { getAvailableClassrooms, type Classroom } from '@/api/classroom'
+import { getBuildingList, type Building } from '@/api/building'
 import { getLibraryList, type Library } from '@/api/library'
 import {
   createReservation,
@@ -12,8 +13,6 @@ import {
   getUserReservations,
   type Reservation,
   updateReservation,
-  getClassroomSlots,
-  type ClassroomSlotStatus,
   generateReservationQrcode,
   getReservationQrcodeStatus,
 } from '@/api/reservation'
@@ -25,12 +24,12 @@ const statusTab = ref<'booking' | 'pending' | 'checked' | 'cancelled'>('booking'
 const dateTab = ref<'today' | 'tomorrow' | 'dayAfter'>('today')
 const areaTab = ref<'classroom' | 'seminar' | 'library'>('classroom')
 
+const buildings = ref<Building[]>([])
 const normalClassrooms = ref<Classroom[]>([])
 const seminarRooms = ref<Classroom[]>([])
 const libraries = ref<Library[]>([])
 
 const reservations = ref<Reservation[]>([])
-const classroomSlots = ref<Record<number, ClassroomSlotStatus[]>>({})
 
 const loading = ref(false)
 const seatModalShow = ref(false)
@@ -73,6 +72,21 @@ const cancelledReservations = computed(() =>
   reservations.value.filter((r) => r.status === 4 || r.status === 5)
 )
 
+const buildingCards = computed(() => {
+  const source = areaTab.value === 'classroom' ? normalClassrooms.value : seminarRooms.value
+  const countMap = new Map<number, number>()
+  source.forEach((c) => {
+    if (!c.buildingId) return
+    countMap.set(c.buildingId, (countMap.get(c.buildingId) ?? 0) + 1)
+  })
+  return buildings.value
+    .filter((b) => !!b.id && countMap.has(b.id))
+    .map((b) => ({
+      ...b,
+      classroomCount: countMap.get(b.id!) ?? 0,
+    }))
+})
+
 const sortClassroomsByFloor = (list: Classroom[]) => {
   return [...list].sort((a, b) => {
     const floorA = a.floor ?? Number.MAX_SAFE_INTEGER
@@ -101,6 +115,16 @@ const loadLibraries = async () => {
   if (Array.isArray(maybeData)) return (maybeData as Library[])
   if (maybeData && Array.isArray((maybeData as { data?: unknown }).data)) {
     return (maybeData as { data: Library[] }).data
+  }
+  return []
+}
+
+const loadBuildings = async () => {
+  const res = await getBuildingList()
+  const maybeData = (res as unknown as { data?: unknown }).data
+  if (Array.isArray(maybeData)) return maybeData as Building[]
+  if (maybeData && Array.isArray((maybeData as { data?: unknown }).data)) {
+    return (maybeData as { data: Building[] }).data
   }
   return []
 }
@@ -134,17 +158,20 @@ const loadAll = async () => {
   try {
     loading.value = true
     loadUserFromStorage()
-    const [normal, seminar, libraryList] = await Promise.all([
+    const [normal, seminar, libraryList, buildingList] = await Promise.all([
       loadClassroomsByType(1),
       loadClassroomsByType(2),
-      loadLibraries()
+      loadLibraries(),
+      loadBuildings(),
     ])
+    buildings.value = buildingList
     normalClassrooms.value = normal
     seminarRooms.value = seminar
     libraries.value = libraryList
-    await Promise.all([reloadSlotsForCurrentDate(), loadUserReservations()])
+    await loadUserReservations()
   } catch (e) {
     console.error(e)
+    buildings.value = []
     normalClassrooms.value = []
     seminarRooms.value = []
     libraries.value = []
@@ -164,45 +191,6 @@ const getCurrentDateString = () => {
     .getDate()
     .toString()
     .padStart(2, '0')}`}`
-}
-
-const reloadSlotsForCurrentDate = async () => {
-  const dateStr = getCurrentDateString()
-  const allClassrooms = [...normalClassrooms.value, ...seminarRooms.value]
-  const record: Record<number, ClassroomSlotStatus[]> = {}
-  await Promise.all(
-    allClassrooms
-      .filter((c) => c.id)
-      .map(async (c) => {
-        try {
-          const res = await getClassroomSlots(c.id!, dateStr)
-          const maybeData = (res as unknown as { data?: unknown }).data
-          if (Array.isArray(maybeData)) {
-            // 根据 label 去重，避免出现重复时间段
-            const list = maybeData as ClassroomSlotStatus[]
-            const map = new Map<string, ClassroomSlotStatus>()
-            list.forEach((s) => {
-              if (!map.has(s.label)) {
-                map.set(s.label, s)
-              }
-            })
-            record[c.id!] = Array.from(map.values())
-          } else if (maybeData && Array.isArray((maybeData as { data?: unknown }).data)) {
-            const list = (maybeData as { data: ClassroomSlotStatus[] }).data
-            const map = new Map<string, ClassroomSlotStatus>()
-            list.forEach((s) => {
-              if (!map.has(s.label)) {
-                map.set(s.label, s)
-              }
-            })
-            record[c.id!] = Array.from(map.values())
-          }
-        } catch (e) {
-          console.error('load classroom slots failed', e)
-        }
-      })
-  )
-  classroomSlots.value = record
 }
 
 const buildReservationPayload = (
@@ -234,7 +222,7 @@ const submitReservation = async (payload: ReservationPayload | null) => {
   try {
     await createReservation(payload)
     showToast('预约成功')
-    await Promise.all([loadUserReservations(), reloadSlotsForCurrentDate()])
+    await loadUserReservations()
     statusTab.value = 'pending'
   } catch (e: unknown) {
     console.error(e)
@@ -304,16 +292,17 @@ const cancelReservation = async (item: Reservation) => {
     const updated: Reservation = { ...item, status: 4 }
     await updateReservation(updated)
     showToast('已取消预约')
-    await Promise.all([loadUserReservations(), reloadSlotsForCurrentDate()])
+    await loadUserReservations()
   } catch (e) {
     console.error(e)
     showToast('取消失败，请稍后重试')
   }
 }
 
-const goToClassroomDetail = (room: Classroom) => {
-  if (!room.id) return
-  router.push(`/reservation/classroom/${room.id}`)
+const goToBuildingClassrooms = (buildingId?: number) => {
+  if (!buildingId) return
+  const type = areaTab.value === 'seminar' ? 2 : 1
+  router.push(`/reservation/building/${buildingId}/${type}`)
 }
 
 const startPolling = (code: string) => {
@@ -330,7 +319,7 @@ const startPolling = (code: string) => {
       const ok = data.ok
       if (ok && data.success) {
         showToast('签到成功')
-        await Promise.all([loadUserReservations(), reloadSlotsForCurrentDate()])
+        await loadUserReservations()
         statusTab.value = 'checked'
         cancelScan()
         return
@@ -452,12 +441,7 @@ onMounted(() => {
           <div
             class="date-tag-item"
             :class="{ active: dateTab === 'today' }"
-            @click="
-              () => {
-                dateTab = 'today'
-                reloadSlotsForCurrentDate()
-              }
-            "
+            @click="dateTab = 'today'"
           >
             <div>今天</div>
             <div>{{ todayText }}</div>
@@ -465,12 +449,7 @@ onMounted(() => {
           <div
             class="date-tag-item"
             :class="{ active: dateTab === 'tomorrow' }"
-            @click="
-              () => {
-                dateTab = 'tomorrow'
-                reloadSlotsForCurrentDate()
-              }
-            "
+            @click="dateTab = 'tomorrow'"
           >
             <div>明天</div>
             <div>{{ tomorrowText }}</div>
@@ -478,12 +457,7 @@ onMounted(() => {
           <div
             class="date-tag-item"
             :class="{ active: dateTab === 'dayAfter' }"
-            @click="
-              () => {
-                dateTab = 'dayAfter'
-                reloadSlotsForCurrentDate()
-              }
-            "
+            @click="dateTab = 'dayAfter'"
           >
             <div>后天</div>
             <div>{{ dayAfterText }}</div>
@@ -515,77 +489,39 @@ onMounted(() => {
         </div>
 
         <div v-if="areaTab === 'classroom'">
-          <div class="card state-card">
-            <div
-              v-for="room in normalClassrooms"
-              :key="room.id"
-              class="state-item list-item"
-              @click="goToClassroomDetail(room)"
-            >
-              <div class="state-left list-left">
-                <div
-                  class="state-tag"
-                  :class="{
-                    'tag-free': (classroomSlots[room.id!] || []).some((s) => s.status === 'available'),
-                    'tag-booked': (classroomSlots[room.id!] || []).every((s) => s.status === 'occupied')
-                  }"
-                >
-                  {{
-                    (classroomSlots[room.id!] || []).some((s) => s.status === 'available') ? '空闲' : '约满'
-                  }}
-                </div>
-                <div class="state-info list-info">
-                  <h3>{{ room.name }}</h3>
-                  <p>
-                    {{ room.floor }}层 |
-                    容量 {{ room.capacity || '-' }} 人
-                  </p>
-                </div>
-              </div>
-              <div class="state-right list-right">
-                <i class="icon iconfont icon-arrow-right" />
-              </div>
+          <div v-for="b in buildingCards" :key="b.id" class="classroom-item">
+            <div class="classroom-header">
+              <div class="classroom-name">{{ b.name }}</div>
+              <div class="classroom-status">空闲</div>
+            </div>
+            <div class="classroom-desc">
+              {{ b.address || '教学楼' }} ｜ 共 {{ b.floorCount || '-' }} 层
+            </div>
+            <div class="classroom-footer">
+              <div class="classroom-capacity">普通教室 {{ b.classroomCount }} 间</div>
+              <button class="btn btn-small" @click="goToBuildingClassrooms(b.id)">查看教室</button>
             </div>
           </div>
-          <div v-if="!loading && normalClassrooms.length === 0" class="empty-text">
+          <div v-if="!loading && buildingCards.length === 0" class="empty-text">
             暂无可预约普通教室
           </div>
         </div>
 
         <div v-else-if="areaTab === 'seminar'">
-          <div class="card state-card">
-            <div
-              v-for="room in seminarRooms"
-              :key="room.id"
-              class="state-item list-item"
-              @click="goToClassroomDetail(room)"
-            >
-              <div class="state-left list-left">
-                <div
-                  class="state-tag"
-                  :class="{
-                    'tag-free': (classroomSlots[room.id!] || []).some((s) => s.status === 'available'),
-                    'tag-booked': (classroomSlots[room.id!] || []).every((s) => s.status === 'occupied')
-                  }"
-                >
-                  {{
-                    (classroomSlots[room.id!] || []).some((s) => s.status === 'available') ? '空闲' : '约满'
-                  }}
-                </div>
-                <div class="state-info list-info">
-                  <h3>{{ room.name }}</h3>
-                  <p>
-                    {{ room.floor }}层 |
-                    容量 {{ room.capacity || '-' }} 人
-                  </p>
-                </div>
-              </div>
-              <div class="state-right list-right">
-                <i class="icon iconfont icon-arrow-right" />
-              </div>
+          <div v-for="b in buildingCards" :key="b.id" class="classroom-item">
+            <div class="classroom-header">
+              <div class="classroom-name">{{ b.name }}</div>
+              <div class="classroom-status">空闲</div>
+            </div>
+            <div class="classroom-desc">
+              {{ b.address || '教学楼' }} ｜ 共 {{ b.floorCount || '-' }} 层
+            </div>
+            <div class="classroom-footer">
+              <div class="classroom-capacity">研讨室 {{ b.classroomCount }} 间</div>
+              <button class="btn btn-small" @click="goToBuildingClassrooms(b.id)">查看教室</button>
             </div>
           </div>
-          <div v-if="!loading && seminarRooms.length === 0" class="empty-text">
+          <div v-if="!loading && buildingCards.length === 0" class="empty-text">
             暂无可预约研讨室
           </div>
         </div>
@@ -850,8 +786,10 @@ onMounted(() => {
 .area-tag-item {
   padding: 8px 16px;
   border-radius: 16px;
-  background-color: #f5f7fa;
+  background-color: #e9edf3;
   font-size: 14px;
+  color: #334155;
+  font-weight: 500;
   white-space: nowrap;
 }
 
@@ -917,6 +855,11 @@ onMounted(() => {
 .tag-booked {
   background-color: #f7d060;
   color: #1a1a1a;
+}
+
+.tag-maintaining {
+  background-color: #f59e0b;
+  color: #ffffff;
 }
 
 .classroom-header {

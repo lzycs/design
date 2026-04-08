@@ -79,6 +79,10 @@ export const quitTeam = (requestId: number, userId: number) => {
   return request.post<unknown, Result<boolean>>(`/team/request/${requestId}/quit`, { userId })
 }
 
+export const deleteTeamRequest = (requestId: number, userId: number) => {
+  return request.post<unknown, Result<boolean>>(`/team/request/${requestId}/delete`, { userId })
+}
+
 export const getUserTeams = (userId: number) => {
   return request.get<unknown, Result<TeamRequestVO[]>>(`/team/user/${userId}`)
 }

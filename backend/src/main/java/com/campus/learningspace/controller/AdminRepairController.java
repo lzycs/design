@@ -91,6 +91,10 @@ public class AdminRepairController {
 
         boolean ok = repairService.updateById(existing);
         if (!ok) return Result.success(false);
+        // 报修状态变更后，同步教室实时状态到预约侧展示
+        if (existing.getResourceType() != null && existing.getResourceType() == 1) {
+            repairService.syncClassroomRealtimeStatusByRepair(existing.getId(), existing.getClassroomId(), existing.getStatus());
+        }
 
         String statusName = switch (req.getStatus()) {
             case 1 -> "待处理";

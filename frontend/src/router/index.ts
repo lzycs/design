@@ -40,6 +40,11 @@ const router = createRouter({
       component: () => import('../views/ClassroomDetailView.vue'),
     },
     {
+      path: '/reservation/building/:buildingId/:type',
+      name: 'reservation-building-classrooms',
+      component: () => import('../views/ReservationBuildingClassroomsView.vue'),
+    },
+    {
       path: '/reservation/classroom/:id/reviews',
       name: 'classroom-reviews',
       component: () => import('../views/ClassroomReviewsView.vue'),

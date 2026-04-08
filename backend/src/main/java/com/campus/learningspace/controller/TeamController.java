@@ -92,6 +92,17 @@ public class TeamController {
         return ok ? Result.success(true) : Result.error(400, "退出失败（组长不能退出，或你不是该组成员）");
     }
 
+    @PostMapping("/request/{requestId}/delete")
+    public Result<Boolean> deleteTeam(@PathVariable Long requestId, @RequestBody Map<String, Object> body) {
+        Object userIdObj = body.get("userId");
+        if (userIdObj == null) {
+            return Result.error(400, "缺少 userId");
+        }
+        Long userId = Long.valueOf(userIdObj.toString());
+        boolean ok = teamRequestService.deleteTeamByLeader(requestId, userId);
+        return ok ? Result.success(true) : Result.error(400, "删除失败（仅组长可删除，或小组不存在）");
+    }
+
     @GetMapping("/user/{userId}")
     public Result<List<TeamRequestVO>> getUserTeams(@PathVariable Long userId) {
         return Result.success(teamRequestService.getUserTeamVOList(userId));

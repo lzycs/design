@@ -10,6 +10,7 @@ import {
   type TeamMemberVO,
   getPendingByApplicant,
   quitTeam,
+  deleteTeamRequest,
   type TeamJoinApplicationVO,
 } from '@/api/team'
 import { showConfirmDialog, showToast } from 'vant'
@@ -34,6 +35,7 @@ const showDetail = ref(false)
 const currentTeam = ref<TeamRequestVO | null>(null)
 const joining = ref(false)
 const quitting = ref(false)
+const deleting = ref(false)
 const members = ref<TeamMemberVO[]>([])
 const myPendingApplications = ref<TeamJoinApplicationVO[]>([])
 
@@ -290,6 +292,39 @@ const handleQuitTeam = async () => {
   }
 }
 
+const handleDeleteTeam = async () => {
+  if (!storedUser.value?.id || !currentTeam.value?.id) return
+  if (!isLeaderOfCurrentTeam.value) {
+    showToast('仅组长可删除小组')
+    return
+  }
+  const confirm = await showConfirmDialog({
+    title: '删除小组',
+    message: `确认删除“${currentTeam.value.title ?? '该小组'}”吗？删除后成员、申请及关联计划将一并隐藏。`,
+  }).catch(() => false)
+  if (!confirm) return
+
+  deleting.value = true
+  try {
+    const res = await deleteTeamRequest(currentTeam.value.id, storedUser.value.id)
+    if (res.code !== 200) {
+      showToast(res.message || '删除失败')
+      return
+    }
+    showToast('小组已删除')
+    showDetail.value = false
+    currentTeam.value = null
+    members.value = []
+    await Promise.all([loadTeams(), loadApplyState()])
+  } catch (e) {
+    console.error('删除小组失败', e)
+    const msg = (e as any)?.response?.data?.message || '删除失败，请稍后重试'
+    showToast(msg)
+  } finally {
+    deleting.value = false
+  }
+}
+
 const handleApplyJoin = async () => {
   if (!isLoggedIn.value || !storedUser.value?.id) {
     showToast('请先登录后再申请加入小组')
@@ -457,7 +492,7 @@ onMounted(() => {
           <div class="team-detail-extra" v-if="formatRange(currentTeam.startTime, currentTeam.endTime)">
             时间范围：{{ formatRange(currentTeam.startTime, currentTeam.endTime) }}
           </div>
-          <div class="btn-row">
+          <div class="btn-row" :class="{ 'leader-mode': isLeaderOfCurrentTeam }">
             <button
               class="join-btn"
               :disabled="
@@ -487,19 +522,28 @@ onMounted(() => {
               }}
             </button>
             <button
-              v-if="isMemberOfCurrentTeam"
+              v-if="isMemberOfCurrentTeam && !isLeaderOfCurrentTeam"
               class="quit-btn"
-              :disabled="quitting || isLeaderOfCurrentTeam"
+              :disabled="quitting"
               @click.stop="handleQuitTeam"
             >
               {{
-                isLeaderOfCurrentTeam
-                  ? '组长不可退出'
-                  : quitting
-                    ? '退出中...'
-                    : '退出小组'
+                quitting
+                  ? '退出中...'
+                  : '退出小组'
               }}
             </button>
+            <button
+              v-if="isLeaderOfCurrentTeam"
+              class="delete-btn"
+              :disabled="deleting"
+              @click.stop="handleDeleteTeam"
+            >
+              {{ deleting ? '删除中...' : '删除小组' }}
+            </button>
+          </div>
+          <div v-if="isLeaderOfCurrentTeam" class="leader-tip">
+            你是组长，可删除小组；删除后成员、申请与关联计划会一并隐藏。
           </div>
         </div>
         <div class="member-section">
@@ -817,6 +861,12 @@ onMounted(() => {
   gap: 10px;
 }
 
+.btn-row.leader-mode {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+}
+
 .join-btn {
   flex: 1;
   height: 44px;
@@ -830,7 +880,6 @@ onMounted(() => {
 }
 
 .join-btn {
-  width: 100%;
   height: 44px;
   background-color: #ffffff;
   color: #4a90e2;
@@ -861,6 +910,30 @@ onMounted(() => {
 .quit-btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
+}
+
+.delete-btn {
+  flex: 1;
+  height: 44px;
+  border-radius: 8px;
+  border: 1px solid #ef9a9a;
+  background-color: #fdecec;
+  color: #c62828;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.delete-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.leader-tip {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .member-tip {

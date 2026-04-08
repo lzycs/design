@@ -31,3 +31,18 @@ body {
     min-height: 100vh;
   }
 }
+
+/* 全局隐藏滚动条（保留滚动能力） */
+html,
+body,
+#app,
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none;
+}
