@@ -312,6 +312,8 @@ const selectResTime = (slot: { start: string; end: string }) => {
   resStartTime.value = slot.start
   resEndTime.value = slot.end
 }
+
+const submitCreate = async () => {
   if (!teamRequestId.value || !title.value.trim()) {
     showToast('请选择所属小组并填写计划名称')
     return
