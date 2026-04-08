@@ -51,5 +51,14 @@ public class ScanDeviceService extends ServiceImpl<ScanDeviceMapper, ScanDevice>
         save(d);
         return d;
     }
+
+    /**
+     * 物理删除设备，释放 device_uid 唯一索引占用，便于后续同设备再次授权
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public boolean hardDeleteById(Long id) {
+        if (id == null) return false;
+        return baseMapper.hardDeleteById(id) > 0;
+    }
 }
 

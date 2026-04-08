@@ -92,7 +92,7 @@ public class AdminScanDeviceController {
     }
 
     /**
-     * 删除授权设备（逻辑删除）
+     * 删除授权设备（物理删除）
      */
     @DeleteMapping("/{id}")
     public Result<Boolean> deleteDevice(@RequestHeader(value = "X-Admin-Token", required = false) String token,
@@ -105,7 +105,7 @@ public class AdminScanDeviceController {
         ScanDevice exist = scanDeviceService.getById(id);
         if (exist == null || (exist.getDeleted() != null && exist.getDeleted() == 1)) return Result.error(404, "设备不存在");
 
-        return Result.success(scanDeviceService.removeById(id));
+        return Result.success(scanDeviceService.hardDeleteById(id));
     }
 }
 
