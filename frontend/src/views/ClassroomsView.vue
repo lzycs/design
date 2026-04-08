@@ -8,11 +8,23 @@ const route = useRoute()
 const buildingId = Number(route.params.buildingId)
 const classrooms = ref<Classroom[]>([])
 
+const sortClassroomsByFloor = (list: Classroom[]) => {
+  return [...list].sort((a, b) => {
+    const floorA = a.floor ?? Number.MAX_SAFE_INTEGER
+    const floorB = b.floor ?? Number.MAX_SAFE_INTEGER
+    if (floorA !== floorB) return floorA - floorB
+    return (a.roomNumber || a.name || '').localeCompare((b.roomNumber || b.name || ''), 'zh-Hans-CN', {
+      numeric: true,
+      sensitivity: 'base',
+    })
+  })
+}
+
 const loadClassrooms = async () => {
   try {
     const res = await getClassroomsByBuilding(buildingId)
     // Safely handle empty or undefined response data
-    classrooms.value = res.data || []
+    classrooms.value = sortClassroomsByFloor(res.data || [])
   } catch (error) {
     console.error('Failed to load classrooms:', error)
     // Show user-friendly error notification using Vant Toast

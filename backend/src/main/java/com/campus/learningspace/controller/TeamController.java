@@ -6,11 +6,9 @@ import com.campus.learningspace.entity.TeamMember;
 import com.campus.learningspace.entity.TeamMemberVO;
 import com.campus.learningspace.entity.TeamRequest;
 import com.campus.learningspace.entity.TeamRequestVO;
-import com.campus.learningspace.entity.TeamMessage;
 import com.campus.learningspace.service.TeamJoinApplicationService;
 import com.campus.learningspace.service.TeamMemberService;
 import com.campus.learningspace.service.TeamRequestService;
-import com.campus.learningspace.service.TeamMessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,9 +25,6 @@ public class TeamController {
 
     @Autowired
     private TeamMemberService teamMemberService;
-
-    @Autowired
-    private TeamMessageService teamMessageService;
 
     @Autowired
     private TeamJoinApplicationService teamJoinApplicationService;
@@ -86,6 +81,17 @@ public class TeamController {
         return ok ? Result.success(true) : Result.error(400, "加入失败（可能已加入或已满员）");
     }
 
+    @PostMapping("/request/{requestId}/quit")
+    public Result<Boolean> quitTeam(@PathVariable Long requestId, @RequestBody Map<String, Object> body) {
+        Object userIdObj = body.get("userId");
+        if (userIdObj == null) {
+            return Result.error(400, "缺少 userId");
+        }
+        Long userId = Long.valueOf(userIdObj.toString());
+        boolean ok = teamRequestService.quitTeam(requestId, userId);
+        return ok ? Result.success(true) : Result.error(400, "退出失败（组长不能退出，或你不是该组成员）");
+    }
+
     @GetMapping("/user/{userId}")
     public Result<List<TeamRequestVO>> getUserTeams(@PathVariable Long userId) {
         return Result.success(teamRequestService.getUserTeamVOList(userId));
@@ -94,23 +100,6 @@ public class TeamController {
     @GetMapping("/request/{requestId}/members")
     public Result<List<TeamMemberVO>> getMembers(@PathVariable Long requestId) {
         return Result.success(teamMemberService.getTeamMemberVOList(requestId));
-    }
-
-    @GetMapping("/request/{requestId}/messages")
-    public Result<List<TeamMessage>> getMessages(@PathVariable Long requestId,
-                                                 @RequestParam(required = false) Integer limit) {
-        return Result.success(teamMessageService.getMessagesByTeam(requestId, limit));
-    }
-
-    @PostMapping("/request/{requestId}/messages")
-    public Result<TeamMessage> sendMessage(@PathVariable Long requestId, @RequestBody TeamMessage message) {
-        message.setId(null);
-        message.setTeamRequestId(requestId);
-        if (message.getType() == null) {
-            message.setType(1);
-        }
-        teamMessageService.save(message);
-        return Result.success(message);
     }
 
     // ===== 加入申请相关接口 =====

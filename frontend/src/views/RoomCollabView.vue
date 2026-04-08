@@ -169,12 +169,6 @@ onMounted(() => {
 
       <!-- 3. 协作文档编辑区 -->
       <div class="card editor-card">
-        <div class="editor-toolbar">
-          <button type="button" class="toolbar-btn">保存</button>
-          <button type="button" class="toolbar-btn">历史版本</button>
-          <button type="button" class="toolbar-btn">分享</button>
-          <button type="button" class="toolbar-btn">更多</button>
-        </div>
         <textarea
           v-model="docContent"
           class="editor-area"
@@ -342,23 +336,6 @@ onMounted(() => {
 .editor-card {
   padding: 0;
   overflow: hidden;
-}
-
-.editor-toolbar {
-  display: flex;
-  gap: 8px;
-  padding: 12px 16px;
-  border-bottom: 1px solid #e5e7eb;
-  background-color: #f9fafb;
-}
-
-.toolbar-btn {
-  padding: 6px 12px;
-  border-radius: 999px;
-  border: 1px solid #e5e7eb;
-  background-color: #ffffff;
-  font-size: 12px;
-  color: #374151;
 }
 
 .editor-area {

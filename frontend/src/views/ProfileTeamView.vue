@@ -288,14 +288,6 @@ const markDone = async () => {
   }
 }
 
-const goChat = () => {
-  if (!currentTeam.value?.id) return
-  router.push({
-    path: `/team-chat/${currentTeam.value.id}`,
-    query: { title: currentTeam.value.title ?? '协作' },
-  })
-}
-
 const createForm = ref({
   title: '',
   description: '',
@@ -503,7 +495,6 @@ onMounted(async () => {
         >
           标记完成
         </button>
-        <button type="button" class="action-btn secondary-btn" @click="goChat">进入聊天</button>
       </div>
     </template>
 
@@ -1039,11 +1030,6 @@ onMounted(async () => {
 .primary-btn:disabled {
   background: #c9d8eb;
   cursor: not-allowed;
-}
-
-.secondary-btn {
-  background: #f5f7fa;
-  color: #4a90e2;
 }
 
 /* 发起协作表单 */

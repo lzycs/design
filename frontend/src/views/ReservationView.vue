@@ -73,12 +73,24 @@ const cancelledReservations = computed(() =>
   reservations.value.filter((r) => r.status === 4 || r.status === 5)
 )
 
+const sortClassroomsByFloor = (list: Classroom[]) => {
+  return [...list].sort((a, b) => {
+    const floorA = a.floor ?? Number.MAX_SAFE_INTEGER
+    const floorB = b.floor ?? Number.MAX_SAFE_INTEGER
+    if (floorA !== floorB) return floorA - floorB
+    return (a.roomNumber || a.name || '').localeCompare((b.roomNumber || b.name || ''), 'zh-Hans-CN', {
+      numeric: true,
+      sensitivity: 'base',
+    })
+  })
+}
+
 const loadClassroomsByType = async (type: number): Promise<Classroom[]> => {
   const res = await getAvailableClassrooms(type)
   const maybeData = (res as unknown as { data?: unknown }).data
-  if (Array.isArray(maybeData)) return maybeData as Classroom[]
+  if (Array.isArray(maybeData)) return sortClassroomsByFloor(maybeData as Classroom[])
   if (maybeData && Array.isArray((maybeData as { data?: unknown }).data)) {
-    return (maybeData as { data: Classroom[] }).data
+    return sortClassroomsByFloor((maybeData as { data: Classroom[] }).data)
   }
   return []
 }
@@ -313,7 +325,7 @@ const startPolling = (code: string) => {
     try {
       const res = await getReservationQrcodeStatus(code)
       if (res.code !== 200) return
-      const data = res.data ?? ({} as any)
+      const data = res.data ?? { ok: false, message: '' }
       const msg = data.message
       const ok = data.ok
       if (ok && data.success) {
@@ -617,7 +629,10 @@ onMounted(() => {
             <div class="booking-header">
               <div class="booking-info">
                 <div class="booking-title">
-                  {{ item.resourceType === 1 ? '教室预约' : '图书馆预约' }} #{{ item.id }}
+                  {{
+                    item.resourceName ||
+                    (item.resourceType === 1 ? `教室预约 #${item.id}` : `图书馆预约 #${item.id}`)
+                  }}
                 </div>
                 <div class="booking-subtitle">
                   {{ item.reservationDate }} {{ item.startTime }}-{{ item.endTime }}
@@ -637,7 +652,7 @@ onMounted(() => {
             </div>
             <div class="booking-actions">
               <button class="action-btn btn-secondary scan-btn" @click.stop="startScan(item)">
-                扫码签到
+                签到
               </button>
               <button class="action-btn btn-danger cancel-btn" @click.stop="cancelReservation(item)">
                 取消预约
@@ -658,7 +673,10 @@ onMounted(() => {
             <div class="booking-header">
               <div class="booking-info">
                 <div class="booking-title">
-                  {{ item.resourceType === 1 ? '教室预约' : '图书馆预约' }} #{{ item.id }}
+                  {{
+                    item.resourceName ||
+                    (item.resourceType === 1 ? `教室预约 #${item.id}` : `图书馆预约 #${item.id}`)
+                  }}
                 </div>
                 <div class="booking-subtitle">
                   {{ item.reservationDate }} {{ item.startTime }}-{{ item.endTime }}
@@ -704,7 +722,10 @@ onMounted(() => {
             <div class="booking-header">
               <div class="booking-info">
                 <div class="booking-title">
-                  {{ item.resourceType === 1 ? '教室预约' : '图书馆预约' }} #{{ item.id }}
+                  {{
+                    item.resourceName ||
+                    (item.resourceType === 1 ? `教室预约 #${item.id}` : `图书馆预约 #${item.id}`)
+                  }}
                 </div>
                 <div class="booking-subtitle">
                   {{ item.reservationDate }} {{ item.startTime }}-{{ item.endTime }}
@@ -784,12 +805,14 @@ onMounted(() => {
       </div>
     </van-popup>
 
-    <van-popup v-model:show="showScan" round :style="{ width: '80%' }">
+    <van-popup v-model:show="showScan" round :style="{ width: '86%', maxWidth: '360px' }">
       <div class="scan-modal-inner">
+        <div class="scan-title">签到</div>
+        <div class="scan-subtitle">请使用已授权设备扫描下方二维码</div>
         <div class="scan-box">
           <canvas ref="qrCanvas" class="qr-canvas" />
         </div>
-        <div class="scan-tips">请使用已授权设备扫描此二维码进行核销</div>
+        <div class="scan-tips">核销成功后页面将自动更新签到状态</div>
         <button class="scan-cancel-btn" @click="cancelScan">取消扫码</button>
       </div>
     </van-popup>
@@ -1133,23 +1156,40 @@ onMounted(() => {
 }
 
 .scan-modal-inner {
-  padding: 16px;
+  padding: 18px 16px 16px;
   text-align: center;
+}
+
+.scan-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 6px;
+}
+
+.scan-subtitle {
+  font-size: 12px;
+  color: #8b8b8b;
+  margin-bottom: 12px;
 }
 
 .scan-box {
   width: 240px;
   height: 240px;
-  border-radius: 16px;
-  border: 2px solid #4a90e2;
+  border-radius: 14px;
+  border: 2px solid #6aa8eb;
+  background: #f8fbff;
   margin: 0 auto 16px;
-  position: relative;
-  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .qr-canvas {
-  width: 100%;
-  height: 100%;
+  width: 210px;
+  height: 210px;
+  display: block;
+  margin: 0 auto;
 }
 
 .scan-line {
@@ -1172,18 +1212,20 @@ onMounted(() => {
 }
 
 .scan-tips {
-  font-size: 14px;
-  color: #333333;
-  margin-bottom: 12px;
+  font-size: 13px;
+  color: #606266;
+  margin-bottom: 14px;
 }
 
 .scan-cancel-btn {
-  padding: 6px 16px;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  background-color: #f5f7fa;
+  min-width: 110px;
+  padding: 8px 18px;
+  border-radius: 10px;
+  border: 1px solid #d9e4f2;
+  background-color: #f7faff;
   font-size: 13px;
-  color: #666666;
+  color: #4a90e2;
+  font-weight: 600;
 }
 
 .empty-text {
@@ -1243,19 +1285,24 @@ onMounted(() => {
   justify-content: center;
   align-items: center;
   font-size: 12px;
-  color: #ffffff;
+  color: #4b5563;
+  background-color: #e5e7eb;
 }
 
 .seat-item.available {
-  background-color: #4a90e2;
+  background-color: #e5e7eb;
+  color: #4b5563;
 }
 
 .seat-item.occupied {
-  background-color: #f56c6c;
+  background-color: #4b5563;
+  color: #f3f4f6;
+  cursor: not-allowed;
 }
 
 .seat-item.selected {
-  background-color: #67c23a;
-  border: 2px solid #4caf50;
+  background-color: #4a90e2;
+  color: #ffffff;
+  border: 2px solid #2f6fb8;
 }
 </style>

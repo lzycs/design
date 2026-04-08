@@ -418,12 +418,14 @@ onMounted(async () => {
       </div>
     </van-popup>
 
-    <van-popup v-model:show="showScan" round :style="{ width: '80%' }">
+    <van-popup v-model:show="showScan" round :style="{ width: '86%', maxWidth: '360px' }">
       <div class="scan-modal-inner">
+        <div class="scan-title">签到</div>
+        <div class="scan-subtitle">请使用已授权设备扫描下方二维码</div>
         <div class="scan-box">
           <canvas ref="qrCanvas" class="qr-canvas" />
         </div>
-        <div class="scan-tips">请使用已授权设备扫描此二维码进行核销</div>
+        <div class="scan-tips">核销成功后页面将自动更新签到状态</div>
         <button class="scan-cancel-btn" @click="cancelScan">取消扫码</button>
       </div>
     </van-popup>
@@ -581,23 +583,40 @@ onMounted(async () => {
 }
 
 .scan-modal-inner {
-  padding: 16px;
+  padding: 18px 16px 16px;
   text-align: center;
+}
+
+.scan-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 6px;
+}
+
+.scan-subtitle {
+  font-size: 12px;
+  color: #8b8b8b;
+  margin-bottom: 12px;
 }
 
 .scan-box {
   width: 240px;
   height: 240px;
-  border-radius: 16px;
-  border: 2px solid #4a90e2;
+  border-radius: 14px;
+  border: 2px solid #6aa8eb;
+  background: #f8fbff;
   margin: 0 auto 16px;
-  position: relative;
-  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .qr-canvas {
-  width: 100%;
-  height: 100%;
+  width: 210px;
+  height: 210px;
+  display: block;
+  margin: 0 auto;
 }
 
 .scan-line {
@@ -620,18 +639,20 @@ onMounted(async () => {
 }
 
 .scan-tips {
-  font-size: 14px;
-  color: #333333;
-  margin-bottom: 12px;
+  font-size: 13px;
+  color: #606266;
+  margin-bottom: 14px;
 }
 
 .scan-cancel-btn {
-  padding: 6px 16px;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  background-color: #f5f7fa;
+  min-width: 110px;
+  padding: 8px 18px;
+  border-radius: 10px;
+  border: 1px solid #d9e4f2;
+  background-color: #f7faff;
   font-size: 13px;
-  color: #666666;
+  color: #4a90e2;
+  font-weight: 600;
 }
 </style>
 

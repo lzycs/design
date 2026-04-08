@@ -16,7 +16,11 @@ const loadBuildings = async () => {
 }
 
 const goToClassrooms = (buildingId: number) => {
-  router.push(`/classrooms/${buildingId}`)
+  router.push(`/building-nav/${buildingId}`)
+}
+
+const goBuildingNav = () => {
+  router.push('/building-nav')
 }
 
 const goReservation = () => {
@@ -81,6 +85,7 @@ onMounted(() => {
         <div class="module-title">
           <van-icon name="home-o" class="module-icon" />
           <span>教学楼导航</span>
+          <button class="more-btn" @click="goBuildingNav">查看全部</button>
         </div>
         <div class="building-list">
           <div
@@ -223,6 +228,13 @@ onMounted(() => {
   margin-bottom: 16px;
   display: flex;
   align-items: center;
+}
+.more-btn {
+  margin-left: auto;
+  border: none;
+  background: transparent;
+  color: #4a90e2;
+  font-size: 12px;
 }
 
 .module-icon {

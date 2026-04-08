@@ -49,18 +49,6 @@ export interface TeamMemberVO {
   memberName?: string
 }
 
-export interface TeamMessage {
-  id?: number
-  teamRequestId?: number
-  senderId?: number
-  senderName?: string
-  type?: number
-  content?: string
-  fileName?: string
-  fileSize?: number
-  createTime?: string
-}
-
 export interface Result<T> {
   code: number
   message: string
@@ -87,6 +75,10 @@ export const joinTeam = (requestId: number, member: TeamMember) => {
   return request.post<unknown, Result<boolean>>(`/team/request/${requestId}/join`, member)
 }
 
+export const quitTeam = (requestId: number, userId: number) => {
+  return request.post<unknown, Result<boolean>>(`/team/request/${requestId}/quit`, { userId })
+}
+
 export const getUserTeams = (userId: number) => {
   return request.get<unknown, Result<TeamRequestVO[]>>(`/team/user/${userId}`)
 }
@@ -94,27 +86,6 @@ export const getUserTeams = (userId: number) => {
 export const getTeamMembers = (teamRequestId: number) => {
   return request.get<unknown, Result<TeamMemberVO[]>>(
     `/team/request/${teamRequestId}/members`,
-  )
-}
-
-export const getTeamMessages = (teamRequestId: number, limit?: number) => {
-  const params: Record<string, number> = {}
-  if (limit && limit > 0) {
-    params.limit = limit
-  }
-  return request.get<unknown, Result<TeamMessage[]>>(
-    `/team/request/${teamRequestId}/messages`,
-    { params },
-  )
-}
-
-export const sendTeamMessage = (
-  teamRequestId: number,
-  payload: Pick<TeamMessage, 'senderId' | 'senderName' | 'type' | 'content' | 'fileName' | 'fileSize'>,
-) => {
-  return request.post<unknown, Result<TeamMessage>>(
-    `/team/request/${teamRequestId}/messages`,
-    payload,
   )
 }
 

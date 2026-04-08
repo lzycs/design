@@ -9,6 +9,7 @@ import {
   getTeamMembers,
   type TeamMemberVO,
   getPendingByApplicant,
+  quitTeam,
   type TeamJoinApplicationVO,
 } from '@/api/team'
 import { showConfirmDialog, showToast } from 'vant'
@@ -32,6 +33,7 @@ const loading = ref(false)
 const showDetail = ref(false)
 const currentTeam = ref<TeamRequestVO | null>(null)
 const joining = ref(false)
+const quitting = ref(false)
 const members = ref<TeamMemberVO[]>([])
 const myPendingApplications = ref<TeamJoinApplicationVO[]>([])
 
@@ -168,14 +170,6 @@ const openDetail = (item: TeamRequestVO) => {
   }
 }
 
-const goChat = () => {
-  if (!currentTeam.value?.id) return
-  router.push({
-    path: `/team-chat/${currentTeam.value.id}`,
-    query: { title: currentTeam.value.title },
-  })
-}
-
 const openCreate = () => {
   if (!isLoggedIn.value || !storedUser.value?.id) {
     showToast('请先登录后再发起小组')
@@ -247,6 +241,54 @@ const isMemberOfCurrentTeam = computed(() => {
   if (!storedUser.value?.id) return false
   return members.value.some((m) => m.userId === storedUser.value?.id)
 })
+
+const isLeaderOfCurrentTeam = computed(() => {
+  if (!storedUser.value?.id || !currentTeam.value?.id) return false
+  if (currentTeam.value.userId === storedUser.value.id) return true
+  return members.value.some((m) => m.userId === storedUser.value?.id && m.role === 1)
+})
+
+const handleQuitTeam = async () => {
+  if (!storedUser.value?.id || !currentTeam.value?.id) return
+  if (isLeaderOfCurrentTeam.value) {
+    showToast('组长不能退出小组')
+    return
+  }
+  if (!isMemberOfCurrentTeam.value) {
+    showToast('你不是该小组成员')
+    return
+  }
+  const confirm = await showConfirmDialog({
+    title: '退出小组',
+    message: `确认退出“${currentTeam.value.title ?? '该小组'}”吗？`,
+  }).catch(() => false)
+  if (!confirm) return
+
+  quitting.value = true
+  try {
+    const res = await quitTeam(currentTeam.value.id, storedUser.value.id)
+    if (res.code !== 200) {
+      showToast(res.message || '退出失败')
+      return
+    }
+    showToast('已退出小组')
+    // 刷新列表与详情中的成员/人数
+    await Promise.all([loadTeams(), loadApplyState()])
+    const cur = currentTeam.value
+    if (cur?.id) {
+      const hit = teams.value.find((t) => t.id === cur.id)
+      if (hit) currentTeam.value = hit
+      const memRes = await getTeamMembers(cur.id)
+      members.value = memRes.data ?? []
+    }
+  } catch (e) {
+    console.error('退出小组失败', e)
+    const msg = (e as any)?.response?.data?.message || '退出失败，请稍后重试'
+    showToast(msg)
+  } finally {
+    quitting.value = false
+  }
+}
 
 const handleApplyJoin = async () => {
   if (!isLoggedIn.value || !storedUser.value?.id) {
@@ -444,8 +486,19 @@ onMounted(() => {
                         : '申请加入'
               }}
             </button>
-            <button class="chat-btn" @click.stop="goChat">
-              进入小组聊天
+            <button
+              v-if="isMemberOfCurrentTeam"
+              class="quit-btn"
+              :disabled="quitting || isLeaderOfCurrentTeam"
+              @click.stop="handleQuitTeam"
+            >
+              {{
+                isLeaderOfCurrentTeam
+                  ? '组长不可退出'
+                  : quitting
+                    ? '退出中...'
+                    : '退出小组'
+              }}
             </button>
           </div>
         </div>
@@ -761,14 +814,10 @@ onMounted(() => {
 
 .btn-row {
   display: flex;
-  gap: 12px;
+  gap: 10px;
 }
 
 .join-btn {
-  flex: 1;
-}
-
-.chat-btn {
   flex: 1;
   height: 44px;
   border-radius: 8px;
@@ -793,6 +842,23 @@ onMounted(() => {
 }
 
 .join-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.quit-btn {
+  flex: 1;
+  height: 44px;
+  border-radius: 8px;
+  border: 1px solid #f6c4c4;
+  background-color: #fff5f5;
+  color: #d03050;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.quit-btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
 }

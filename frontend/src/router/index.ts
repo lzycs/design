@@ -15,6 +15,16 @@ const router = createRouter({
       component: () => import('../views/ClassroomsView.vue'),
     },
     {
+      path: '/building-nav',
+      name: 'building-nav',
+      component: () => import('../views/BuildingNavView.vue'),
+    },
+    {
+      path: '/building-nav/:id',
+      name: 'building-nav-detail',
+      component: () => import('../views/BuildingNavDetailView.vue'),
+    },
+    {
       path: '/reservation',
       name: 'reservation',
       component: () => import('../views/ReservationView.vue'),
@@ -23,11 +33,6 @@ const router = createRouter({
       path: '/collaboration',
       name: 'collaboration',
       component: () => import('../views/CollaborationView.vue'),
-    },
-    {
-      path: '/team-chat/:id',
-      name: 'team-chat',
-      component: () => import('../views/TeamChatView.vue'),
     },
     {
       path: '/reservation/classroom/:id',

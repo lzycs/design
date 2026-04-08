@@ -368,8 +368,10 @@ ALTER TABLE `classroom_feedback` MODIFY COLUMN `env_score` TINYINT NULL;
 ALTER TABLE `classroom_feedback` MODIFY COLUMN `equip_score` TINYINT NULL;
 
 -- 学习计划表：添加关键时间节点字段（若已存在可忽略）
+-- 需要先判断表是否存在，避免在 study_plan 创建前执行 ALTER 失败
+SET @sp_table_exists := (SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'study_plan');
 SET @sp_kn_exists := (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'study_plan' AND COLUMN_NAME = 'key_time_nodes');
-SET @sp_kn_sql := IF(@sp_kn_exists = 0, 'ALTER TABLE `study_plan` ADD COLUMN `key_time_nodes` TEXT COMMENT ''关键时间节点''', 'SELECT 1');
+SET @sp_kn_sql := IF(@sp_table_exists = 1 AND @sp_kn_exists = 0, 'ALTER TABLE `study_plan` ADD COLUMN `key_time_nodes` TEXT COMMENT ''关键时间节点''', 'SELECT 1');
 PREPARE sp_kn_stmt FROM @sp_kn_sql;
 EXECUTE sp_kn_stmt;
 DEALLOCATE PREPARE sp_kn_stmt;
@@ -609,7 +611,9 @@ INSERT IGNORE INTO `user` (`username`, `password`, `real_name`, `student_id`, `e
 -- 插入教学楼数据
 INSERT IGNORE INTO `building` (`name`, `building_number`, `address`, `floor_count`, `description`, `latitude`, `longitude`) VALUES
 ('第一教学楼', 'J1', '学校东区主路1号', 5, '主教学楼，设施较新。', 39.904989, 116.405285),
-('第二教学楼', 'J2', '学校西区科技路2号', 6, '以理工科实验室为主。', 39.905500, 116.406000);
+('第二教学楼', 'J2', '学校西区科技路2号', 6, '以理工科实验室为主。', 39.905500, 116.406000),
+('第三教学楼', 'J3', '学校南区学术路3号', 7, '综合教学楼，含多媒体大教室与公共讨论区。', 39.906210, 116.405120),
+('第四教学楼', 'J4', '学校北区创新路4号', 4, '创新实践教学楼，侧重研讨与项目实践。', 39.907060, 116.406680);
 
 -- 插入图书馆数据
 INSERT IGNORE INTO `library` (`name`, `address`, `floor_count`, `description`, `latitude`, `longitude`, `opening_hours`) VALUES
@@ -620,13 +624,24 @@ INSERT IGNORE INTO `library` (`name`, `address`, `floor_count`, `description`, `
 INSERT IGNORE INTO `classroom` (`building_id`, `name`, `room_number`, `floor`, `type`, `capacity`, `equipment`) VALUES
 (1, '101多媒体教室', '101', 1, 1, 60, '["投影仪", "电脑", "音响"]'),
 (1, '102普通教室', '102', 1, 1, 50, '["白板"]'),
+(1, '103阶梯教室', '103', 1, 1, 120, '["投影仪", "扩声系统", "录播"]'),
+(1, '104普通教室', '104', 1, 1, 55, '["白板", "空调"]'),
 (1, '201研讨室A', '201A', 2, 2, 10, '["会议桌", "白板", "电视"]'),
-(1, '202研讨室B', '202B', 2, 2, 8, '["会议桌", "白板"]');
+(1, '202研讨室B', '202B', 2, 2, 8, '["会议桌", "白板"]'),
+(1, '203研讨室C', '203C', 2, 2, 12, '["会议桌", "电子白板", "电视"]'),
+(1, '204研讨室D', '204D', 2, 2, 10, '["会议桌", "白板", "投屏器"]'),
+(1, '301普通教室', '301', 3, 1, 65, '["投影仪", "白板"]'),
+(1, '302普通教室', '302', 3, 1, 60, '["投影仪", "空调"]');
 
 -- 插入教室数据 (属于第二教学楼)
 INSERT IGNORE INTO `classroom` (`building_id`, `name`, `room_number`, `floor`, `type`, `capacity`, `equipment`) VALUES
 (2, '301实验室', '301', 3, 1, 30, '["实验台", "电脑", "专用仪器"]'),
-(2, '401会议室', '401', 4, 2, 20, '["大会议桌", "投影仪", "电话会议系统"]');
+(2, '302普通教室', '302', 3, 1, 45, '["白板", "投影仪"]'),
+(2, '303普通教室', '303', 3, 1, 48, '["白板"]'),
+(2, '401会议室', '401', 4, 2, 20, '["大会议桌", "投影仪", "电话会议系统"]'),
+(2, '402研讨室A', '402A', 4, 2, 14, '["会议桌", "白板", "电视"]'),
+(2, '403研讨室B', '403B', 4, 2, 12, '["会议桌", "白板"]'),
+(2, '501普通教室', '501', 5, 1, 70, '["投影仪", "扩声系统"]');
 
 -- 插入图书馆座位数据 (中心图书馆1-2层示例)
 INSERT IGNORE INTO `library_seat` (`library_id`, `seat_label`, `floor`, `row_num`, `col_num`, `seat_type`, `equipment`) VALUES
@@ -634,17 +649,49 @@ INSERT IGNORE INTO `library_seat` (`library_id`, `seat_label`, `floor`, `row_num
 (1, 'A-01', 1, 1, 1, 2, '["插座", "台灯"]'),
 (1, 'A-02', 1, 1, 2, 1, '[]'),
 (1, 'A-03', 1, 1, 3, 2, '["插座"]'),
+(1, 'A-04', 1, 1, 4, 2, '["插座", "台灯"]'),
 (1, 'B-01', 1, 2, 1, 3, '["隔板", "静音区"]'),
 (1, 'B-02', 1, 2, 2, 3, '["隔板", "静音区"]'),
 -- 2楼座位
 (1, 'C-01', 2, 1, 1, 4, '["小组桌", "白板"]'),
-(1, 'C-02', 2, 1, 2, 4, '["小组桌", "插座"]');
+(1, 'C-02', 2, 1, 2, 4, '["小组桌", "插座"]'),
+(1, 'C-03', 2, 1, 3, 1, '["台灯"]'),
+(1, 'D-01', 2, 2, 1, 2, '["插座"]'),
+(1, 'D-02', 2, 2, 2, 2, '["插座", "台灯"]'),
+-- 3楼座位（中心图书馆）
+(1, 'E-01', 3, 1, 1, 3, '["隔板", "静音区"]'),
+(1, 'E-02', 3, 1, 2, 3, '["隔板", "静音区"]'),
+(1, 'E-03', 3, 1, 3, 2, '["插座"]'),
+(1, 'F-01', 3, 2, 1, 2, '["插座", "台灯"]'),
+(1, 'F-02', 3, 2, 2, 1, '[]'),
+-- 4楼座位（中心图书馆）
+(1, 'G-01', 4, 1, 1, 4, '["小组桌", "白板"]'),
+(1, 'G-02', 4, 1, 2, 4, '["小组桌", "插座"]'),
+(1, 'G-03', 4, 1, 3, 4, '["小组桌", "电视"]'),
+(1, 'H-01', 4, 2, 1, 2, '["插座"]'),
+(1, 'H-02', 4, 2, 2, 2, '["插座", "台灯"]');
 
 -- 插入图书馆座位数据 (科技分馆示例)
 INSERT IGNORE INTO `library_seat` (`library_id`, `seat_label`, `floor`, `row_num`, `col_num`, `seat_type`) VALUES
 (2, 'S-01', 1, 1, 1, 2),
 (2, 'S-02', 1, 1, 2, 1),
-(2, 'S-03', 2, 1, 1, 3);
+(2, 'S-03', 2, 1, 1, 3),
+(2, 'S-04', 2, 1, 2, 2),
+(2, 'S-05', 2, 1, 3, 1),
+(2, 'T-01', 3, 1, 1, 4),
+(2, 'T-02', 3, 1, 2, 4),
+-- 1楼补充座位（科技分馆）
+(2, 'S-06', 1, 2, 1, 2),
+(2, 'S-07', 1, 2, 2, 2),
+-- 3楼补充座位（科技分馆）
+(2, 'T-03', 3, 1, 3, 3),
+(2, 'T-04', 3, 2, 1, 3),
+-- 4楼新增座位（科技分馆）
+(2, 'U-01', 4, 1, 1, 1),
+(2, 'U-02', 4, 1, 2, 2),
+(2, 'U-03', 4, 1, 3, 2),
+(2, 'U-04', 4, 2, 1, 4),
+(2, 'U-05', 4, 2, 2, 4);
 
 -- 插入课程数据
 -- 注意：course/time_slot/reservation 等表默认无唯一约束且未指定 id，会导致每次启动重复插入

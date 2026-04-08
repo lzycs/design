@@ -3,6 +3,7 @@ import request from '@/utils/request'
 export interface Building {
   id?: number
   name: string
+  buildingNumber?: string
   address?: string
   floorCount?: number
   description?: string

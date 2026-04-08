@@ -121,5 +121,54 @@ public class TeamRequestService extends ServiceImpl<TeamRequestMapper, TeamReque
         updateById(req);
         return true;
     }
+
+    /**
+     * 退出小组：仅成员可退出，组长不可退出
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public boolean quitTeam(Long requestId, Long userId) {
+        if (requestId == null || userId == null) {
+            return false;
+        }
+        TeamRequest req = getById(requestId);
+        if (req == null) {
+            return false;
+        }
+
+        // 组长不能退出
+        if (teamMemberService.isLeader(requestId, userId) || (req.getUserId() != null && req.getUserId().equals(userId))) {
+            return false;
+        }
+
+        // 必须是当前成员
+        LambdaQueryWrapper<TeamMember> memberW = new LambdaQueryWrapper<>();
+        memberW.eq(TeamMember::getTeamRequestId, requestId)
+                .eq(TeamMember::getUserId, userId)
+                .eq(TeamMember::getDeleted, 0);
+        TeamMember exist = teamMemberService.getOne(memberW);
+        if (exist == null) {
+            return false;
+        }
+
+        // 逻辑删除成员关系
+        boolean removed = teamMemberService.removeById(exist.getId());
+        if (!removed) {
+            return false;
+        }
+
+        int current = req.getCurrentCount() != null ? req.getCurrentCount() : 1;
+        int newCurrent = Math.max(1, current - 1);
+        req.setCurrentCount(newCurrent);
+
+        int expected = req.getExpectedCount() != null ? req.getExpectedCount() : 0;
+        if (req.getStatus() != null && req.getStatus() == 2) {
+            // 由已满员恢复为招募中
+            if (expected <= 0 || newCurrent < expected) {
+                req.setStatus(1);
+            }
+        }
+        updateById(req);
+        return true;
+    }
 }
 
