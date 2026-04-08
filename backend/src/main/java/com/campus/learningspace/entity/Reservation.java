@@ -47,7 +47,26 @@ public class Reservation {
 
     private String qrcode;
 
+    /** 二维码有效期（预约二维码） */
+    private LocalDateTime qrcodeExpireTime;
+
     private LocalDateTime checkinTime;
+
+    /** 扫码尝试/成功的扫码时间（设备端扫码预约二维码） */
+    private LocalDateTime qrcodeScanTime;
+
+    /** 扫码设备唯一标识（设备端） */
+    private String qrcodeScanDeviceUid;
+
+    /**
+     * 二维码扫码结果：
+     * 0-未使用/未尝试
+     * 1-预约成功
+     * 2-非授权设备
+     * 3-二维码已过期
+     * 4-二维码无效/已使用
+     */
+    private Integer qrcodeScanStatus;
 
     private BigDecimal checkinLatitude;
 

@@ -129,6 +129,21 @@ const router = createRouter({
       name: 'admin-reservation-limits',
       component: () => import('../views/admin/AdminAppView.vue'),
     },
+    {
+      path: '/admin/scan-devices',
+      name: 'admin-scan-devices',
+      component: () => import('../views/admin/AdminAppView.vue'),
+    },
+    {
+      path: '/scan-device',
+      name: 'scan-device',
+      component: () => import('../views/ScanDeviceView.vue'),
+    },
+    {
+      path: '/scan-reservation',
+      name: 'scan-reservation',
+      component: () => import('../views/ScanReservationView.vue'),
+    },
   ],
 })
 

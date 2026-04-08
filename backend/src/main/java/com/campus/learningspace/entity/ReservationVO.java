@@ -25,6 +25,10 @@ public class ReservationVO {
     private String purpose;
     private Integer status;
     private String qrcode;
+    private LocalDateTime qrcodeExpireTime;
+    private LocalDateTime qrcodeScanTime;
+    private String qrcodeScanDeviceUid;
+    private Integer qrcodeScanStatus;
     private LocalDateTime checkinTime;
     private BigDecimal checkinLatitude;
     private BigDecimal checkinLongitude;

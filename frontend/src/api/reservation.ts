@@ -16,6 +16,10 @@ export interface ReservationPayload {
 export interface Reservation extends ReservationPayload {
   status?: number
   qrcode?: string
+  qrcodeExpireTime?: string
+  qrcodeScanTime?: string
+  qrcodeScanDeviceUid?: string
+  qrcodeScanStatus?: number
   createTime?: string
   checkinTime?: string
   resourceName?: string
@@ -72,5 +76,25 @@ export const updateReservation = (reservation: Reservation) => {
 
 export const checkinReservation = (id: number) => {
   return request.post<any, Result<boolean>>(`/reservation/${id}/checkin`)
+}
+
+/** 生成预约二维码（用户端触发） */
+export const generateReservationQrcode = (id: number) => {
+  return request.post<any, Result<{ code: string; ok: boolean }>>(`/reservation/${id}/qrcode`)
+}
+
+/** 获取预约二维码状态（用户端轮询） */
+export const getReservationQrcodeStatus = (code: string) => {
+  return request.get<any, Result<{ ok: boolean; message: string; success?: boolean; expired?: boolean }>>(
+    `/reservation/qrcode/${code}/status`,
+  )
+}
+
+/** 设备端扫码核销预约二维码 */
+export const scanReservationQrcode = (code: string, deviceUid: string) => {
+  return request.post<any, Result<{ ok: boolean; message: string; success?: boolean }>>(
+    `/reservation/qrcode/${code}/scan`,
+    { deviceUid },
+  )
 }
 

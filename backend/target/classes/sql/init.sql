@@ -182,6 +182,98 @@ CREATE TABLE IF NOT EXISTS `reservation` (
     FOREIGN KEY (`library_seat_id`) REFERENCES `library_seat`(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='预约记录表';
 
+-- 扫码授权设备表（用于跨设备核销）
+CREATE TABLE IF NOT EXISTS `scan_device` (
+    `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT 'ID',
+    `device_uid` VARCHAR(100) NOT NULL UNIQUE COMMENT '设备唯一标识',
+    `device_name` VARCHAR(100) DEFAULT '' COMMENT '设备备注名称',
+    `enabled` TINYINT NOT NULL DEFAULT 1 COMMENT '是否启用',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '删除标记: 0-未删除, 1-已删除',
+    INDEX idx_enabled (`enabled`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='扫码授权设备表';
+
+-- 扫码设备配对 token（admin 生成，设备扫码兑换并绑定 deviceUid）
+CREATE TABLE IF NOT EXISTS `scan_device_pair_token` (
+    `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '配对tokenID',
+    `token` VARCHAR(64) NOT NULL UNIQUE COMMENT '一次性 token',
+    `expired_time` DATETIME NOT NULL COMMENT '过期时间',
+    `used_status` TINYINT NOT NULL DEFAULT 0 COMMENT '是否已使用：0-未使用，1-已使用',
+    `used_time` DATETIME NULL COMMENT '被使用时间',
+    `redeemed_device_uid` VARCHAR(100) NULL COMMENT '兑换到的 deviceUid',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '删除标记: 0-未删除, 1-已删除',
+    INDEX idx_used_status (`used_status`),
+    INDEX idx_expired_time (`expired_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='扫码设备配对token表';
+
+-- 为预约二维码核销补齐字段（兼容历史库）
+SET @__rq_qrcode_expire_exists := (
+  SELECT COUNT(*)
+  FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'reservation'
+    AND COLUMN_NAME = 'qrcode_expire_time'
+);
+SET @__rq_qrcode_expire_sql := IF(
+  @__rq_qrcode_expire_exists = 0,
+  'ALTER TABLE `reservation` ADD COLUMN `qrcode_expire_time` DATETIME NULL COMMENT ''预约二维码有效期''',
+  'SELECT 1'
+);
+PREPARE __rq_stmt1 FROM @__rq_qrcode_expire_sql;
+EXECUTE __rq_stmt1;
+DEALLOCATE PREPARE __rq_stmt1;
+
+SET @__rq_qrcode_scan_status_exists := (
+  SELECT COUNT(*)
+  FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'reservation'
+    AND COLUMN_NAME = 'qrcode_scan_status'
+);
+SET @__rq_qrcode_scan_status_sql := IF(
+  @__rq_qrcode_scan_status_exists = 0,
+  'ALTER TABLE `reservation` ADD COLUMN `qrcode_scan_status` TINYINT NOT NULL DEFAULT 0 COMMENT ''二维码扫码结果''',
+  'SELECT 1'
+);
+PREPARE __rq_stmt2 FROM @__rq_qrcode_scan_status_sql;
+EXECUTE __rq_stmt2;
+DEALLOCATE PREPARE __rq_stmt2;
+
+SET @__rq_qrcode_scan_time_exists := (
+  SELECT COUNT(*)
+  FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'reservation'
+    AND COLUMN_NAME = 'qrcode_scan_time'
+);
+SET @__rq_qrcode_scan_time_sql := IF(
+  @__rq_qrcode_scan_time_exists = 0,
+  'ALTER TABLE `reservation` ADD COLUMN `qrcode_scan_time` DATETIME NULL COMMENT ''二维码扫码时间''',
+  'SELECT 1'
+);
+PREPARE __rq_stmt3 FROM @__rq_qrcode_scan_time_sql;
+EXECUTE __rq_stmt3;
+DEALLOCATE PREPARE __rq_stmt3;
+
+SET @__rq_qrcode_scan_device_uid_exists := (
+  SELECT COUNT(*)
+  FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'reservation'
+    AND COLUMN_NAME = 'qrcode_scan_device_uid'
+);
+SET @__rq_qrcode_scan_device_uid_sql := IF(
+  @__rq_qrcode_scan_device_uid_exists = 0,
+  'ALTER TABLE `reservation` ADD COLUMN `qrcode_scan_device_uid` VARCHAR(100) NULL COMMENT ''二维码扫码设备uid''',
+  'SELECT 1'
+);
+PREPARE __rq_stmt4 FROM @__rq_qrcode_scan_device_uid_sql;
+EXECUTE __rq_stmt4;
+DEALLOCATE PREPARE __rq_stmt4;
+
 -- 预约上限配置（单例 id=1：每人每周次数上限、单次最长分钟数，管理端可修改）
 CREATE TABLE IF NOT EXISTS `reservation_limit_config` (
     `id` TINYINT NOT NULL PRIMARY KEY DEFAULT 1 COMMENT '固定为1',

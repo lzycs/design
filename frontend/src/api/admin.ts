@@ -203,3 +203,35 @@ export const updateAdminReservationLimits = (payload: AdminReservationLimitVO) =
   return request.put<unknown, Result<AdminReservationLimitVO>>('/admin/reservation-limits', payload)
 }
 
+// ===== 扫码授权设备 =====
+export interface AdminScanDevice {
+  id?: number
+  deviceUid?: string
+  deviceName?: string
+  enabled?: number
+  createTime?: string
+  updateTime?: string
+}
+
+export interface AdminScanDevicePairTokenResp {
+  token: string
+  expiredTime: string
+}
+
+/** admin 生成一次性设备配对 token（用于生成二维码） */
+export const generateAdminPairToken = () => {
+  return request.post<unknown, Result<AdminScanDevicePairTokenResp>>('/admin/scan-devices/pair-token', {})
+}
+
+export const getAdminScanDevices = () => {
+  return request.get<unknown, Result<AdminScanDevice[]>>('/admin/scan-devices')
+}
+
+export const updateAdminScanDeviceEnabled = (id: number, payload: { enabled: number; deviceName?: string }) => {
+  return request.put<unknown, Result<boolean>>(`/admin/scan-devices/${id}`, payload)
+}
+
+export const deleteAdminScanDevice = (id: number) => {
+  return request.delete<unknown, Result<boolean>>(`/admin/scan-devices/${id}`)
+}
+

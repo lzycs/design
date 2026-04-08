@@ -68,6 +68,44 @@ public class ReservationController {
         return Result.success(reservationService.checkin(id));
     }
 
+    /**
+     * 生成预约二维码（用户端触发，用于设备端扫码核销）
+     * POST /api/reservation/{id}/qrcode
+     */
+    @PostMapping("/{id}/qrcode")
+    public Result<Map<String, Object>> generateQrcode(@PathVariable Long id) {
+        // 默认有效期 10 分钟
+        String code = reservationService.ensureReservationQrcode(id, 10);
+        if (code == null) {
+            return Result.error(400, "无法生成二维码（预约可能已不是待扫码状态）");
+        }
+        return Result.success(Map.of(
+                "code", code,
+                "ok", true
+        ));
+    }
+
+    /**
+     * 获取二维码状态（用户端轮询）
+     * GET /api/reservation/qrcode/{code}/status
+     */
+    @GetMapping("/qrcode/{code}/status")
+    public Result<Map<String, Object>> getQrcodeStatus(@PathVariable String code) {
+        return Result.success(reservationService.getReservationQrcodeStatus(code));
+    }
+
+    /**
+     * 设备端扫码核销
+     * POST /api/reservation/qrcode/{code}/scan
+     * body: { deviceUid }
+     */
+    @PostMapping("/qrcode/{code}/scan")
+    public Result<Map<String, Object>> scanQrcode(@PathVariable String code, @RequestBody Map<String, Object> body) {
+        Object deviceUidObj = body == null ? null : body.get("deviceUid");
+        String deviceUid = deviceUidObj == null ? null : String.valueOf(deviceUidObj);
+        return Result.success(reservationService.scanReservationQrcode(code, deviceUid));
+    }
+
     @PostMapping
     public Result<Boolean> save(@RequestBody Reservation reservation) {
         return Result.success(reservationService.save(reservation));
