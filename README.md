@@ -221,6 +221,32 @@ npm run dev:lan
 
 该命令会以 `0.0.0.0:5173` 启动前端。
 
+### 5. 打包 Windows 桌面端（Electron）
+
+先分别构建后端与安装前端依赖：
+
+```bash
+cd backend
+mvn clean package
+
+cd ../frontend
+npm install
+```
+
+生成桌面端安装包：
+
+```bash
+npm run desktop:dist
+```
+
+生成结果位于 `frontend/release/`。
+
+说明：
+- 该命令会先使用 `frontend/.env.desktop` 构建前端。
+- 再自动复制 `backend/target` 下的可执行 JAR 到打包资源中。
+- 打开的桌面程序会自动尝试启动本地 Spring Boot 服务（默认 `127.0.0.1:8080`）。
+- 目标机器需要可用的 Java 21 运行环境，并且数据库、Redis 配置仍需可访问。
+
 ---
 
 ## 前端环境变量
@@ -247,6 +273,20 @@ VITE_PUBLIC_WEB_ORIGIN=http://192.168.1.100:5173
 ```env
 VITE_API_BASE_URL=http://192.168.1.100:8080/api
 ```
+
+### 桌面端打包环境变量
+
+桌面端打包默认读取 `frontend/.env.desktop`：
+
+```env
+VITE_API_BASE_URL=http://127.0.0.1:8080/api
+VITE_PUBLIC_WEB_ORIGIN=http://127.0.0.1:4173
+```
+
+说明：
+- `VITE_API_BASE_URL` 指向本机 Spring Boot 服务。
+- `VITE_PUBLIC_WEB_ORIGIN` 指向 Electron 内部静态服务地址。
+- 若需修改桌面端接口地址，可调整 `frontend/.env.desktop` 后重新执行桌面打包。
 
 ---
 

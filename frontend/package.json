@@ -11,7 +11,11 @@
     "test:unit": "vitest",
     "test:e2e": "playwright test",
     "build-only": "vite build",
+    "build:desktop": "vite build --mode desktop",
     "type-check": "vue-tsc --build",
+    "electron:start": "electron ./electron/main.cjs",
+    "desktop:pack": "npm run build:desktop && node ./electron/prepare-backend.cjs && electron-builder --dir",
+    "desktop:dist": "npm run build:desktop && node ./electron/prepare-backend.cjs && electron-builder --win nsis",
     "lint": "run-s lint:*",
     "lint:oxlint": "oxlint . --fix",
     "lint:eslint": "eslint . --fix --cache",
@@ -39,6 +43,8 @@
     "@vue/eslint-config-typescript": "^14.7.0",
     "@vue/test-utils": "^2.4.6",
     "@vue/tsconfig": "^0.8.1",
+    "electron": "37.4.0",
+    "electron-builder": "26.8.1",
     "eslint": "^10.0.2",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-oxlint": "~1.50.0",
@@ -54,6 +60,41 @@
     "vite-plugin-vue-devtools": "^8.0.6",
     "vitest": "^4.0.18",
     "vue-tsc": "^3.2.5"
+  },
+  "main": "electron/main.cjs",
+  "build": {
+    "appId": "com.campus.learningspace.desktop",
+    "productName": "校园学习空间",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": ".electron/backend/app.jar",
+        "to": "backend/app.jar"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
