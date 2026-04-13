@@ -9,6 +9,7 @@ import com.campus.learningspace.entity.TeamRequest;
 import com.campus.learningspace.entity.TeamRequestVO;
 import com.campus.learningspace.entity.TeamJoinApplication;
 import com.campus.learningspace.mapper.TeamJoinApplicationMapper;
+import com.campus.learningspace.mapper.TeamMemberMapper;
 import com.campus.learningspace.mapper.TeamRequestMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,8 @@ public class TeamRequestService extends ServiceImpl<TeamRequestMapper, TeamReque
     private StudyPlanService studyPlanService;
     @Autowired
     private TeamJoinApplicationMapper teamJoinApplicationMapper;
+    @Autowired
+    private TeamMemberMapper teamMemberMapper;
 
     public List<TeamRequest> getActiveRequests() {
         LambdaQueryWrapper<TeamRequest> wrapper = new LambdaQueryWrapper<>();
@@ -92,15 +95,6 @@ public class TeamRequestService extends ServiceImpl<TeamRequestMapper, TeamReque
             return false;
         }
 
-        // 是否已加入（利用唯一索引前先做查询，避免抛 500）
-        LambdaQueryWrapper<TeamMember> existsW = new LambdaQueryWrapper<>();
-        existsW.eq(TeamMember::getTeamRequestId, requestId)
-                .eq(TeamMember::getUserId, userId)
-                .eq(TeamMember::getDeleted, 0);
-        if (teamMemberService.count(existsW) > 0) {
-            return false;
-        }
-
         int expected = req.getExpectedCount() != null ? req.getExpectedCount() : 0;
         int current = req.getCurrentCount() != null ? req.getCurrentCount() : 0;
         if (expected > 0 && current >= expected) {
@@ -108,6 +102,35 @@ public class TeamRequestService extends ServiceImpl<TeamRequestMapper, TeamReque
             req.setStatus(2);
             updateById(req);
             return false;
+        }
+
+        // 是否已加入 / 是否存在历史记录（team_member 有唯一键 uk_team_user，会导致 deleted=1 时再次插入抛 500）
+        // 注意：MyBatis-Plus 逻辑删除会默认过滤 deleted=1，所以这里用 mapper 自定义 SQL 查“包含 deleted=1”的记录
+        TeamMember anyExist = teamMemberMapper.selectAnyByTeamAndUser(requestId, userId);
+        if (anyExist != null) {
+            if (anyExist.getDeleted() != null && anyExist.getDeleted() == 0) {
+                // 已是成员
+                return false;
+            }
+            // 只有创建者才允许保留 role=1；普通重新加入一律按成员处理
+            Integer role = (anyExist.getRole() != null && anyExist.getRole() == 1) ? 1 : 2;
+            LocalDateTime now = LocalDateTime.now();
+            // 复活逻辑删除记录：不能用 updateById（会带 deleted=0 条件导致更新不到 deleted=1 的行）
+            int revivedRows = teamMemberMapper.reviveDeletedMemberById(anyExist.getId(), role, now);
+            if (revivedRows <= 0) {
+                return false;
+            }
+
+            // current_count 可能因历史数据不一致而偏小：这里仍按 +1 处理
+            int newCurrentRevive = current + 1;
+            req.setCurrentCount(newCurrentRevive);
+            if (expected > 0 && newCurrentRevive >= expected) {
+                req.setStatus(2);
+            } else {
+                req.setStatus(1);
+            }
+            updateById(req);
+            return true;
         }
 
         TeamMember m = new TeamMember();

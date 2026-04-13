@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.campus.learningspace.entity.TeamJoinApplication;
 import com.campus.learningspace.entity.TeamJoinApplicationVO;
 import com.campus.learningspace.mapper.TeamJoinApplicationMapper;
+import com.campus.learningspace.mapper.TeamMemberMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,11 +18,18 @@ public class TeamJoinApplicationService extends ServiceImpl<TeamJoinApplicationM
 
     @Autowired
     private TeamRequestService teamRequestService;
+    @Autowired
+    private TeamMemberMapper teamMemberMapper;
 
     /**
      * 提交加入申请（同一人对同一小组只能有一条待审核申请）
      */
     public boolean applyToJoin(Long teamRequestId, Long applicantId, String reason) {
+        // 已是成员则不允许重复申请（避免“已加入仍可申请”）
+        var memberRel = teamMemberMapper.selectAnyByTeamAndUser(teamRequestId, applicantId);
+        if (memberRel != null && memberRel.getDeleted() != null && memberRel.getDeleted() == 0) {
+            return false;
+        }
         // 已存在待审核申请则不重复提交
         LambdaQueryWrapper<TeamJoinApplication> qw = new LambdaQueryWrapper<>();
         qw.eq(TeamJoinApplication::getTeamRequestId, teamRequestId)
@@ -63,10 +71,15 @@ public class TeamJoinApplicationService extends ServiceImpl<TeamJoinApplicationM
         }
 
         if (approve) {
-            // 通过则自动加入小组
-            boolean joinOk = teamRequestService.joinTeam(app.getTeamRequestId(), app.getApplicantId());
-            if (!joinOk) {
-                return false;
+            // 通过则自动加入小组（如果其实已是成员，则不重复加入；否则加入失败要回滚）
+            var memberRel = teamMemberMapper.selectAnyByTeamAndUser(app.getTeamRequestId(), app.getApplicantId());
+            boolean alreadyMember = memberRel != null && memberRel.getDeleted() != null && memberRel.getDeleted() == 0;
+            if (!alreadyMember) {
+                boolean joinOk = teamRequestService.joinTeam(app.getTeamRequestId(), app.getApplicantId());
+                if (!joinOk) {
+                    // 这里必须抛异常触发事务回滚，避免“申请已通过但成员关系没写入/人数错乱”
+                    throw new IllegalStateException("加入小组失败，已回滚审核结果");
+                }
             }
             // 同步清空该用户在其他小组的未处理申请
             LambdaQueryWrapper<TeamJoinApplication> clearQw = new LambdaQueryWrapper<>();

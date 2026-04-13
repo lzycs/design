@@ -1,6 +1,8 @@
 import axios from 'axios'
 
-const apiBaseURL = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim() || 'http://localhost:8080/api'
+const configuredBaseURL = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim()
+// 开发环境推荐使用相对路径 + Vite 代理，避免直连后端导致超时/CORS
+const apiBaseURL = configuredBaseURL || '/api'
 
 const request = axios.create({
   baseURL: apiBaseURL,

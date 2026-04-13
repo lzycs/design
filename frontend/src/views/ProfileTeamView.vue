@@ -181,8 +181,8 @@ const handleReview = async (app: TeamJoinApplicationVO, approve: boolean) => {
     showToast(approve ? '已通过申请' : '已拒绝申请')
     // 从待审核列表移除
     pendingApplications.value = pendingApplications.value.filter((a) => a.id !== app.id)
-    // 刷新红点
-    await loadBadge()
+    // 刷新红点 + 我的协作列表（人数/成员关系等）
+    await Promise.all([loadBadge(), loadTeams()])
   } catch (e) {
     console.error(e)
     showToast('操作失败，请稍后重试')
@@ -194,6 +194,8 @@ const handleReview = async (app: TeamJoinApplicationVO, approve: boolean) => {
 const goBack = () => {
   if (screen.value === 'review') {
     screen.value = 'list'
+    // 从审核页返回时，刷新一次列表与红点，避免“已通过但界面不更新”
+    void Promise.all([loadTeams(), loadBadge()])
   } else if (screen.value === 'detail' || screen.value === 'create') {
     screen.value = 'list'
     currentTeam.value = null
@@ -347,6 +349,18 @@ onMounted(async () => {
     await loadTeams()
     await loadBadge()
   }
+
+  // 回到页面/切回标签页时刷新，避免成员端“审核结果不显示”
+  const refreshOnFocus = async () => {
+    if (!storedUser.value?.id) return
+    await Promise.all([loadTeams(), loadBadge()])
+  }
+  window.addEventListener('focus', refreshOnFocus)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      void refreshOnFocus()
+    }
+  })
 })
 </script>
 
