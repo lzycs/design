@@ -424,302 +424,303 @@ onMounted(() => {
 
 <template>
   <div class="reservation">
-    <van-nav-bar title="预约中心" left-arrow @click-left="router.back()" />
+    <div class="phone-container">
+      <van-nav-bar title="预约中心" left-arrow @click-left="router.back()" />
 
-    <div class="page" v-if="isLoggedIn">
-      <div class="filter-panel">
-        <div class="status-tag-bar">
-          <div
-            class="status-tag-item"
-            :class="{ active: statusTab === 'booking' }"
-            @click="statusTab = 'booking'"
-          >
-            预约
-          </div>
-          <div
-            class="status-tag-item"
-            :class="{ active: statusTab === 'pending' }"
-            @click="statusTab = 'pending'"
-          >
-            待签到
-          </div>
-          <div
-            class="status-tag-item"
-            :class="{ active: statusTab === 'checked' }"
-            @click="statusTab = 'checked'"
-          >
-            已签到
-          </div>
-          <div
-            class="status-tag-item"
-            :class="{ active: statusTab === 'cancelled' }"
-            @click="statusTab = 'cancelled'"
-          >
-            已取消
-          </div>
-        </div>
-
-        <template v-if="statusTab === 'booking'">
-          <div class="date-tag-bar">
+      <div class="page" v-if="isLoggedIn">
+        <div class="filter-panel">
+          <div class="status-tag-bar">
             <div
-              class="date-tag-item"
-              :class="{ active: dateTab === 'today' }"
-              @click="dateTab = 'today'"
+              class="status-tag-item"
+              :class="{ active: statusTab === 'booking' }"
+              @click="statusTab = 'booking'"
             >
-              <div>今天</div>
-              <div>{{ todayText }}</div>
+              预约
             </div>
             <div
-              class="date-tag-item"
-              :class="{ active: dateTab === 'tomorrow' }"
-              @click="dateTab = 'tomorrow'"
+              class="status-tag-item"
+              :class="{ active: statusTab === 'pending' }"
+              @click="statusTab = 'pending'"
             >
-              <div>明天</div>
-              <div>{{ tomorrowText }}</div>
+              待签到
             </div>
             <div
-              class="date-tag-item"
-              :class="{ active: dateTab === 'dayAfter' }"
-              @click="dateTab = 'dayAfter'"
+              class="status-tag-item"
+              :class="{ active: statusTab === 'checked' }"
+              @click="statusTab = 'checked'"
             >
-              <div>后天</div>
-              <div>{{ dayAfterText }}</div>
+              已签到
+            </div>
+            <div
+              class="status-tag-item"
+              :class="{ active: statusTab === 'cancelled' }"
+              @click="statusTab = 'cancelled'"
+            >
+              已取消
             </div>
           </div>
 
-          <div class="area-tag-bar">
-            <div
-              class="area-tag-item"
-              :class="{ active: areaTab === 'classroom' }"
-              @click="areaTab = 'classroom'"
-            >
-              普通教室
-            </div>
-            <div
-              class="area-tag-item"
-              :class="{ active: areaTab === 'seminar' }"
-              @click="areaTab = 'seminar'"
-            >
-              研讨室
-            </div>
-            <div
-              class="area-tag-item"
-              :class="{ active: areaTab === 'library' }"
-              @click="areaTab = 'library'"
-            >
-              图书馆
-            </div>
-          </div>
-        </template>
-      </div>
-
-      <div class="content-panel">
-      <div v-if="statusTab === 'booking'">
-        <div v-if="areaTab === 'classroom'" class="card-grid">
-          <div v-for="b in buildingCards" :key="b.id" class="classroom-item">
-            <div class="classroom-header">
-              <div class="classroom-name">{{ b.name }}</div>
-              <div class="classroom-status">空闲</div>
-            </div>
-            <div class="classroom-desc">
-              {{ b.address || '教学楼' }} ｜ 共 {{ b.floorCount || '-' }} 层
-            </div>
-            <div class="classroom-footer">
-              <div class="classroom-capacity">普通教室 {{ b.classroomCount }} 间</div>
-              <button class="btn btn-small" @click="goToBuildingClassrooms(b.id)">查看教室</button>
-            </div>
-          </div>
-          <div v-if="!loading && buildingCards.length === 0" class="empty-text">
-            暂无可预约普通教室
-          </div>
-        </div>
-
-        <div v-else-if="areaTab === 'seminar'" class="card-grid">
-          <div v-for="b in buildingCards" :key="b.id" class="classroom-item">
-            <div class="classroom-header">
-              <div class="classroom-name">{{ b.name }}</div>
-              <div class="classroom-status">空闲</div>
-            </div>
-            <div class="classroom-desc">
-              {{ b.address || '教学楼' }} ｜ 共 {{ b.floorCount || '-' }} 层
-            </div>
-            <div class="classroom-footer">
-              <div class="classroom-capacity">研讨室 {{ b.classroomCount }} 间</div>
-              <button class="btn btn-small" @click="goToBuildingClassrooms(b.id)">查看教室</button>
-            </div>
-          </div>
-          <div v-if="!loading && buildingCards.length === 0" class="empty-text">
-            暂无可预约研讨室
-          </div>
-        </div>
-
-        <div v-else class="card-grid">
-          <div
-            v-for="lib in libraries"
-            :key="lib.id"
-            class="classroom-item"
-          >
-            <div class="classroom-header">
-              <div class="classroom-name">{{ lib.name }}</div>
-              <div class="classroom-status">空闲</div>
-            </div>
-            <div class="classroom-desc">
-              {{ lib.address || '校园图书馆' }} ｜ 共 {{ lib.floorCount || 5 }} 层
-            </div>
-            <div class="classroom-footer">
-              <div class="classroom-capacity">图书馆选座</div>
-              <button
-                class="btn btn-small"
-                @click="openSeatModal(lib, 1)"
+          <template v-if="statusTab === 'booking'">
+            <div class="date-tag-bar">
+              <div
+                class="date-tag-item"
+                :class="{ active: dateTab === 'today' }"
+                @click="dateTab = 'today'"
               >
-                选座位
-              </button>
-            </div>
-          </div>
-          <div v-if="!loading && libraries.length === 0" class="empty-text">
-            暂无图书馆数据
-          </div>
-        </div>
-      </div>
-
-      <div v-else-if="statusTab === 'pending'">
-        <div v-if="pendingReservations.length" class="card-grid">
-          <div
-            v-for="item in pendingReservations"
-            :key="item.id"
-            class="booking-item"
-          >
-            <div class="booking-header">
-              <div class="booking-info">
-                <div class="booking-title">
-                  {{
-                    item.resourceName ||
-                    (item.resourceType === 1 ? `教室预约 #${item.id}` : `图书馆预约 #${item.id}`)
-                  }}
-                </div>
-                <div class="booking-subtitle">
-                  {{ formatDisplayDate(item.reservationDate) }} {{ formatDisplayTimeRange(item.startTime, item.endTime) }}
-                </div>
+                <div>今天</div>
+                <div>{{ todayText }}</div>
               </div>
-              <div class="booking-status status-pending">待签到</div>
-            </div>
-            <div class="booking-detail">
-              <div class="detail-row">
-                <span class="detail-label">预约日期：</span>
-                <span>{{ formatDisplayDate(item.reservationDate) }}</span>
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">预约时段：</span>
-                <span>{{ formatDisplayTimeRange(item.startTime, item.endTime) }}</span>
-              </div>
-            </div>
-            <div class="booking-actions">
-              <button class="action-btn btn-secondary scan-btn" @click.stop="startScan(item)">
-                签到
-              </button>
-              <button class="action-btn btn-danger cancel-btn" @click.stop="cancelReservation(item)">
-                取消预约
-              </button>
-            </div>
-          </div>
-        </div>
-        <div v-else class="empty-text">暂无待签到预约</div>
-      </div>
-
-      <div v-else-if="statusTab === 'checked'">
-        <div v-if="checkedReservations.length" class="card-grid">
-          <div
-            v-for="item in checkedReservations"
-            :key="item.id"
-            class="booking-item"
-          >
-            <div class="booking-header">
-              <div class="booking-info">
-                <div class="booking-title">
-                  {{
-                    item.resourceName ||
-                    (item.resourceType === 1 ? `教室预约 #${item.id}` : `图书馆预约 #${item.id}`)
-                  }}
-                </div>
-                <div class="booking-subtitle">
-                  {{ formatDisplayDate(item.reservationDate) }} {{ formatDisplayTimeRange(item.startTime, item.endTime) }}
-                </div>
-              </div>
-              <div class="booking-status status-checked">已签到</div>
-            </div>
-            <div class="booking-detail">
-              <div class="detail-row">
-                <span class="detail-label">预约日期：</span>
-                <span>{{ formatDisplayDate(item.reservationDate) }}</span>
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">预约时段：</span>
-                <span>{{ formatDisplayTimeRange(item.startTime, item.endTime) }}</span>
-              </div>
-              <div class="detail-row" v-if="(item as any).checkinTime">
-                <span class="detail-label">签到时间：</span>
-                <span>{{ formatDisplayDateTime((item as any).checkinTime) }}</span>
-              </div>
-            </div>
-            <div class="booking-actions">
-              <button
-                v-if="item.resourceType === 1"
-                class="action-btn btn-secondary"
-                @click.stop="goRoomCollab(item)"
+              <div
+                class="date-tag-item"
+                :class="{ active: dateTab === 'tomorrow' }"
+                @click="dateTab = 'tomorrow'"
               >
-                查看详情
-              </button>
+                <div>明天</div>
+                <div>{{ tomorrowText }}</div>
+              </div>
+              <div
+                class="date-tag-item"
+                :class="{ active: dateTab === 'dayAfter' }"
+                @click="dateTab = 'dayAfter'"
+              >
+                <div>后天</div>
+                <div>{{ dayAfterText }}</div>
+              </div>
+            </div>
+
+            <div class="area-tag-bar">
+              <div
+                class="area-tag-item"
+                :class="{ active: areaTab === 'classroom' }"
+                @click="areaTab = 'classroom'"
+              >
+                普通教室
+              </div>
+              <div
+                class="area-tag-item"
+                :class="{ active: areaTab === 'seminar' }"
+                @click="areaTab = 'seminar'"
+              >
+                研讨室
+              </div>
+              <div
+                class="area-tag-item"
+                :class="{ active: areaTab === 'library' }"
+                @click="areaTab = 'library'"
+              >
+                图书馆
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <div class="content-panel">
+          <div v-if="statusTab === 'booking'">
+            <div v-if="areaTab === 'classroom'" class="card-grid">
+              <div v-for="b in buildingCards" :key="b.id" class="classroom-item">
+                <div class="classroom-header">
+                  <div class="classroom-name">{{ b.name }}</div>
+                  <div class="classroom-status">空闲</div>
+                </div>
+                <div class="classroom-desc">
+                  {{ b.address || '教学楼' }} ｜ 共 {{ b.floorCount || '-' }} 层
+                </div>
+                <div class="classroom-footer">
+                  <div class="classroom-capacity">普通教室 {{ b.classroomCount }} 间</div>
+                  <button class="btn btn-small" @click="goToBuildingClassrooms(b.id)">查看教室</button>
+                </div>
+              </div>
+              <div v-if="!loading && buildingCards.length === 0" class="empty-text">
+                暂无可预约普通教室
+              </div>
+            </div>
+
+            <div v-else-if="areaTab === 'seminar'" class="card-grid">
+              <div v-for="b in buildingCards" :key="b.id" class="classroom-item">
+                <div class="classroom-header">
+                  <div class="classroom-name">{{ b.name }}</div>
+                  <div class="classroom-status">空闲</div>
+                </div>
+                <div class="classroom-desc">
+                  {{ b.address || '教学楼' }} ｜ 共 {{ b.floorCount || '-' }} 层
+                </div>
+                <div class="classroom-footer">
+                  <div class="classroom-capacity">研讨室 {{ b.classroomCount }} 间</div>
+                  <button class="btn btn-small" @click="goToBuildingClassrooms(b.id)">查看教室</button>
+                </div>
+              </div>
+              <div v-if="!loading && buildingCards.length === 0" class="empty-text">
+                暂无可预约研讨室
+              </div>
+            </div>
+
+            <div v-else class="card-grid">
+              <div
+                v-for="lib in libraries"
+                :key="lib.id"
+                class="classroom-item"
+              >
+                <div class="classroom-header">
+                  <div class="classroom-name">{{ lib.name }}</div>
+                  <div class="classroom-status">空闲</div>
+                </div>
+                <div class="classroom-desc">
+                  {{ lib.address || '校园图书馆' }} ｜ 共 {{ lib.floorCount || 5 }} 层
+                </div>
+                <div class="classroom-footer">
+                  <div class="classroom-capacity">图书馆选座</div>
+                  <button
+                    class="btn btn-small"
+                    @click="openSeatModal(lib, 1)"
+                  >
+                    选座位
+                  </button>
+                </div>
+              </div>
+              <div v-if="!loading && libraries.length === 0" class="empty-text">
+                暂无图书馆数据
+              </div>
             </div>
           </div>
-        </div>
-        <div v-else class="empty-text">暂无已签到预约</div>
-      </div>
+          <div v-else-if="statusTab === 'pending'">
+            <div v-if="pendingReservations.length" class="card-grid">
+              <div
+                v-for="item in pendingReservations"
+                :key="item.id"
+                class="booking-item"
+              >
+                <div class="booking-header">
+                  <div class="booking-info">
+                    <div class="booking-title">
+                      {{
+                        item.resourceName ||
+                        (item.resourceType === 1 ? `教室预约 #${item.id}` : `图书馆预约 #${item.id}`)
+                      }}
+                    </div>
+                    <div class="booking-subtitle">
+                      {{ formatDisplayDate(item.reservationDate) }} {{ formatDisplayTimeRange(item.startTime, item.endTime) }}
+                    </div>
+                  </div>
+                  <div class="booking-status status-pending">待签到</div>
+                </div>
+                <div class="booking-detail">
+                  <div class="detail-row">
+                    <span class="detail-label">预约日期：</span>
+                    <span>{{ formatDisplayDate(item.reservationDate) }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">预约时段：</span>
+                    <span>{{ formatDisplayTimeRange(item.startTime, item.endTime) }}</span>
+                  </div>
+                </div>
+                <div class="booking-actions">
+                  <button class="action-btn btn-secondary scan-btn" @click.stop="startScan(item)">
+                    签到
+                  </button>
+                  <button class="action-btn btn-danger cancel-btn" @click.stop="cancelReservation(item)">
+                    取消预约
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div v-else class="empty-text">暂无待签到预约</div>
+          </div>
 
-      <div v-else>
-        <div v-if="cancelledReservations.length" class="card-grid">
-          <div
-            v-for="item in cancelledReservations"
-            :key="item.id"
-            class="booking-item"
-          >
-            <div class="booking-header">
-              <div class="booking-info">
-                <div class="booking-title">
-                  {{
-                    item.resourceName ||
-                    (item.resourceType === 1 ? `教室预约 #${item.id}` : `图书馆预约 #${item.id}`)
-                  }}
+          <div v-else-if="statusTab === 'checked'">
+            <div v-if="checkedReservations.length" class="card-grid">
+              <div
+                v-for="item in checkedReservations"
+                :key="item.id"
+                class="booking-item"
+              >
+                <div class="booking-header">
+                  <div class="booking-info">
+                    <div class="booking-title">
+                      {{
+                        item.resourceName ||
+                        (item.resourceType === 1 ? `教室预约 #${item.id}` : `图书馆预约 #${item.id}`)
+                      }}
+                    </div>
+                    <div class="booking-subtitle">
+                      {{ formatDisplayDate(item.reservationDate) }} {{ formatDisplayTimeRange(item.startTime, item.endTime) }}
+                    </div>
+                  </div>
+                  <div class="booking-status status-checked">已签到</div>
                 </div>
-                <div class="booking-subtitle">
-                  {{ formatDisplayDate(item.reservationDate) }} {{ formatDisplayTimeRange(item.startTime, item.endTime) }}
+                <div class="booking-detail">
+                  <div class="detail-row">
+                    <span class="detail-label">预约日期：</span>
+                    <span>{{ formatDisplayDate(item.reservationDate) }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">预约时段：</span>
+                    <span>{{ formatDisplayTimeRange(item.startTime, item.endTime) }}</span>
+                  </div>
+                  <div class="detail-row" v-if="(item as any).checkinTime">
+                    <span class="detail-label">签到时间：</span>
+                    <span>{{ formatDisplayDateTime((item as any).checkinTime) }}</span>
+                  </div>
+                </div>
+                <div class="booking-actions">
+                  <button
+                    v-if="item.resourceType === 1"
+                    class="action-btn btn-secondary"
+                    @click.stop="goRoomCollab(item)"
+                  >
+                    查看详情
+                  </button>
                 </div>
               </div>
-              <div class="booking-status status-cancelled">已取消</div>
             </div>
-            <div class="booking-detail">
-              <div class="detail-row">
-                <span class="detail-label">预约日期：</span>
-                <span>{{ formatDisplayDate(item.reservationDate) }}</span>
+            <div v-else class="empty-text">暂无已签到预约</div>
+          </div>
+
+          <div v-else>
+            <div v-if="cancelledReservations.length" class="card-grid">
+              <div
+                v-for="item in cancelledReservations"
+                :key="item.id"
+                class="booking-item"
+              >
+                <div class="booking-header">
+                  <div class="booking-info">
+                    <div class="booking-title">
+                      {{
+                        item.resourceName ||
+                        (item.resourceType === 1 ? `教室预约 #${item.id}` : `图书馆预约 #${item.id}`)
+                      }}
+                    </div>
+                    <div class="booking-subtitle">
+                      {{ formatDisplayDate(item.reservationDate) }} {{ formatDisplayTimeRange(item.startTime, item.endTime) }}
+                    </div>
+                  </div>
+                  <div class="booking-status status-cancelled">已取消</div>
+                </div>
+                <div class="booking-detail">
+                  <div class="detail-row">
+                    <span class="detail-label">预约日期：</span>
+                    <span>{{ formatDisplayDate(item.reservationDate) }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">预约时段：</span>
+                    <span>{{ formatDisplayTimeRange(item.startTime, item.endTime) }}</span>
+                  </div>
+                </div>
+                <div class="booking-actions">
+                  <button class="action-btn btn-secondary">
+                    重新预约
+                  </button>
+                </div>
               </div>
-              <div class="detail-row">
-                <span class="detail-label">预约时段：</span>
-                <span>{{ formatDisplayTimeRange(item.startTime, item.endTime) }}</span>
-              </div>
             </div>
-            <div class="booking-actions">
-              <button class="action-btn btn-secondary">
-                重新预约
-              </button>
-            </div>
+            <div v-else class="empty-text">暂无已取消预约</div>
           </div>
         </div>
-        <div v-else class="empty-text">暂无已取消预约</div>
       </div>
-      </div>
-    </div>
 
-    <div v-else class="not-login">
-      请先登录后再进行预约和查看记录。
+      <div v-else class="not-login">
+        请先登录后再进行预约和查看记录。
+      </div>
     </div>
 
     <van-popup
@@ -785,6 +786,9 @@ onMounted(() => {
 
 <style scoped>
 .reservation {
+  --reservation-page-gutter: 16px;
+  --reservation-inset-left: max(var(--reservation-page-gutter), env(safe-area-inset-left, 0px));
+  --reservation-inset-right: max(var(--reservation-page-gutter), env(safe-area-inset-right, 0px));
   background-color: #f5f5f5;
   height: 100dvh;
   min-height: 100dvh;
@@ -793,9 +797,22 @@ onMounted(() => {
   flex-direction: column;
 }
 
+.phone-container {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-width: 375px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  background-color: #f5f5f5;
+}
+
 .reservation :deep(.van-nav-bar) {
   flex-shrink: 0;
   z-index: 40;
+  position: sticky;
+  top: 0;
 }
 
 .page {
@@ -803,7 +820,7 @@ onMounted(() => {
   min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 8px 16px 16px;
+  padding: 8px var(--reservation-inset-right) 16px var(--reservation-inset-left);
 }
 
 .page-title {
@@ -817,7 +834,7 @@ onMounted(() => {
   position: sticky;
   top: 0px;
   z-index: 12;
-  margin-bottom: 14px;
+  margin-bottom: 0;
   padding: 12px;
   border-radius: 14px;
   border: 1px solid #e8edf5;
@@ -827,10 +844,19 @@ onMounted(() => {
 }
 
 .content-panel {
+  position: relative;
+  z-index: 1;
+  margin-top: 16px;
   padding: 12px;
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.96);
   border: 1px solid #edf2f8;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
 }
 
 .status-tag-bar,
@@ -865,8 +891,8 @@ onMounted(() => {
   padding: 16px;
   border-radius: 12px;
   background-color: #ffffff;
-  margin-bottom: 12px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  min-width: 0;
 }
 
 .state-card {
@@ -934,6 +960,10 @@ onMounted(() => {
   font-size: 16px;
   font-weight: 600;
   color: #1a1a1a;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .classroom-status {
@@ -948,6 +978,7 @@ onMounted(() => {
   font-size: 12px;
   color: #909399;
   margin-bottom: 12px;
+  line-height: 1.5;
 }
 
 .classroom-time {
@@ -984,11 +1015,15 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .classroom-capacity {
   font-size: 12px;
   color: #909399;
+  flex: 1;
+  min-width: 120px;
 }
 
 .btn {
@@ -1076,7 +1111,7 @@ onMounted(() => {
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   padding: 16px;
-  margin-bottom: 12px;
+  min-width: 0;
 }
 
 .booking-header {
@@ -1091,6 +1126,8 @@ onMounted(() => {
   font-weight: 600;
   color: #1a1a1a;
   margin-bottom: 4px;
+  line-height: 1.45;
+  word-break: break-word;
 }
 
 .booking-subtitle {
@@ -1140,6 +1177,7 @@ onMounted(() => {
   gap: 8px;
   border-top: 1px solid #f5f7fa;
   padding-top: 8px;
+  flex-wrap: wrap;
 }
 
 .action-btn {
@@ -1147,6 +1185,7 @@ onMounted(() => {
   border-radius: 8px;
   border: none;
   font-size: 13px;
+  min-width: 88px;
 }
 
 .btn-secondary {
@@ -1312,27 +1351,44 @@ onMounted(() => {
 
 @media (min-width: 1024px) {
   .reservation {
+    --reservation-page-gutter: 24px;
     background:
       radial-gradient(circle at 10% -12%, rgba(74, 144, 226, 0.1), transparent 40%),
       #f3f6fb;
   }
 
-  .page {
-    max-width: 1180px;
+  .phone-container {
+    width: min(1200px, 100%);
+    max-width: none;
     margin: 0 auto;
-    padding: 12px 24px 24px;
+    border-left: 1px solid #e9eef5;
+    border-right: 1px solid #e9eef5;
+    box-shadow: 0 8px 28px rgba(15, 23, 42, 0.06);
+  }
+
+  .page {
+    max-width: none;
+    margin: 0;
+    padding: 12px var(--reservation-inset-right) 24px var(--reservation-inset-left);
   }
 
   .filter-panel {
-    top: 56px;
-    margin-bottom: 16px;
+    position: static;
+    top: auto;
+    z-index: 1;
+    margin-bottom: 0;
     padding: 14px;
     border-radius: 16px;
   }
 
   .content-panel {
+    margin-top: 20px;
     padding: 16px;
     border-radius: 16px;
+  }
+
+  .content-panel > div {
+    min-height: 420px;
   }
 
   .page-title {
@@ -1358,7 +1414,7 @@ onMounted(() => {
 
   .card-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
     gap: 14px;
     align-content: start;
   }
@@ -1383,11 +1439,17 @@ onMounted(() => {
 
   .booking-actions {
     padding-top: 10px;
+    justify-content: flex-end;
   }
 
   .action-btn {
     padding: 7px 14px;
     border-radius: 9px;
+  }
+
+  .scan-btn,
+  .cancel-btn {
+    min-width: 96px;
   }
 
   .scan-modal-inner {
