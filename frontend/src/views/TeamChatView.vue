@@ -559,10 +559,17 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .team-chat-page {
-  min-height: 100vh;
+  height: 100dvh;
   background: #f5f7fa;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+}
+
+.team-chat-page :deep(.van-nav-bar) {
+  flex-shrink: 0;
+  z-index: 20;
+  background: #ffffff;
 }
 
 .nav-action {
@@ -572,6 +579,7 @@ onBeforeUnmount(() => {
 
 .message-list {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: 12px;
 }
@@ -727,6 +735,7 @@ onBeforeUnmount(() => {
 }
 
 .input-bar {
+  flex-shrink: 0;
   border-top: 1px solid #edf2f8;
   background: #fff;
   padding: 8px 12px calc(8px + env(safe-area-inset-bottom, 0px));

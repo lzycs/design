@@ -90,6 +90,9 @@ const handleLogin = async () => {
   padding: 16px 20px;
   background-color: #4a90e2;
   color: #ffffff;
+  position: sticky;
+  top: 0;
+  z-index: 30;
 }
 .page-header-title {
   font-size: 18px;

@@ -427,8 +427,6 @@ onMounted(() => {
     <van-nav-bar title="预约中心" left-arrow @click-left="router.back()" />
 
     <div class="page" v-if="isLoggedIn">
-      <div class="page-title">预约中心</div>
-
       <div class="filter-panel">
         <div class="status-tag-bar">
           <div
@@ -788,11 +786,24 @@ onMounted(() => {
 <style scoped>
 .reservation {
   background-color: #f5f5f5;
-  min-height: 100vh;
+  height: 100dvh;
+  min-height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.reservation :deep(.van-nav-bar) {
+  flex-shrink: 0;
+  z-index: 40;
 }
 
 .page {
-  padding: 16px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px 16px 16px;
 }
 
 .page-title {
@@ -804,7 +815,7 @@ onMounted(() => {
 
 .filter-panel {
   position: sticky;
-  top: 46px;
+  top: 0px;
   z-index: 12;
   margin-bottom: 14px;
   padding: 12px;
@@ -1309,11 +1320,11 @@ onMounted(() => {
   .page {
     max-width: 1180px;
     margin: 0 auto;
-    padding: 22px 24px 24px;
+    padding: 12px 24px 24px;
   }
 
   .filter-panel {
-    top: 54px;
+    top: 56px;
     margin-bottom: 16px;
     padding: 14px;
     border-radius: 16px;

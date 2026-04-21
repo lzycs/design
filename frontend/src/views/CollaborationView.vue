@@ -722,7 +722,7 @@ onMounted(() => {
   border-bottom: 1px solid #f0f2f5;
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 30;
   box-sizing: border-box;
 }
 
@@ -780,6 +780,9 @@ onMounted(() => {
   overflow-x: auto;
   white-space: nowrap;
   border-bottom: 1px solid #f0f2f5;
+  position: sticky;
+  top: 52px;
+  z-index: 20;
   box-sizing: border-box;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -1181,6 +1184,10 @@ onMounted(() => {
     padding-top: 16px;
     padding-bottom: 16px;
     border-bottom-color: #e7ebf3;
+  }
+
+  .category-bar {
+    top: 66px;
   }
 
   .page-header__title {

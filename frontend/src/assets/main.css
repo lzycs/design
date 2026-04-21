@@ -22,6 +22,14 @@ body {
   box-shadow: 0 0 24px rgba(0, 0, 0, 0.10);
 }
 
+/* 全局顶部标题栏固定：统一所有 van-nav-bar 行为 */
+.van-nav-bar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: #ffffff;
+}
+
 @media (min-width: 480px) {
   body {
     align-items: flex-start;

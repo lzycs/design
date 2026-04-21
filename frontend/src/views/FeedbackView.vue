@@ -1083,5 +1083,39 @@ onMounted(() => {
 .evaluation-form-panel .form-area::-webkit-scrollbar {
   display: none;
 }
+
+/* Web 端增强：列表卡片排列方式与「协作」一致（多列网格） */
+@media (min-width: 1024px) {
+  .pending-list,
+  .evaluated-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    align-content: start;
+  }
+
+  /* 待评价 与 已评价 两块列表之间留出层级间距 */
+  .evaluated-list {
+    margin-top: 16px;
+  }
+
+  .classroom-card,
+  .evaluation-card {
+    margin-bottom: 0;
+    border: 1px solid #e8edf5;
+    border-radius: 14px;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+}
+
+@media (min-width: 1024px) and (hover: hover) {
+  .classroom-card:hover,
+  .evaluation-card:hover {
+    transform: translateY(-2px);
+    border-color: #cfe1f8;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1);
+  }
+}
 </style>
 

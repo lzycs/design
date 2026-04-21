@@ -218,7 +218,7 @@ onBeforeUnmount(() => {
   color: #fff;
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 30;
 }
 .page-header-title {
   font-size: 18px;
