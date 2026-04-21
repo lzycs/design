@@ -52,4 +52,12 @@ watch(
   flex-direction: column;
   position: relative;
 }
+
+@media (min-width: 1024px) {
+  .app-container :deep(.van-tabbar) {
+    border-top: 1px solid #e7edf7;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(8px);
+  }
+}
 </style>

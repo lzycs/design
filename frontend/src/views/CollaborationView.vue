@@ -1093,5 +1093,204 @@ onMounted(() => {
 .create-btn:disabled {
   opacity: 0.7;
 }
+
+/* Web 端增强：移动端样式保持默认，仅在大屏渐进增强 */
+@media (min-width: 1024px) {
+  .collaboration {
+    --collab-page-gutter: 24px;
+    height: 100vh;
+    padding-bottom: 0;
+    background:
+      radial-gradient(circle at 10% -10%, rgba(74, 144, 226, 0.1), transparent 40%),
+      radial-gradient(circle at 90% 110%, rgba(96, 165, 250, 0.08), transparent 45%),
+      #f3f6fb;
+  }
+
+  .phone-container {
+    width: min(1200px, 100%);
+    max-width: none;
+    min-height: 0;
+    margin: 0 auto;
+    border-left: 1px solid #e9eef5;
+    border-right: 1px solid #e9eef5;
+    box-shadow: 0 8px 28px rgba(15, 23, 42, 0.06);
+  }
+
+  .page-header {
+    padding-top: 16px;
+    padding-bottom: 16px;
+    border-bottom-color: #e7ebf3;
+  }
+
+  .page-header__title {
+    font-size: 20px;
+    letter-spacing: 0.02em;
+  }
+
+  .page-header__back {
+    width: 34px;
+    height: 34px;
+    border-radius: 17px;
+    font-size: 26px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .page-header__action {
+    padding: 7px 14px;
+    border: 1px solid #d6e5fa;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #ffffff 0%, #f3f8ff 100%);
+    transition: all 0.2s ease;
+  }
+
+  .category-bar {
+    gap: 12px;
+    padding-top: 14px;
+    padding-bottom: 14px;
+    overflow-x: visible;
+    white-space: normal;
+    flex-wrap: wrap;
+  }
+
+  .category-item {
+    margin-right: 0;
+    padding: 8px 16px;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+  }
+
+  .team-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    align-content: start;
+    padding-top: 16px;
+    padding-bottom: 24px;
+  }
+
+  .team-card {
+    margin-bottom: 0;
+    min-height: 184px;
+    border: 1px solid #e8edf5;
+    border-radius: 14px;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+
+  .team-title {
+    font-size: 17px;
+  }
+
+  .team-desc {
+    line-height: 1.65;
+  }
+
+  .tag {
+    border-radius: 999px;
+    border: 1px solid #edf1f7;
+    background-color: #f8fafd;
+  }
+
+  .detail-wrapper {
+    background-color: #f7f9fd;
+  }
+
+  .team-detail-header {
+    padding: 24px 28px;
+    background: linear-gradient(135deg, #4a90e2 0%, #5aa0f2 100%);
+    border-radius: 16px 16px 0 0;
+  }
+
+  .team-detail-title {
+    font-size: 24px;
+  }
+
+  .team-detail-desc {
+    font-size: 15px;
+  }
+
+  .btn-row {
+    gap: 12px;
+  }
+
+  .btn-row.leader-mode {
+    grid-template-columns: 2fr 1fr;
+  }
+
+  .join-btn,
+  .quit-btn,
+  .delete-btn,
+  .create-btn {
+    height: 46px;
+  }
+
+  .member-section {
+    margin-top: 14px;
+    border: 1px solid #edf2f8;
+    border-radius: 12px;
+  }
+
+  .create-wrapper {
+    padding: 24px 28px;
+    background: #f9fbff;
+  }
+
+  .create-form {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .create-form .form-item {
+    margin-bottom: 14px;
+  }
+
+  .create-btn-row {
+    margin-top: 12px;
+  }
+
+  :deep(.van-popup--bottom) {
+    width: min(900px, calc(100vw - 48px));
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 16px 16px 0 0;
+    max-height: 88vh;
+    box-shadow: 0 14px 40px rgba(15, 23, 42, 0.24);
+  }
+}
+
+@media (min-width: 1024px) and (hover: hover) {
+  .page-header__back:hover {
+    background: #e9f2ff;
+    color: #2f6fb8;
+  }
+
+  .page-header__action:hover {
+    color: #2f6fb8;
+    border-color: #bfd7f8;
+    box-shadow: 0 2px 10px rgba(59, 130, 246, 0.14);
+  }
+
+  .category-item:hover {
+    color: #4a90e2;
+    border-color: #d5e6fb;
+    background: #f0f6ff;
+  }
+
+  .team-card:hover {
+    transform: translateY(-2px);
+    border-color: #cfe1f8;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1);
+  }
+
+  .join-btn:not(:disabled):hover,
+  .create-btn:not(:disabled):hover {
+    filter: brightness(0.98);
+  }
+
+  .quit-btn:not(:disabled):hover,
+  .delete-btn:not(:disabled):hover {
+    filter: brightness(0.96);
+  }
+}
 </style>
 

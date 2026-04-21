@@ -32,6 +32,37 @@ body {
   }
 }
 
+/* Desktop enhancement: keep mobile baseline unchanged */
+@media (min-width: 1024px) {
+  html,
+  body {
+    background:
+      radial-gradient(circle at 8% -12%, rgba(74, 144, 226, 0.08), transparent 42%),
+      radial-gradient(circle at 90% 120%, rgba(59, 130, 246, 0.08), transparent 40%),
+      #f3f6fb;
+    display: block;
+  }
+
+  #app {
+    max-width: none;
+    width: min(1280px, calc(100vw - 48px));
+    margin: 0 auto;
+    background-color: #ffffff;
+    box-shadow: 0 10px 36px rgba(15, 23, 42, 0.1);
+    border-left: 1px solid #e9eef6;
+    border-right: 1px solid #e9eef6;
+  }
+
+  .van-popup--bottom {
+    width: min(920px, calc(100vw - 48px));
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 16px 16px 0 0;
+    max-height: 88vh;
+    box-shadow: 0 14px 40px rgba(15, 23, 42, 0.2);
+  }
+}
+
 /* 全局隐藏滚动条（保留滚动能力） */
 html,
 body,

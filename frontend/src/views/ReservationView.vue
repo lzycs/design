@@ -64,7 +64,7 @@ const formatDisplayDate = (value?: string) => {
 
 const formatDisplayTime = (value?: string) => {
   if (!value) return ''
-  const normalized = value.includes('T') ? value.split('T')[1] : value
+  const normalized = value.includes('T') ? (value.split('T')[1] ?? '') : value
   return normalized.length >= 5 ? normalized.slice(0, 5) : normalized
 }
 
@@ -429,90 +429,95 @@ onMounted(() => {
     <div class="page" v-if="isLoggedIn">
       <div class="page-title">预约中心</div>
 
-      <div class="status-tag-bar">
-        <div
-          class="status-tag-item"
-          :class="{ active: statusTab === 'booking' }"
-          @click="statusTab = 'booking'"
-        >
-          预约
+      <div class="filter-panel">
+        <div class="status-tag-bar">
+          <div
+            class="status-tag-item"
+            :class="{ active: statusTab === 'booking' }"
+            @click="statusTab = 'booking'"
+          >
+            预约
+          </div>
+          <div
+            class="status-tag-item"
+            :class="{ active: statusTab === 'pending' }"
+            @click="statusTab = 'pending'"
+          >
+            待签到
+          </div>
+          <div
+            class="status-tag-item"
+            :class="{ active: statusTab === 'checked' }"
+            @click="statusTab = 'checked'"
+          >
+            已签到
+          </div>
+          <div
+            class="status-tag-item"
+            :class="{ active: statusTab === 'cancelled' }"
+            @click="statusTab = 'cancelled'"
+          >
+            已取消
+          </div>
         </div>
-        <div
-          class="status-tag-item"
-          :class="{ active: statusTab === 'pending' }"
-          @click="statusTab = 'pending'"
-        >
-          待签到
-        </div>
-        <div
-          class="status-tag-item"
-          :class="{ active: statusTab === 'checked' }"
-          @click="statusTab = 'checked'"
-        >
-          已签到
-        </div>
-        <div
-          class="status-tag-item"
-          :class="{ active: statusTab === 'cancelled' }"
-          @click="statusTab = 'cancelled'"
-        >
-          已取消
-        </div>
+
+        <template v-if="statusTab === 'booking'">
+          <div class="date-tag-bar">
+            <div
+              class="date-tag-item"
+              :class="{ active: dateTab === 'today' }"
+              @click="dateTab = 'today'"
+            >
+              <div>今天</div>
+              <div>{{ todayText }}</div>
+            </div>
+            <div
+              class="date-tag-item"
+              :class="{ active: dateTab === 'tomorrow' }"
+              @click="dateTab = 'tomorrow'"
+            >
+              <div>明天</div>
+              <div>{{ tomorrowText }}</div>
+            </div>
+            <div
+              class="date-tag-item"
+              :class="{ active: dateTab === 'dayAfter' }"
+              @click="dateTab = 'dayAfter'"
+            >
+              <div>后天</div>
+              <div>{{ dayAfterText }}</div>
+            </div>
+          </div>
+
+          <div class="area-tag-bar">
+            <div
+              class="area-tag-item"
+              :class="{ active: areaTab === 'classroom' }"
+              @click="areaTab = 'classroom'"
+            >
+              普通教室
+            </div>
+            <div
+              class="area-tag-item"
+              :class="{ active: areaTab === 'seminar' }"
+              @click="areaTab = 'seminar'"
+            >
+              研讨室
+            </div>
+            <div
+              class="area-tag-item"
+              :class="{ active: areaTab === 'library' }"
+              @click="areaTab = 'library'"
+            >
+              图书馆
+            </div>
+          </div>
+        </template>
       </div>
 
+      <div class="content-panel">
       <div v-if="statusTab === 'booking'">
-        <div class="date-tag-bar">
-          <div
-            class="date-tag-item"
-            :class="{ active: dateTab === 'today' }"
-            @click="dateTab = 'today'"
-          >
-            <div>今天</div>
-            <div>{{ todayText }}</div>
-          </div>
-          <div
-            class="date-tag-item"
-            :class="{ active: dateTab === 'tomorrow' }"
-            @click="dateTab = 'tomorrow'"
-          >
-            <div>明天</div>
-            <div>{{ tomorrowText }}</div>
-          </div>
-          <div
-            class="date-tag-item"
-            :class="{ active: dateTab === 'dayAfter' }"
-            @click="dateTab = 'dayAfter'"
-          >
-            <div>后天</div>
-            <div>{{ dayAfterText }}</div>
-          </div>
-        </div>
-
-        <div class="area-tag-bar">
-          <div
-            class="area-tag-item"
-            :class="{ active: areaTab === 'classroom' }"
-            @click="areaTab = 'classroom'"
-          >
-            普通教室
-          </div>
-          <div
-            class="area-tag-item"
-            :class="{ active: areaTab === 'seminar' }"
-            @click="areaTab = 'seminar'"
-          >
-            研讨室
-          </div>
-          <div
-            class="area-tag-item"
-            :class="{ active: areaTab === 'library' }"
-            @click="areaTab = 'library'"
-          >
-            图书馆
-          </div>
-        </div>
-
-        <div v-if="areaTab === 'classroom'">
+        <div v-if="areaTab === 'classroom'" class="card-grid">
           <div v-for="b in buildingCards" :key="b.id" class="classroom-item">
             <div class="classroom-header">
               <div class="classroom-name">{{ b.name }}</div>
@@ -531,7 +536,7 @@ onMounted(() => {
           </div>
         </div>
 
-        <div v-else-if="areaTab === 'seminar'">
+        <div v-else-if="areaTab === 'seminar'" class="card-grid">
           <div v-for="b in buildingCards" :key="b.id" class="classroom-item">
             <div class="classroom-header">
               <div class="classroom-name">{{ b.name }}</div>
@@ -550,7 +555,7 @@ onMounted(() => {
           </div>
         </div>
 
-        <div v-else>
+        <div v-else class="card-grid">
           <div
             v-for="lib in libraries"
             :key="lib.id"
@@ -580,7 +585,7 @@ onMounted(() => {
       </div>
 
       <div v-else-if="statusTab === 'pending'">
-        <div v-if="pendingReservations.length">
+        <div v-if="pendingReservations.length" class="card-grid">
           <div
             v-for="item in pendingReservations"
             :key="item.id"
@@ -624,7 +629,7 @@ onMounted(() => {
       </div>
 
       <div v-else-if="statusTab === 'checked'">
-        <div v-if="checkedReservations.length">
+        <div v-if="checkedReservations.length" class="card-grid">
           <div
             v-for="item in checkedReservations"
             :key="item.id"
@@ -673,7 +678,7 @@ onMounted(() => {
       </div>
 
       <div v-else>
-        <div v-if="cancelledReservations.length">
+        <div v-if="cancelledReservations.length" class="card-grid">
           <div
             v-for="item in cancelledReservations"
             :key="item.id"
@@ -711,6 +716,7 @@ onMounted(() => {
           </div>
         </div>
         <div v-else class="empty-text">暂无已取消预约</div>
+      </div>
       </div>
     </div>
 
@@ -796,6 +802,26 @@ onMounted(() => {
   margin-bottom: 16px;
 }
 
+.filter-panel {
+  position: sticky;
+  top: 46px;
+  z-index: 12;
+  margin-bottom: 14px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid #e8edf5;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+  backdrop-filter: blur(6px);
+}
+
+.content-panel {
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid #edf2f8;
+}
+
 .status-tag-bar,
 .date-tag-bar,
 .area-tag-bar {
@@ -810,7 +836,7 @@ onMounted(() => {
 .area-tag-item {
   padding: 8px 16px;
   border-radius: 16px;
-  background-color: #e9edf3;
+  background-color: #f5f7fa;
   font-size: 14px;
   color: #334155;
   font-weight: 500;
@@ -1271,5 +1297,128 @@ onMounted(() => {
   background-color: #4a90e2;
   color: #ffffff;
   border: 2px solid #2f6fb8;
+}
+
+@media (min-width: 1024px) {
+  .reservation {
+    background:
+      radial-gradient(circle at 10% -12%, rgba(74, 144, 226, 0.1), transparent 40%),
+      #f3f6fb;
+  }
+
+  .page {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 22px 24px 24px;
+  }
+
+  .filter-panel {
+    top: 54px;
+    margin-bottom: 16px;
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .content-panel {
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .page-title {
+    font-size: 24px;
+    margin-bottom: 18px;
+    letter-spacing: 0.02em;
+  }
+
+  .status-tag-bar,
+  .date-tag-bar,
+  .area-tag-bar {
+    gap: 10px;
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+
+  .status-tag-item,
+  .date-tag-item,
+  .area-tag-item {
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+  }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 14px;
+    align-content: start;
+  }
+
+  .classroom-item,
+  .booking-item {
+    margin-bottom: 0;
+    border: 1px solid #e8edf5;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+
+  .booking-title,
+  .classroom-name {
+    font-size: 17px;
+  }
+
+  .classroom-desc,
+  .booking-subtitle {
+    font-size: 13px;
+  }
+
+  .booking-actions {
+    padding-top: 10px;
+  }
+
+  .action-btn {
+    padding: 7px 14px;
+    border-radius: 9px;
+  }
+
+  .scan-modal-inner {
+    padding: 22px 20px 18px;
+  }
+
+  .scan-box {
+    width: 264px;
+    height: 264px;
+  }
+
+  .qr-canvas {
+    width: 224px;
+    height: 224px;
+  }
+
+  .seat-container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  .seat-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 10px;
+  }
+}
+
+@media (min-width: 1024px) and (hover: hover) {
+  .status-tag-item:hover,
+  .date-tag-item:hover,
+  .area-tag-item:hover {
+    border-color: #cfe1f8;
+    background-color: #eef5ff;
+    color: #4a90e2;
+  }
+
+  .classroom-item:hover,
+  .booking-item:hover {
+    transform: translateY(-2px);
+    border-color: #cfe1f8;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1);
+  }
 }
 </style>

@@ -306,4 +306,78 @@ onMounted(() => {
 .tab-item.active {
   color: #4a90e2;
 }
+
+@media (min-width: 1024px) {
+  .home-page {
+    padding-bottom: 84px;
+  }
+
+  .banner {
+    height: 220px;
+    border-radius: 0 0 28px 28px;
+  }
+
+  .banner h1 {
+    font-size: 30px;
+  }
+
+  .banner p {
+    font-size: 16px;
+  }
+
+  .banner-avatar {
+    width: 72px;
+    height: 72px;
+    right: 32px;
+    bottom: -36px;
+  }
+
+  .avatar-icon {
+    font-size: 40px;
+  }
+
+  .function-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+    padding: 52px 28px 24px;
+  }
+
+  .function-item {
+    min-height: 126px;
+    border: 1px solid #e9eef6;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .building-nav {
+    margin: 24px 28px;
+    padding: 24px;
+    border: 1px solid #e9eef6;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+  }
+
+  .building-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .building-item {
+    min-height: 116px;
+    justify-content: center;
+    border: 1px solid #e8edf5;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .tab-bar {
+    display: none;
+  }
+}
+
+@media (min-width: 1024px) and (hover: hover) {
+  .function-item:hover,
+  .building-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.1);
+  }
+}
 </style>
