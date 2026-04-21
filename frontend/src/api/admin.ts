@@ -74,6 +74,23 @@ export interface AdminReviewAuditRequest {
   remark?: string
 }
 
+export interface AdminMarketItemVO {
+  id: number
+  userId: number
+  publisherName?: string
+  title: string
+  description?: string
+  category?: string
+  resourceType?: number
+  price?: number | null
+  isFree?: number
+  originType?: number
+  sourceReference?: string
+  recommendedPlace?: string
+  status?: number
+  createTime?: string
+}
+
 export interface AdminClassroomVO {
   id: number
   buildingId: number | null
@@ -138,6 +155,14 @@ export const getAdminReviews = (params?: { status?: number; keyword?: string }) 
 
 export const auditAdminReview = (id: number, payload: AdminReviewAuditRequest) => {
   return request.put<unknown, Result<boolean>>(`/admin/reviews/${id}/audit`, payload)
+}
+
+export const getAdminMarketItems = () => {
+  return request.get<unknown, Result<AdminMarketItemVO[]>>('/admin/market-items')
+}
+
+export const auditAdminMarketItem = (id: number, payload: AdminReviewAuditRequest) => {
+  return request.put<unknown, Result<boolean>>(`/admin/market-items/${id}/audit`, payload)
 }
 
 export const getAdminClassrooms = (params?: { buildingId?: number; status?: number }) => {

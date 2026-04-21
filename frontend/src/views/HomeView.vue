@@ -39,6 +39,10 @@ const goSharedPlan = () => {
   router.push('/shared-plan')
 }
 
+const goResourceMarket = () => {
+  router.push('/resource-market')
+}
+
 const goMine = () => {
   router.push('/profile')
 }
@@ -77,6 +81,10 @@ onMounted(() => {
         <div class="function-item" @click="goSharedPlan">
           <van-icon name="notes-o" class="func-icon" />
           <p>共享计划</p>
+        </div>
+        <div class="function-item" @click="goResourceMarket">
+          <van-icon name="shop-o" class="func-icon" />
+          <p>资源集市</p>
         </div>
       </div>
 
@@ -337,7 +345,7 @@ onMounted(() => {
   }
 
   .function-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 18px;
     padding: 52px 28px 24px;
   }

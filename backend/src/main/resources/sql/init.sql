@@ -958,6 +958,7 @@ INSERT INTO `admin_menu` (`id`, `title`, `path`, `permission_key`, `sort_order`,
 (6, '教学楼信息管理', '/admin/buildings', 'base:manage', 25, 0),
 (2, '报修管理', '/admin/repairs', 'repair:process', 10, 0),
 (3, '评价审核管理', '/admin/reviews', 'review:audit', 20, 0),
+(7, '资源集市审核', '/admin/market-audit', 'review:audit', 21, 0),
 (4, '教室信息管理', '/admin/classrooms', 'base:manage', 30, 0),
 (5, '课程表管理', '/admin/courses', 'base:manage', 40, 0)
 ON DUPLICATE KEY UPDATE
@@ -1152,5 +1153,102 @@ ON DUPLICATE KEY UPDATE
   `applicant_id`    = VALUES(`applicant_id`),
   `reason`          = VALUES(`reason`),
   `status`          = VALUES(`status`);
+
+-- 校园学习资源交易&共享集市：资源发布表
+CREATE TABLE IF NOT EXISTS `resource_market_item` (
+    `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '资源ID',
+    `user_id` BIGINT NOT NULL COMMENT '发布者ID',
+    `title` VARCHAR(200) NOT NULL COMMENT '资源标题',
+    `description` TEXT COMMENT '资源描述',
+    `category` VARCHAR(50) NOT NULL COMMENT '分类（考研笔记/课程资料/闲置教材/实验耗材/二手设备/技能服务）',
+    `resource_type` TINYINT NOT NULL DEFAULT 1 COMMENT '资源类型: 1-实物资料, 2-文档资料, 3-技能服务',
+    `price` DECIMAL(10,2) NULL COMMENT '金额（非盈利、互助型，免费可为空）',
+    `is_free` TINYINT NOT NULL DEFAULT 0 COMMENT '是否免费: 0-否, 1-是',
+    `origin_type` TINYINT NOT NULL DEFAULT 1 COMMENT '溯源类型: 1-原创, 2-转载',
+    `source_reference` VARCHAR(255) NULL COMMENT '转载来源说明',
+    `course_id` BIGINT NULL COMMENT '关联课程ID',
+    `team_request_id` BIGINT NULL COMMENT '关联学习共同体ID（team_request）',
+    `tags` VARCHAR(255) NULL COMMENT '标签(JSON数组)',
+    `images` MEDIUMTEXT NULL COMMENT '图片列表(JSON数组/base64)',
+    `recommended_place` VARCHAR(120) NULL COMMENT '推荐面交地点',
+    `status` TINYINT NOT NULL DEFAULT 0 COMMENT '状态: 0-待审核,1-已上架,2-已驳回,3-已下架,4-流转中,5-已完成',
+    `audit_by` BIGINT NULL COMMENT '审核人ID',
+    `audit_remark` VARCHAR(255) NULL COMMENT '审核备注',
+    `audit_time` DATETIME NULL COMMENT '审核时间',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '删除标记: 0-未删除, 1-已删除',
+    INDEX idx_rmi_user (`user_id`),
+    INDEX idx_rmi_category (`category`),
+    INDEX idx_rmi_status (`status`),
+    INDEX idx_rmi_course (`course_id`),
+    INDEX idx_rmi_team (`team_request_id`),
+    FOREIGN KEY (`user_id`) REFERENCES `user`(`id`),
+    FOREIGN KEY (`audit_by`) REFERENCES `user`(`id`),
+    FOREIGN KEY (`course_id`) REFERENCES `course`(`id`),
+    FOREIGN KEY (`team_request_id`) REFERENCES `team_request`(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='校园学习资源交易与共享集市-资源表';
+
+-- 资源流转记录表（线上撮合 + 线下面交确认）
+CREATE TABLE IF NOT EXISTS `resource_market_trade` (
+    `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '流转ID',
+    `item_id` BIGINT NOT NULL COMMENT '资源ID',
+    `publisher_id` BIGINT NOT NULL COMMENT '发布者ID',
+    `receiver_id` BIGINT NOT NULL COMMENT '接收者ID',
+    `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态: 1-待面交确认, 2-已完成, 3-已取消',
+    `note` VARCHAR(255) NULL COMMENT '留言',
+    `meeting_place` VARCHAR(120) NULL COMMENT '面交地点',
+    `meeting_time` DATETIME NULL COMMENT '约定面交时间',
+    `confirm_publisher` TINYINT NOT NULL DEFAULT 0 COMMENT '发布方是否确认面交',
+    `confirm_receiver` TINYINT NOT NULL DEFAULT 0 COMMENT '接收方是否确认面交',
+    `confirm_time` DATETIME NULL COMMENT '双方确认完成时间',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '删除标记: 0-未删除, 1-已删除',
+    INDEX idx_rmt_item (`item_id`),
+    INDEX idx_rmt_publisher (`publisher_id`),
+    INDEX idx_rmt_receiver (`receiver_id`),
+    INDEX idx_rmt_status (`status`),
+    FOREIGN KEY (`item_id`) REFERENCES `resource_market_item`(`id`),
+    FOREIGN KEY (`publisher_id`) REFERENCES `user`(`id`),
+    FOREIGN KEY (`receiver_id`) REFERENCES `user`(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='校园学习资源交易与共享集市-流转记录';
+
+-- 校园学习信用分
+CREATE TABLE IF NOT EXISTS `campus_credit` (
+    `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
+    `user_id` BIGINT NOT NULL COMMENT '用户ID',
+    `credit_score` INT NOT NULL DEFAULT 100 COMMENT '信用分',
+    `score_comment` VARCHAR(100) NULL COMMENT '信用评价',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    UNIQUE KEY uk_cc_user (`user_id`),
+    FOREIGN KEY (`user_id`) REFERENCES `user`(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='校园学习信用分';
+
+INSERT IGNORE INTO `campus_credit` (`user_id`, `credit_score`, `score_comment`)
+SELECT id, 100, '信用优秀' FROM `user` WHERE deleted = 0;
+
+INSERT INTO `resource_market_item`
+(`id`,`user_id`,`title`,`description`,`category`,`resource_type`,`price`,`is_free`,`origin_type`,`source_reference`,`course_id`,`team_request_id`,`tags`,`recommended_place`,`status`)
+VALUES
+(1,1,'高等数学考研笔记（手写版）','重点章节整理，附真题题型总结。','考研笔记',2,NULL,1,1,NULL,1,10,'["考研","数学"]','图书馆服务台',1),
+(2,2,'二手《操作系统》教材','九成新，含课堂批注，按成本转让。','闲置教材',1,15.00,0,1,NULL,NULL,NULL,'["教材","计算机"]','第二教学楼一层大厅',1),
+(3,6,'Python编程辅导（互助）','可帮忙排查作业报错，按时间成本收费。','技能服务',3,20.00,0,1,NULL,NULL,12,'["编程","辅导"]','线上沟通后线下',0),
+(4,3,'英语六级高频词汇资料','教师整理资料，免费共享。','课程资料',2,NULL,1,1,NULL,NULL,NULL,'["英语","六级"]','图书馆服务台',1)
+ON DUPLICATE KEY UPDATE
+  `user_id` = VALUES(`user_id`),
+  `title` = VALUES(`title`),
+  `description` = VALUES(`description`),
+  `category` = VALUES(`category`),
+  `resource_type` = VALUES(`resource_type`),
+  `price` = VALUES(`price`),
+  `is_free` = VALUES(`is_free`),
+  `origin_type` = VALUES(`origin_type`),
+  `source_reference` = VALUES(`source_reference`),
+  `course_id` = VALUES(`course_id`),
+  `team_request_id` = VALUES(`team_request_id`),
+  `tags` = VALUES(`tags`),
+  `recommended_place` = VALUES(`recommended_place`),
+  `status` = VALUES(`status`);
 
 SELECT '测试数据插入完成。' AS result; 

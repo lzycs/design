@@ -11,6 +11,7 @@ import AdminCourseView from '@/views/admin/AdminCourseView.vue'
 import AdminBuildingView from '@/views/admin/AdminBuildingView.vue'
 import AdminReservationLimitView from '@/views/admin/AdminReservationLimitView.vue'
 import AdminScanDevicesView from '@/views/admin/AdminScanDevicesView.vue'
+import AdminMarketAuditView from '@/views/admin/AdminMarketAuditView.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -22,6 +23,7 @@ const defaultMenus: AdminMenu[] = [
   { id: 4, title: '教室管理', path: '/admin/classrooms', permissionKey: null },
   { id: 5, title: '课程管理', path: '/admin/courses', permissionKey: null },
   { id: 6, title: '楼栋管理', path: '/admin/buildings', permissionKey: null },
+  { id: 7, title: '资源集市审核', path: '/admin/market-audit', permissionKey: null },
 ]
 
 const tabMenus = [
@@ -75,6 +77,7 @@ const viewMap: Record<string, Component> = {
   '/admin/buildings': AdminBuildingView,
   '/admin/reservation-limits': AdminReservationLimitView,
   '/admin/scan-devices': AdminScanDevicesView,
+  '/admin/market-audit': AdminMarketAuditView,
 }
 
 const currentView = computed(() => {
