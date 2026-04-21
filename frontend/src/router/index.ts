@@ -85,6 +85,16 @@ const router = createRouter({
       component: () => import('../views/ProfileTeamView.vue'),
     },
     {
+      path: '/profile/teams/:teamId/chat',
+      name: 'team-chat',
+      component: () => import('../views/TeamChatView.vue'),
+    },
+    {
+      path: '/profile/team-messages',
+      name: 'team-message-center',
+      component: () => import('../views/TeamMessageCenterView.vue'),
+    },
+    {
       path: '/profile/plans',
       name: 'profile-plans',
       component: () => import('../views/ProfilePlanView.vue'),

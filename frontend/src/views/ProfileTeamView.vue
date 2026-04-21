@@ -16,6 +16,7 @@ import {
   type TeamJoinApplicationVO,
 } from '@/api/team'
 import { getTeamStudyPlans, type StudyPlanVO } from '@/api/studyPlan'
+import { useTeamChatStore } from '@/stores/teamChat'
 import { showToast } from 'vant'
 
 interface User {
@@ -24,6 +25,7 @@ interface User {
 }
 
 const router = useRouter()
+const teamChatStore = useTeamChatStore()
 const storedUser = ref<User | null>(null)
 const teams = ref<TeamRequestVO[]>([])
 const loading = ref(false)
@@ -153,6 +155,11 @@ const loadBadge = async () => {
   }
 }
 
+const loadChatUnread = async () => {
+  if (!storedUser.value?.id) return
+  await teamChatStore.refreshUnreadSummary(storedUser.value.id)
+}
+
 const openReview = async () => {
   screen.value = 'review'
   reviewLoading.value = true
@@ -264,11 +271,11 @@ const goCreate = () => {
     return
   }
   screen.value = 'create'
-  createForm.title = ''
-  createForm.description = ''
-  createForm.initStatus = 1
-  createForm.startTime = ''
-  createForm.endTime = ''
+  createForm.value.title = ''
+  createForm.value.description = ''
+  createForm.value.initStatus = 1
+  createForm.value.startTime = ''
+  createForm.value.endTime = ''
 }
 
 const markDone = async () => {
@@ -278,7 +285,10 @@ const markDone = async () => {
     await updateTeamStatus(currentTeam.value.id, 0, storedUser.value.id)
     currentTeam.value.status = 0
     const idx = teams.value.findIndex((t) => t.id === currentTeam.value!.id)
-    if (idx >= 0) teams.value[idx].status = 0
+    if (idx >= 0) {
+      const target = teams.value[idx]
+      if (target) target.status = 0
+    }
     showToast('已标记为完成')
   } catch (e) {
     console.error(e)
@@ -348,12 +358,14 @@ onMounted(async () => {
   if (storedUser.value?.id) {
     await loadTeams()
     await loadBadge()
+    await loadChatUnread()
   }
 
   // 回到页面/切回标签页时刷新，避免成员端“审核结果不显示”
   const refreshOnFocus = async () => {
     if (!storedUser.value?.id) return
     await Promise.all([loadTeams(), loadBadge()])
+    await loadChatUnread()
   }
   window.addEventListener('focus', refreshOnFocus)
   document.addEventListener('visibilitychange', () => {
@@ -416,8 +428,16 @@ onMounted(async () => {
               <div class="collab-info">
                 <div class="collab-header">
                   <div class="collab-title">{{ item.title }}</div>
-                  <div class="collab-status" :class="getStatusClass(item.status)">
-                    {{ getStatusText(item.status) }}
+                  <div class="collab-right">
+                    <span
+                      v-if="item.id && (teamChatStore.unreadMap[item.id] ?? 0) > 0"
+                      class="chat-unread-dot"
+                    >
+                      {{ (teamChatStore.unreadMap[item.id] ?? 0) > 99 ? '99+' : (teamChatStore.unreadMap[item.id] ?? 0) }}
+                    </span>
+                    <div class="collab-status" :class="getStatusClass(item.status)">
+                      {{ getStatusText(item.status) }}
+                    </div>
                   </div>
                 </div>
                 <div class="collab-meta">
@@ -501,6 +521,14 @@ onMounted(async () => {
       </div>
 
       <div class="action-bar">
+        <button
+          v-if="currentTeam.id"
+          type="button"
+          class="action-btn secondary-btn"
+          @click="router.push(`/profile/teams/${currentTeam.id}/chat`)"
+        >
+          小组聊天
+        </button>
         <button
           v-if="currentTeam.status !== 0 && isLeader"
           type="button"
@@ -721,6 +749,12 @@ onMounted(async () => {
   margin-bottom: 4px;
 }
 
+.collab-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .collab-title {
   font-size: 16px;
   font-weight: 600;
@@ -736,6 +770,18 @@ onMounted(async () => {
   font-size: 12px;
   font-weight: 500;
   flex-shrink: 0;
+}
+
+.chat-unread-dot {
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  background: #f56c6c;
+  color: #fff;
+  font-size: 11px;
+  line-height: 18px;
+  text-align: center;
+  padding: 0 5px;
 }
 
 .status-doing {
@@ -1039,6 +1085,11 @@ onMounted(async () => {
 .primary-btn {
   background: #4a90e2;
   color: #fff;
+}
+
+.secondary-btn {
+  background: #edf4ff;
+  color: #2f6fb8;
 }
 
 .primary-btn:disabled {

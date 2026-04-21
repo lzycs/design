@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { showToast, showConfirmDialog } from 'vant'
 import request from '@/utils/request'
 import { getTeamBadge } from '@/api/team'
+import { useTeamChatStore } from '@/stores/teamChat'
 
 interface User {
   id?: number
@@ -67,6 +68,7 @@ interface StudyPlan {
 
 const activeTab = ref<'login' | 'register'>('login')
 const router = useRouter()
+const teamChatStore = useTeamChatStore()
 
 const loading = ref(false)
 const dataLoading = ref(false)
@@ -105,6 +107,11 @@ const loadTeamBadge = async () => {
   } catch {
     teamBadgeTotal.value = 0
   }
+}
+
+const loadTeamChatUnread = async () => {
+  if (!storedUser.value?.id) return
+  await teamChatStore.refreshUnreadSummary(storedUser.value.id)
 }
 
 const loadFromStorage = () => {
@@ -154,7 +161,7 @@ const handleLogin = async () => {
   }
   loading.value = true
   try {
-    const res = await request.post('/user/login', loginForm.value)
+    const res = await request.post<unknown, { code: number; message?: string; data: User }>('/user/login', loginForm.value)
     if (res.code !== 200) {
       showToast(res.message || '登录失败')
       return
@@ -184,7 +191,7 @@ const handleRegister = async () => {
   }
   loading.value = true
   try {
-    const res = await request.post('/user/register', registerForm.value)
+    const res = await request.post<unknown, { code: number; message?: string; data: User }>('/user/register', registerForm.value)
     if (res.code !== 200) {
       showToast(res.message || '注册失败')
       return
@@ -217,6 +224,7 @@ onMounted(async () => {
   if (storedUser.value?.id) {
     await loadUserData()
     await loadTeamBadge()
+    await loadTeamChatUnread()
   }
 })
 </script>
@@ -293,6 +301,24 @@ onMounted(async () => {
               </div>
               <div class="menu-right">
                 <div v-if="teamBadgeTotal > 0" class="menu-badge">{{ teamBadgeTotal }}</div>
+                <van-icon name="arrow" class="menu-arrow" />
+              </div>
+            </div>
+
+            <div
+              class="menu-item"
+              @click="$router.push('/profile/team-messages')"
+            >
+              <div class="menu-left">
+                <div class="menu-icon">
+                  <van-icon name="chat-o" />
+                </div>
+                <div class="menu-text">小组消息</div>
+              </div>
+              <div class="menu-right">
+                <div v-if="teamChatStore.totalUnread > 0" class="menu-badge">
+                  {{ teamChatStore.totalUnread > 99 ? '99+' : teamChatStore.totalUnread }}
+                </div>
                 <van-icon name="arrow" class="menu-arrow" />
               </div>
             </div>

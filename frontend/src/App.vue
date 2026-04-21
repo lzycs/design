@@ -6,6 +6,7 @@ const route = useRoute()
 const active = ref(0)
 
 const isAdminRoute = computed(() => route.path.startsWith('/admin'))
+const hideTabbar = computed(() => route.path.startsWith('/profile/teams/') && route.path.endsWith('/chat'))
 
 watch(
   () => ({ path: route.path, only: route.query.only }),
@@ -34,7 +35,7 @@ watch(
 <template>
   <div class="app-container">
     <RouterView />
-    <van-tabbar v-if="!isAdminRoute" v-model="active">
+    <van-tabbar v-if="!isAdminRoute && !hideTabbar" v-model="active">
       <van-tabbar-item icon="home-o" to="/">首页</van-tabbar-item>
       <van-tabbar-item icon="calendar-o" to="/reservation">预约</van-tabbar-item>
       <van-tabbar-item icon="friends-o" to="/collaboration">协作</van-tabbar-item>

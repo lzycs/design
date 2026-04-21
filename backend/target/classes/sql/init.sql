@@ -465,6 +465,105 @@ CREATE TABLE IF NOT EXISTS `team_message` (
     FOREIGN KEY (`sender_id`) REFERENCES `user`(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='组队消息表';
 
+-- 兼容历史库：补齐聊天幂等与消息状态字段
+SET @__tm_client_msg_id_exists := (
+  SELECT COUNT(*)
+  FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'team_message'
+    AND COLUMN_NAME = 'client_msg_id'
+);
+SET @__tm_client_msg_id_sql := IF(
+  @__tm_client_msg_id_exists = 0,
+  'ALTER TABLE `team_message` ADD COLUMN `client_msg_id` VARCHAR(64) NULL COMMENT ''客户端消息ID（幂等）''',
+  'SELECT 1'
+);
+PREPARE __tm_stmt1 FROM @__tm_client_msg_id_sql;
+EXECUTE __tm_stmt1;
+DEALLOCATE PREPARE __tm_stmt1;
+
+SET @__tm_status_exists := (
+  SELECT COUNT(*)
+  FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'team_message'
+    AND COLUMN_NAME = 'status'
+);
+SET @__tm_status_sql := IF(
+  @__tm_status_exists = 0,
+  'ALTER TABLE `team_message` ADD COLUMN `status` TINYINT NOT NULL DEFAULT 1 COMMENT ''消息状态: 1-正常, 2-撤回, 3-删除''',
+  'SELECT 1'
+);
+PREPARE __tm_stmt2 FROM @__tm_status_sql;
+EXECUTE __tm_stmt2;
+DEALLOCATE PREPARE __tm_stmt2;
+
+SET @__tm_recalled_exists := (
+  SELECT COUNT(*)
+  FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'team_message'
+    AND COLUMN_NAME = 'recalled'
+);
+SET @__tm_recalled_sql := IF(
+  @__tm_recalled_exists = 0,
+  'ALTER TABLE `team_message` ADD COLUMN `recalled` TINYINT NOT NULL DEFAULT 0 COMMENT ''是否撤回: 0-否,1-是''',
+  'SELECT 1'
+);
+PREPARE __tm_stmt5 FROM @__tm_recalled_sql;
+EXECUTE __tm_stmt5;
+DEALLOCATE PREPARE __tm_stmt5;
+
+-- 兼容历史库：补齐聊天核心索引（按小组+时间/ID分页）
+SET @__tm_idx_team_time_exists := (
+  SELECT COUNT(*)
+  FROM information_schema.STATISTICS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'team_message'
+    AND INDEX_NAME = 'idx_team_time_id'
+);
+SET @__tm_idx_team_time_sql := IF(
+  @__tm_idx_team_time_exists = 0,
+  'ALTER TABLE `team_message` ADD INDEX `idx_team_time_id` (`team_request_id`, `create_time`, `id`)',
+  'SELECT 1'
+);
+PREPARE __tm_stmt3 FROM @__tm_idx_team_time_sql;
+EXECUTE __tm_stmt3;
+DEALLOCATE PREPARE __tm_stmt3;
+
+SET @__tm_uk_client_exists := (
+  SELECT COUNT(*)
+  FROM information_schema.STATISTICS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'team_message'
+    AND INDEX_NAME = 'uk_team_sender_client_msg'
+);
+SET @__tm_uk_client_sql := IF(
+  @__tm_uk_client_exists = 0,
+  'ALTER TABLE `team_message` ADD UNIQUE KEY `uk_team_sender_client_msg` (`team_request_id`, `sender_id`, `client_msg_id`)',
+  'SELECT 1'
+);
+PREPARE __tm_stmt4 FROM @__tm_uk_client_sql;
+EXECUTE __tm_stmt4;
+DEALLOCATE PREPARE __tm_stmt4;
+
+-- 小组聊天已读游标表（用于未读统计）
+CREATE TABLE IF NOT EXISTS `team_message_read` (
+    `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
+    `team_request_id` BIGINT NOT NULL COMMENT '小组ID',
+    `user_id` BIGINT NOT NULL COMMENT '用户ID',
+    `last_read_message_id` BIGINT DEFAULT 0 COMMENT '最后已读消息ID',
+    `last_read_time` DATETIME NULL COMMENT '最后已读时间',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '删除标记: 0-未删除, 1-已删除',
+    UNIQUE KEY uk_team_user (`team_request_id`, `user_id`),
+    INDEX idx_user (`user_id`),
+    INDEX idx_team (`team_request_id`),
+    FOREIGN KEY (`team_request_id`) REFERENCES `team_request`(`id`),
+    FOREIGN KEY (`user_id`) REFERENCES `user`(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='小组聊天已读游标表';
+
 -- 学习计划表
 CREATE TABLE IF NOT EXISTS `study_plan` (
     `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '计划ID',

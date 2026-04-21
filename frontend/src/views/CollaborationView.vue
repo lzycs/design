@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useTeamChatStore } from '@/stores/teamChat'
 import {
   getActiveTeamRequests,
   applyToJoinTeam,
@@ -18,6 +19,7 @@ import { showConfirmDialog, showToast } from 'vant'
 type CategoryKey = 'all' | 'exam' | 'project' | 'postgrad' | 'language'
 
 const router = useRouter()
+const teamChatStore = useTeamChatStore()
 
 const categories: { key: CategoryKey; label: string }[] = [
   { key: 'all', label: '全部组队' },
@@ -141,6 +143,11 @@ const loadTeams = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const loadChatUnread = async () => {
+  if (!storedUser.value?.id) return
+  await teamChatStore.refreshUnreadSummary(storedUser.value.id)
 }
 
 const loadApplyState = async () => {
@@ -369,10 +376,26 @@ const handleApplyJoin = async () => {
   }
 }
 
+const goTeamChat = () => {
+  if (!isLoggedIn.value || !storedUser.value?.id) {
+    showToast('请先登录')
+    router.push('/profile')
+    return
+  }
+  if (!currentTeam.value?.id) return
+  if (!isMemberOfCurrentTeam.value && !isLeaderOfCurrentTeam.value) {
+    showToast('加入小组后可使用聊天')
+    return
+  }
+  showDetail.value = false
+  router.push(`/profile/teams/${currentTeam.value.id}/chat`)
+}
+
 onMounted(() => {
   loadUserFromStorage()
   loadTeams()
   loadApplyState()
+  loadChatUnread()
 })
 </script>
 
@@ -425,6 +448,12 @@ onMounted(() => {
             <div class="team-title">
               {{ item.title }}
             </div>
+            <span
+              v-if="item.id && (teamChatStore.unreadMap[item.id] ?? 0) > 0"
+              class="team-unread-dot"
+            >
+              {{ (teamChatStore.unreadMap[item.id] ?? 0) > 99 ? '99+' : (teamChatStore.unreadMap[item.id] ?? 0) }}
+            </span>
           </div>
           <div class="team-tags">
             <div class="tag">
@@ -494,6 +523,13 @@ onMounted(() => {
             时间范围：{{ formatRange(currentTeam.startTime, currentTeam.endTime) }}
           </div>
           <div class="btn-row" :class="{ 'leader-mode': isLeaderOfCurrentTeam }">
+            <button
+              v-if="isMemberOfCurrentTeam || isLeaderOfCurrentTeam"
+              class="chat-btn"
+              @click.stop="goTeamChat"
+            >
+              小组聊天
+            </button>
             <button
               class="join-btn"
               :disabled="
@@ -810,7 +846,20 @@ onMounted(() => {
 .team-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 8px;
+}
+
+.team-unread-dot {
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  background: #f56c6c;
+  color: #fff;
+  font-size: 11px;
+  line-height: 18px;
+  text-align: center;
+  padding: 0 5px;
 }
 
 .team-title {
@@ -904,6 +953,18 @@ onMounted(() => {
   color: #4a90e2;
   font-size: 14px;
   font-weight: 500;
+  cursor: pointer;
+}
+
+.chat-btn {
+  flex: 1;
+  height: 44px;
+  border-radius: 8px;
+  border: 1px solid #d6e6fb;
+  background-color: #eef5ff;
+  color: #2f6fb8;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
 }
 
