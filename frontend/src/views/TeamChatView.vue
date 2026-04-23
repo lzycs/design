@@ -546,7 +546,7 @@ onBeforeUnmount(() => {
       :actions="msgActions.map((a) => ({ name: a.name, key: a.key }))"
       @select="(a:any) => onMsgAction(a.key)"
     />
-    <van-popup v-model:show="showPlanPicker" round position="bottom" :style="{ height: '50%' }">
+    <van-popup v-model:show="showPlanPicker" class="ls-bottom-popup" round position="bottom" :style="{ height: '50%' }">
       <div class="picker-wrap">
         <div class="picker-title">选择学习计划</div>
         <div v-for="p in planOptions" :key="p.id" class="picker-item" @click="sendPlanCard(p)">

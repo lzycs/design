@@ -746,6 +746,7 @@ onMounted(() => {
 
     <van-popup
       v-model:show="seatModalShow"
+      class="seat-popup ls-bottom-popup"
       round
       position="bottom"
       :style="{ height: '70%' }"
@@ -807,10 +808,10 @@ onMounted(() => {
 
 <style scoped>
 .reservation {
-  --reservation-page-gutter: 16px;
+  --reservation-page-gutter: 8px;
   --reservation-inset-left: max(var(--reservation-page-gutter), env(safe-area-inset-left, 0px));
   --reservation-inset-right: max(var(--reservation-page-gutter), env(safe-area-inset-right, 0px));
-  background-color: #f5f5f5;
+  background-color: var(--ls-bg);
   height: 100dvh;
   min-height: 100dvh;
   overflow: hidden;
@@ -826,7 +827,7 @@ onMounted(() => {
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  background-color: #f5f5f5;
+  background-color: var(--ls-bg);
 }
 
 .reservation :deep(.van-nav-bar) {
@@ -856,28 +857,28 @@ onMounted(() => {
   top: 0px;
   z-index: 12;
   margin-bottom: 0;
-  padding: 12px;
-  border-radius: 14px;
-  border: 1px solid #e8edf5;
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+  padding: 10px;
+  border-radius: var(--ls-radius-card);
+  border: 1px solid var(--ls-divider);
+  background: color-mix(in srgb, var(--ls-surface) 96%, transparent);
+  box-shadow: var(--ls-shadow-card);
   backdrop-filter: blur(6px);
 }
 
 .content-panel {
   position: relative;
   z-index: 1;
-  margin-top: 16px;
-  padding: 12px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.96);
-  border: 1px solid #edf2f8;
+  margin-top: 12px;
+  padding: 10px;
+  border-radius: var(--ls-radius-card);
+  background: color-mix(in srgb, var(--ls-surface) 96%, transparent);
+  border: 1px solid var(--ls-divider);
 }
 
 .card-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
+  gap: 10px;
 }
 
 .status-tag-bar,
@@ -886,33 +887,44 @@ onMounted(() => {
   display: flex;
   gap: 8px;
   overflow-x: auto;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .status-tag-item,
 .date-tag-item,
 .area-tag-item {
-  padding: 8px 16px;
-  border-radius: 16px;
-  background-color: #f5f7fa;
+  padding: 7px 14px;
+  border-radius: var(--ls-radius-pill);
+  background-color: var(--ls-surface-muted);
   font-size: 14px;
-  color: #334155;
+  color: var(--ls-text-strong);
   font-weight: 500;
   white-space: nowrap;
+}
+
+.date-tag-item {
+  min-width: 70px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  text-align: center;
+  line-height: 1.3;
 }
 
 .status-tag-item.active,
 .date-tag-item.active,
 .area-tag-item.active {
-  background-color: #4a90e2;
-  color: #ffffff;
+  background-color: var(--ls-primary);
+  color: var(--ls-surface);
 }
 
 .classroom-item {
-  padding: 16px;
-  border-radius: 12px;
-  background-color: #ffffff;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  padding: 14px;
+  border-radius: var(--ls-radius-card);
+  background-color: var(--ls-surface);
+  box-shadow: var(--ls-shadow-card);
   min-width: 0;
 }
 
@@ -980,7 +992,7 @@ onMounted(() => {
 .classroom-name {
   font-size: 16px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--ls-text-strong);
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -992,12 +1004,12 @@ onMounted(() => {
   padding: 2px 8px;
   border-radius: 6px;
   background-color: #f0f9ff;
-  color: #4a90e2;
+  color: var(--ls-primary);
 }
 
 .classroom-desc {
   font-size: 12px;
-  color: #909399;
+  color: var(--ls-text-muted);
   margin-bottom: 12px;
   line-height: 1.5;
 }
@@ -1050,12 +1062,16 @@ onMounted(() => {
 .btn {
   width: 100%;
   height: 44px;
-  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-radius: var(--ls-radius-control);
   border: none;
   font-size: 16px;
   font-weight: 600;
-  color: #ffffff;
-  background-color: #4a90e2;
+  color: var(--ls-surface);
+  background-color: var(--ls-primary);
 }
 
 .btn-small {
@@ -1128,10 +1144,10 @@ onMounted(() => {
 }
 
 .booking-item {
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  padding: 16px;
+  background-color: var(--ls-surface);
+  border-radius: var(--ls-radius-card);
+  box-shadow: var(--ls-shadow-card);
+  padding: 14px;
   min-width: 0;
 }
 
@@ -1145,7 +1161,7 @@ onMounted(() => {
 .booking-title {
   font-size: 16px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--ls-text-strong);
   margin-bottom: 4px;
   line-height: 1.45;
   word-break: break-word;
@@ -1153,7 +1169,7 @@ onMounted(() => {
 
 .booking-subtitle {
   font-size: 12px;
-  color: #909399;
+  color: var(--ls-text-muted);
 }
 
 .booking-status {
@@ -1203,6 +1219,10 @@ onMounted(() => {
 
 .action-btn {
   padding: 6px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   border-radius: 8px;
   border: none;
   font-size: 13px;
@@ -1215,12 +1235,15 @@ onMounted(() => {
 }
 
 .btn-danger {
-  background-color: #f56c6c;
-  color: #ffffff;
+  background-color: var(--ls-danger);
+  color: var(--ls-surface);
 }
 
 .scan-modal-inner {
   padding: 18px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
 }
 
@@ -1229,12 +1252,16 @@ onMounted(() => {
   font-weight: 700;
   color: #1a1a1a;
   margin-bottom: 6px;
+  width: 100%;
+  text-align: center;
 }
 
 .scan-subtitle {
   font-size: 12px;
   color: #8b8b8b;
   margin-bottom: 12px;
+  width: 100%;
+  text-align: center;
 }
 
 .scan-box {
@@ -1279,10 +1306,16 @@ onMounted(() => {
   font-size: 13px;
   color: #606266;
   margin-bottom: 14px;
+  width: 100%;
+  text-align: center;
 }
 
 .scan-cancel-btn {
   min-width: 110px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   padding: 8px 18px;
   border-radius: 10px;
   border: 1px solid #d9e4f2;
@@ -1307,7 +1340,17 @@ onMounted(() => {
 }
 
 .seat-container {
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
   padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.seat-container > * {
+  width: 100%;
 }
 
 .library-logo {
@@ -1370,9 +1413,16 @@ onMounted(() => {
   border: 2px solid #2f6fb8;
 }
 
+/* Web 端弹层纠偏：强制以视口居中，避免偏左 */
+:deep(.seat-popup) {
+  width: min(920px, calc(100vw - 48px));
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+
 @media (min-width: 1024px) {
   .reservation {
-    --reservation-page-gutter: 24px;
+    --reservation-page-gutter: 16px;
     background:
       radial-gradient(circle at 10% -12%, rgba(74, 144, 226, 0.1), transparent 40%),
       #f3f6fb;
@@ -1496,6 +1546,14 @@ onMounted(() => {
   .seat-grid {
     grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 10px;
+  }
+}
+
+@media (max-width: 1023px) {
+  :deep(.seat-popup) {
+    width: 100%;
+    left: 0 !important;
+    transform: none !important;
   }
 }
 

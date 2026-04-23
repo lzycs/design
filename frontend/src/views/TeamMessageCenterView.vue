@@ -46,7 +46,7 @@ onMounted(async () => {
 <style scoped>
 .message-center {
   min-height: 100vh;
-  background: #f5f7fa;
+  background: var(--ls-bg);
 }
 
 .content {
@@ -54,10 +54,11 @@ onMounted(async () => {
 }
 
 .msg-card {
-  background: #fff;
-  border-radius: 12px;
+  background: var(--ls-surface);
+  border-radius: var(--ls-radius-card);
   padding: 12px;
   margin-bottom: 10px;
+  box-shadow: var(--ls-shadow-card);
 }
 
 .title {
@@ -67,7 +68,7 @@ onMounted(async () => {
 .preview {
   margin-top: 6px;
   font-size: 13px;
-  color: #666;
+  color: var(--ls-text-muted);
 }
 
 .meta {
@@ -75,15 +76,15 @@ onMounted(async () => {
   display: flex;
   justify-content: space-between;
   font-size: 12px;
-  color: #909399;
+  color: var(--ls-text-faint);
 }
 
 .dot {
   min-width: 18px;
   height: 18px;
   border-radius: 9px;
-  background: #f56c6c;
-  color: #fff;
+  background: var(--ls-danger);
+  color: var(--ls-surface);
   text-align: center;
   line-height: 18px;
   padding: 0 4px;
@@ -91,7 +92,7 @@ onMounted(async () => {
 
 .empty {
   text-align: center;
-  color: #909399;
+  color: var(--ls-text-faint);
   margin-top: 40px;
 }
 </style>

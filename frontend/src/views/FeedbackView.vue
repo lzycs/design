@@ -631,7 +631,7 @@ onMounted(() => {
 
 <style scoped>
 .feedback {
-  background-color: #f5f7fa;
+  background-color: var(--ls-bg);
   min-height: 100vh;
 }
 
@@ -639,8 +639,8 @@ onMounted(() => {
   display: flex;
   align-items: center;
   padding: 16px 20px;
-  background-color: #ffffff;
-  border-bottom: 1px solid #f5f7fa;
+  background-color: var(--ls-surface);
+  border-bottom: 1px solid var(--ls-divider);
 }
 
 .back-btn {
@@ -649,21 +649,21 @@ onMounted(() => {
 
 .back-icon {
   font-size: 20px;
-  color: #1a1a1a;
+  color: var(--ls-text-strong);
 }
 
 .page-header-title {
   font-size: 18px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--ls-text-strong);
   flex: 1;
   text-align: center;
 }
 
 .top-tab-bar {
   display: flex;
-  background-color: #ffffff;
-  border-bottom: 1px solid #f5f7fa;
+  background-color: var(--ls-surface);
+  border-bottom: 1px solid var(--ls-divider);
 }
 
 .top-tab-item {
@@ -671,14 +671,14 @@ onMounted(() => {
   text-align: center;
   padding: 16px 0;
   font-size: 16px;
-  color: #909399;
+  color: var(--ls-text-muted);
   font-weight: 500;
   position: relative;
   cursor: pointer;
 }
 
 .top-tab-item.active {
-  color: #4a90e2;
+  color: var(--ls-primary);
 }
 
 .top-tab-item.active::after {
@@ -689,7 +689,7 @@ onMounted(() => {
   transform: translateX(-50%);
   width: 40px;
   height: 3px;
-  background-color: #4a90e2;
+  background-color: var(--ls-primary);
   border-radius: 2px;
 }
 
@@ -699,9 +699,9 @@ onMounted(() => {
 }
 
 .form-card {
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  background-color: var(--ls-surface);
+  border-radius: var(--ls-radius-card);
+  box-shadow: var(--ls-shadow-card);
   padding: 20px;
 }
 
@@ -815,8 +815,8 @@ onMounted(() => {
 .submit-btn {
   width: 100%;
   height: 48px;
-  background-color: #4a90e2;
-  color: #ffffff;
+  background-color: var(--ls-primary);
+  color: var(--ls-surface);
   border: none;
   border-radius: 8px;
   font-size: 16px;
@@ -832,9 +832,9 @@ onMounted(() => {
 
 .eval-filter-bar {
   display: flex;
-  background-color: #ffffff;
+  background-color: var(--ls-surface);
   padding: 12px 20px;
-  border-bottom: 1px solid #f5f7fa;
+  border-bottom: 1px solid var(--ls-divider);
   margin: -20px -20px 20px;
 }
 
@@ -847,21 +847,21 @@ onMounted(() => {
 .filter-item {
   padding: 6px 16px;
   font-size: 14px;
-  color: #909399;
+  color: var(--ls-text-muted);
   border-radius: 20px;
   margin-right: 12px;
   cursor: pointer;
 }
 
 .filter-item.active {
-  background-color: #4a90e2;
-  color: #ffffff;
+  background-color: var(--ls-primary);
+  color: var(--ls-surface);
 }
 
 .classroom-card {
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  background-color: var(--ls-surface);
+  border-radius: var(--ls-radius-card);
+  box-shadow: var(--ls-shadow-card);
   padding: 16px;
   margin-bottom: 12px;
   position: relative;
@@ -898,8 +898,8 @@ onMounted(() => {
   right: 16px;
   bottom: 16px;
   padding: 6px 12px;
-  background-color: #4a90e2;
-  color: #ffffff;
+  background-color: var(--ls-primary);
+  color: var(--ls-surface);
   border: none;
   border-radius: 6px;
   font-size: 12px;
@@ -914,9 +914,9 @@ onMounted(() => {
 }
 
 .evaluation-card {
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  background-color: var(--ls-surface);
+  border-radius: var(--ls-radius-card);
+  box-shadow: var(--ls-shadow-card);
   padding: 16px;
   margin-bottom: 12px;
 }

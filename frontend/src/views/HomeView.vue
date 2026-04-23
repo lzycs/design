@@ -168,26 +168,26 @@ onMounted(() => {
 
 <style scoped>
 .home {
-  background-color: #f5f5f5;
+  background-color: var(--ls-bg);
   min-height: 100vh;
 }
 
 .home-page {
-  --color-primary: #3370e7;
-  --color-primary-soft: #6691f7;
-  --color-primary-bg: #eef4ff;
-  --color-success: #2daf60;
-  --color-danger: #f56c6c;
+  --color-primary: var(--ls-primary);
+  --color-primary-soft: var(--ls-primary);
+  --color-primary-bg: color-mix(in srgb, var(--ls-primary) 12%, transparent);
+  --color-success: var(--ls-success);
+  --color-danger: var(--ls-danger);
   width: 100%;
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background-color: var(--ls-bg);
   padding-bottom: 72px;
 }
 
 .top-header {
-  background-color: #ffffff;
+  background-color: var(--ls-surface);
   border-radius: 0 0 16px 16px;
-  box-shadow: 0 2px 14px rgba(15, 23, 42, 0.06);
+  box-shadow: var(--ls-shadow-card);
   padding: 18px 20px 16px;
   margin-bottom: 16px;
 }
@@ -208,7 +208,7 @@ onMounted(() => {
 .header-text p {
   margin-top: 7px;
   font-size: 12px;
-  color: #98a2b3;
+  color: var(--ls-text-faint);
 }
 
 .header-avatar {
@@ -239,17 +239,17 @@ onMounted(() => {
 }
 
 .header-tag.active {
-  color: #ffffff;
+  color: var(--ls-surface);
   background-color: var(--color-primary);
   border-color: var(--color-primary);
 }
 
 .quick-section {
   margin: 20px;
-  background: linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
-  border-radius: 12px;
-  border: 1px solid #e8eef7;
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+  background: var(--ls-surface);
+  border-radius: var(--ls-radius-card);
+  border: 1px solid var(--ls-divider);
+  box-shadow: var(--ls-shadow-card);
   padding: 16px 16px 18px;
 }
 
@@ -266,7 +266,7 @@ onMounted(() => {
 .quick-logo {
   width: 32px;
   height: 32px;
-  border-radius: 8px;
+  border-radius: var(--ls-radius-soft);
   background: linear-gradient(135deg, #e8f2ff 0%, #f2f7ff 100%);
   color: var(--color-primary-soft);
   display: flex;
@@ -280,7 +280,7 @@ onMounted(() => {
 
 .quick-title-left span {
   font-size: 18px;
-  color: #1e3657;
+  color: var(--ls-text-strong);
   font-weight: 600;
   letter-spacing: 0.2px;
 }
@@ -302,11 +302,11 @@ onMounted(() => {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background-color: #ffffff;
-  border: 1px solid #e2eaf5;
+  background-color: var(--ls-surface);
+  border: 1px solid var(--ls-divider);
   padding: 16px 8px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border-radius: var(--ls-radius-card);
+  box-shadow: var(--ls-shadow-card);
   transition: all 0.2s ease;
 }
 
@@ -318,21 +318,21 @@ onMounted(() => {
 
 .function-item p {
   font-size: 16px;
-  color: #333333;
+  color: var(--ls-text-strong);
   font-weight: 500;
 }
 
 .building-nav {
   margin: 0 20px 24px;
-  background: linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  background: var(--ls-surface);
+  border-radius: var(--ls-radius-card);
+  box-shadow: var(--ls-shadow-card);
   padding: 16px;
 }
 
 .module-title {
   font-size: 18px;
-  color: #1a1a1a;
+  color: var(--ls-text-strong);
   font-weight: 600;
   margin-bottom: 16px;
   display: flex;
@@ -361,9 +361,9 @@ onMounted(() => {
 .building-item {
   padding: 16px 8px;
   border-radius: 12px;
-  background-color: #ffffff;
-  border: 1px solid #e2eaf5;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  background-color: var(--ls-surface);
+  border: 1px solid var(--ls-divider);
+  box-shadow: var(--ls-shadow-card);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -378,7 +378,7 @@ onMounted(() => {
 
 .building-name {
   font-size: 16px;
-  color: #333333;
+  color: var(--ls-text-strong);
   font-weight: 500;
 }
 
@@ -396,8 +396,8 @@ onMounted(() => {
   border: none;
   border-radius: 10px;
   padding: 4px 8px;
-  background: #eef4ff;
-  color: #3370e7;
+  background: color-mix(in srgb, var(--ls-primary) 12%, transparent);
+  color: var(--ls-primary);
   font-size: 12px;
 }
 

@@ -229,7 +229,7 @@ onMounted(async () => {
       <van-empty description="请先登录后查看报修记录" class="empty-wrap" />
     </template>
 
-    <van-popup v-model:show="showRepairDetail" round position="bottom" :style="{ height: '60%' }">
+    <van-popup v-model:show="showRepairDetail" class="ls-bottom-popup" round position="bottom" :style="{ height: '60%' }">
       <div v-if="repairDetail" class="detail-wrapper">
         <div class="detail-title">报修详情</div>
         <div class="detail-row">地点：{{ repairDetail.location || repairDetail.title || '-' }}</div>
@@ -248,7 +248,7 @@ onMounted(async () => {
 <style scoped>
 .profile-repair {
   min-height: 100vh;
-  background-color: #f5f7fa;
+  background-color: var(--ls-bg);
   padding-bottom: 24px;
 }
 
@@ -270,18 +270,18 @@ onMounted(async () => {
 
 .status-tab-item {
   padding: 8px 16px;
-  border-radius: 16px;
-  background-color: #f5f7fa;
+  border-radius: var(--ls-radius-pill);
+  background-color: var(--ls-surface-muted);
   font-size: 14px;
-  color: #333;
+  color: var(--ls-text-strong);
   white-space: nowrap;
   cursor: pointer;
   border: none;
 }
 
 .status-tab-item.active {
-  background-color: #4a90e2;
-  color: #fff;
+  background-color: var(--ls-primary);
+  color: var(--ls-surface);
 }
 
 .repair-list {
@@ -291,9 +291,9 @@ onMounted(async () => {
 }
 
 .repair-card {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  background: var(--ls-surface);
+  border-radius: var(--ls-radius-card);
+  box-shadow: var(--ls-shadow-card);
   padding: 16px;
 }
 
@@ -307,7 +307,7 @@ onMounted(async () => {
 .repair-card-title {
   font-size: 16px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--ls-text-strong);
 }
 
 .repair-status {
@@ -323,12 +323,12 @@ onMounted(async () => {
 
 .status-processing {
   background-color: #ecf5ff;
-  color: #4a90e2;
+  color: var(--ls-primary);
 }
 
 .status-completed {
   background-color: #f0f9ff;
-  color: #67c23a;
+  color: var(--ls-success);
 }
 
 .repair-card-detail {
@@ -373,13 +373,13 @@ onMounted(async () => {
 }
 
 .btn-primary {
-  background-color: #4a90e2;
-  color: #fff;
+  background-color: var(--ls-primary);
+  color: var(--ls-surface);
 }
 
 .btn-secondary {
-  background-color: #f5f7fa;
-  color: #666;
+  background-color: var(--ls-surface-muted);
+  color: var(--ls-text-muted);
 }
 
 .loading-wrap,

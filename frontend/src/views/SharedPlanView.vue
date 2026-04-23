@@ -517,6 +517,7 @@ onMounted(async () => {
     <!-- 创建计划弹层：样式匹配 UI 设计，预约时间用日期+时段选项 -->
     <van-popup
       v-model:show="showCreateModal"
+      class="ls-bottom-popup"
       position="bottom"
       round
       :style="{ height: '90%' }"
@@ -617,6 +618,7 @@ onMounted(async () => {
     <!-- 关联研讨室弹层：所属小组、计划名称固定，可填关键时间节点与其余内容 -->
     <van-popup
       v-model:show="showBindRoomModal"
+      class="ls-bottom-popup"
       position="bottom"
       round
       :style="{ height: '90%' }"

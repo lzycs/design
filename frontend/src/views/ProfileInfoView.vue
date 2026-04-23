@@ -61,11 +61,14 @@ onMounted(() => {
 <style scoped>
 .profile-info {
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background-color: var(--ls-bg);
 }
 
 .info-card {
   margin-top: 16px;
+  border-radius: var(--ls-radius-card);
+  overflow: hidden;
+  box-shadow: var(--ls-shadow-card);
 }
 </style>
 

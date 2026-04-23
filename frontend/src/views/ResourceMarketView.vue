@@ -235,9 +235,10 @@ onMounted(async () => {
 
     <van-popup
       v-model:show="showPublish"
+      class="ls-bottom-popup"
       round
       position="bottom"
-      :style="{ height: '72%', width: 'min(760px, 96vw)', left: '50%', transform: 'translateX(-50%)' }"
+      :style="{ height: '72%', width: 'min(760px, 96vw)' }"
     >
       <div class="publish-panel">
         <div class="form-title">发布学习资源</div>

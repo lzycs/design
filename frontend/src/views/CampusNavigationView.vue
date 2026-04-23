@@ -534,7 +534,7 @@ onBeforeUnmount(() => {
 <style scoped>
 .campus-nav-page {
   min-height: 100vh;
-  background: #f4f7fb;
+  background: var(--ls-bg);
 }
 
 .page-content {
@@ -542,10 +542,10 @@ onBeforeUnmount(() => {
 }
 
 .toolbar-card {
-  background: #fff;
-  border-radius: 12px;
+  background: var(--ls-surface);
+  border-radius: var(--ls-radius-card);
   padding: 10px;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+  box-shadow: var(--ls-shadow-card);
 }
 
 .toolbar-actions {
@@ -559,7 +559,7 @@ onBeforeUnmount(() => {
 .map-panel {
   height: 42vh;
   min-height: 260px;
-  border-radius: 12px;
+  border-radius: var(--ls-radius-card);
   margin-top: 12px;
   overflow: hidden;
   box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
@@ -567,10 +567,10 @@ onBeforeUnmount(() => {
 
 .poi-card {
   margin-top: 12px;
-  background: #fff;
-  border-radius: 12px;
+  background: var(--ls-surface);
+  border-radius: var(--ls-radius-card);
   padding: 12px;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+  box-shadow: var(--ls-shadow-card);
 }
 
 .poi-title {
@@ -578,12 +578,12 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: space-between;
   font-size: 14px;
-  color: #1f2937;
+  color: var(--ls-text-strong);
   font-weight: 600;
 }
 
 .poi-count {
-  color: #1f6feb;
+  color: var(--ls-primary);
   font-size: 12px;
 }
 
@@ -594,16 +594,16 @@ onBeforeUnmount(() => {
 }
 
 .poi-item {
-  border: 1px solid #e5ebf3;
-  border-radius: 10px;
+  border: 1px solid var(--ls-divider);
+  border-radius: var(--ls-radius-soft);
   padding: 10px;
   margin-bottom: 8px;
-  background: #fff;
+  background: var(--ls-surface);
 }
 
 .poi-item.active {
-  border-color: #1f6feb;
-  background: #f1f6ff;
+  border-color: var(--ls-primary);
+  background: color-mix(in srgb, var(--ls-primary) 8%, var(--ls-surface));
 }
 
 .poi-head {
@@ -616,17 +616,17 @@ onBeforeUnmount(() => {
 .poi-name {
   font-size: 14px;
   font-weight: 600;
-  color: #111827;
+  color: var(--ls-text);
 }
 
 .poi-distance {
   font-size: 12px;
-  color: #1f6feb;
+  color: var(--ls-primary);
 }
 
 .poi-sub {
   margin-top: 4px;
-  color: #6b7280;
+  color: var(--ls-text-muted);
   font-size: 12px;
 }
 

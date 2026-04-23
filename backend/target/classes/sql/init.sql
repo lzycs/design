@@ -852,8 +852,33 @@ INSERT IGNORE INTO `building` (`name`, `building_number`, `address`, `floor_coun
 
 -- 插入图书馆数据
 INSERT IGNORE INTO `library` (`name`, `address`, `floor_count`, `description`, `latitude`, `longitude`, `opening_hours`) VALUES
-('浙江工商大学图书馆', '浙江工商大学下沙校区学正街18号（图书馆）', 8, '浙工商下沙校区主图书馆。', 30.312244, 120.385042, '08:00-22:00'),
-('综合大楼阅览空间', '浙江工商大学下沙校区综合大楼', 3, '综合大楼内学习阅览空间。', 30.311106, 120.383718, '09:00-21:00');
+('浙江工商大学图书馆', '浙江工商大学下沙校区学正街18号（图书馆）', 8, '浙工商下沙校区主图书馆。', 30.312244, 120.385042, '08:00-22:00');
+
+-- 图书馆数据收敛：仅保留“浙江工商大学图书馆”
+-- 将关联到非主图书馆座位的业务数据置空，避免外键冲突
+UPDATE `reservation` r
+JOIN `library_seat` s ON r.`library_seat_id` = s.`id`
+JOIN `library` l ON s.`library_id` = l.`id`
+SET r.`library_seat_id` = NULL
+WHERE l.`name` <> '浙江工商大学图书馆';
+
+UPDATE `repair` rp
+JOIN `library_seat` s ON rp.`library_seat_id` = s.`id`
+JOIN `library` l ON s.`library_id` = l.`id`
+SET rp.`library_seat_id` = NULL
+WHERE l.`name` <> '浙江工商大学图书馆';
+
+UPDATE `review` rv
+JOIN `library_seat` s ON rv.`library_seat_id` = s.`id`
+JOIN `library` l ON s.`library_id` = l.`id`
+SET rv.`library_seat_id` = NULL
+WHERE l.`name` <> '浙江工商大学图书馆';
+
+DELETE s FROM `library_seat` s
+JOIN `library` l ON s.`library_id` = l.`id`
+WHERE l.`name` <> '浙江工商大学图书馆';
+
+DELETE FROM `library` WHERE `name` <> '浙江工商大学图书馆';
 
 -- 插入教室数据 (属于A教学楼)
 INSERT IGNORE INTO `classroom` (`building_id`, `name`, `room_number`, `floor`, `type`, `capacity`, `equipment`) VALUES
@@ -877,6 +902,32 @@ INSERT IGNORE INTO `classroom` (`building_id`, `name`, `room_number`, `floor`, `
 (2, '402研讨室A', '402A', 4, 2, 14, '["会议桌", "白板", "电视"]'),
 (2, '403研讨室B', '403B', 4, 2, 12, '["会议桌", "白板"]'),
 (2, '501普通教室', '501', 5, 1, 70, '["投影仪", "扩声系统"]');
+
+-- 插入教室数据 (属于C/D/E/F教学楼)
+INSERT IGNORE INTO `classroom` (`building_id`, `name`, `room_number`, `floor`, `type`, `capacity`, `equipment`)
+SELECT b.`id`, t.`name`, t.`room_number`, t.`floor`, t.`type`, t.`capacity`, t.`equipment`
+FROM `building` b
+JOIN (
+  SELECT 'C教学楼' AS building_name, 'C101多媒体教室' AS `name`, '101' AS room_number, 1 AS floor, 1 AS `type`, 60 AS capacity, '["投影仪", "电脑", "音响"]' AS equipment
+  UNION ALL SELECT 'C教学楼', 'C201普通教室', '201', 2, 1, 55, '["投影仪", "白板", "空调"]'
+  UNION ALL SELECT 'C教学楼', 'C301研讨室A', '301A', 3, 2, 12, '["会议桌", "电子白板", "电视"]'
+  UNION ALL SELECT 'C教学楼', 'C401研讨室B', '401B', 4, 2, 10, '["会议桌", "白板"]'
+
+  UNION ALL SELECT 'D教学楼', 'D101普通教室', '101', 1, 1, 60, '["投影仪", "白板"]'
+  UNION ALL SELECT 'D教学楼', 'D202普通教室', '202', 2, 1, 50, '["投影仪", "空调"]'
+  UNION ALL SELECT 'D教学楼', 'D302研讨室A', '302A', 3, 2, 10, '["会议桌", "白板", "投屏器"]'
+  UNION ALL SELECT 'D教学楼', 'D402研讨室B', '402B', 4, 2, 12, '["会议桌", "白板", "电视"]'
+
+  UNION ALL SELECT 'E教学楼', 'E101阶梯教室', '101', 1, 1, 120, '["投影仪", "扩声系统", "录播"]'
+  UNION ALL SELECT 'E教学楼', 'E201普通教室', '201', 2, 1, 55, '["投影仪", "白板"]'
+  UNION ALL SELECT 'E教学楼', 'E301普通教室', '301', 3, 1, 60, '["投影仪", "白板", "空调"]'
+  UNION ALL SELECT 'E教学楼', 'E401研讨室', '401', 4, 2, 14, '["会议桌", "电子白板"]'
+
+  UNION ALL SELECT 'F教学楼', 'F101普通教室', '101', 1, 1, 50, '["投影仪", "白板"]'
+  UNION ALL SELECT 'F教学楼', 'F201普通教室', '201', 2, 1, 55, '["投影仪", "空调"]'
+  UNION ALL SELECT 'F教学楼', 'F301实验教室', '301', 3, 1, 45, '["实验台", "电脑", "投影仪"]'
+  UNION ALL SELECT 'F教学楼', 'F401研讨室', '401', 4, 2, 12, '["会议桌", "白板", "电视"]'
+) t ON t.building_name = b.`name`;
 
 -- 插入图书馆座位数据 (中心图书馆1-2层示例)
 INSERT IGNORE INTO `library_seat` (`library_id`, `seat_label`, `floor`, `row_num`, `col_num`, `seat_type`, `equipment`) VALUES
@@ -904,29 +955,118 @@ INSERT IGNORE INTO `library_seat` (`library_id`, `seat_label`, `floor`, `row_num
 (1, 'G-02', 4, 1, 2, 4, '["小组桌", "插座"]'),
 (1, 'G-03', 4, 1, 3, 4, '["小组桌", "电视"]'),
 (1, 'H-01', 4, 2, 1, 2, '["插座"]'),
-(1, 'H-02', 4, 2, 2, 2, '["插座", "台灯"]');
+(1, 'H-02', 4, 2, 2, 2, '["插座", "台灯"]'),
+-- 5楼座位（浙江工商大学图书馆）
+(1, 'I-01', 5, 1, 1, 3, '["隔板", "静音区"]'),
+(1, 'I-02', 5, 1, 2, 3, '["隔板", "静音区"]'),
+(1, 'I-03', 5, 1, 3, 2, '["插座"]'),
+(1, 'J-01', 5, 2, 1, 2, '["插座", "台灯"]'),
+(1, 'J-02', 5, 2, 2, 1, '[]'),
+-- 6楼座位（浙江工商大学图书馆）
+(1, 'K-01', 6, 1, 1, 4, '["小组桌", "白板"]'),
+(1, 'K-02', 6, 1, 2, 4, '["小组桌", "插座"]'),
+(1, 'K-03', 6, 1, 3, 2, '["插座"]'),
+(1, 'L-01', 6, 2, 1, 2, '["插座", "台灯"]'),
+(1, 'L-02', 6, 2, 2, 1, '[]'),
+-- 7楼座位（浙江工商大学图书馆）
+(1, 'M-01', 7, 1, 1, 3, '["隔板", "静音区"]'),
+(1, 'M-02', 7, 1, 2, 3, '["隔板", "静音区"]'),
+(1, 'M-03', 7, 1, 3, 2, '["插座"]'),
+(1, 'N-01', 7, 2, 1, 2, '["插座", "台灯"]'),
+(1, 'N-02', 7, 2, 2, 1, '[]'),
+-- 8楼座位（浙江工商大学图书馆）
+(1, 'O-01', 8, 1, 1, 4, '["小组桌", "白板", "电视"]'),
+(1, 'O-02', 8, 1, 2, 4, '["小组桌", "插座"]'),
+(1, 'O-03', 8, 1, 3, 2, '["插座"]'),
+(1, 'P-01', 8, 2, 1, 2, '["插座", "台灯"]'),
+(1, 'P-02', 8, 2, 2, 1, '[]');
 
--- 插入图书馆座位数据 (科技分馆示例)
-INSERT IGNORE INTO `library_seat` (`library_id`, `seat_label`, `floor`, `row_num`, `col_num`, `seat_type`) VALUES
-(2, 'S-01', 1, 1, 1, 2),
-(2, 'S-02', 1, 1, 2, 1),
-(2, 'S-03', 2, 1, 1, 3),
-(2, 'S-04', 2, 1, 2, 2),
-(2, 'S-05', 2, 1, 3, 1),
-(2, 'T-01', 3, 1, 1, 4),
-(2, 'T-02', 3, 1, 2, 4),
--- 1楼补充座位（科技分馆）
-(2, 'S-06', 1, 2, 1, 2),
-(2, 'S-07', 1, 2, 2, 2),
--- 3楼补充座位（科技分馆）
-(2, 'T-03', 3, 1, 3, 3),
-(2, 'T-04', 3, 2, 1, 3),
--- 4楼新增座位（科技分馆）
-(2, 'U-01', 4, 1, 1, 1),
-(2, 'U-02', 4, 1, 2, 2),
-(2, 'U-03', 4, 1, 3, 2),
-(2, 'U-04', 4, 2, 1, 4),
-(2, 'U-05', 4, 2, 2, 4);
+-- 图书馆扩展测试座位数据（按图书馆名称动态解析 library_id，便于重复执行）
+INSERT IGNORE INTO `library_seat` (
+  `library_id`, `seat_label`, `floor`, `row_num`, `col_num`, `seat_type`, `equipment`
+)
+SELECT
+  l.`id`,
+  CONCAT(CHAR(64 + t.`floor`), '-', t.`row_num`, LPAD(t.`col_num`, 2, '0')) AS `seat_label`,
+  t.`floor`,
+  t.`row_num`,
+  t.`col_num`,
+  t.`seat_type`,
+  t.`equipment`
+FROM `library` l
+JOIN (
+  SELECT 1 AS `floor`, 1 AS `row_num`, 5 AS `col_num`, 2 AS `seat_type`, '["插座","台灯"]' AS `equipment`
+  UNION ALL SELECT 1, 1, 6, 2, '["插座"]'
+  UNION ALL SELECT 1, 2, 3, 3, '["隔板","静音区"]'
+  UNION ALL SELECT 1, 2, 4, 3, '["隔板","静音区","插座"]'
+
+  UNION ALL SELECT 2, 1, 4, 4, '["小组桌","白板","插座"]'
+  UNION ALL SELECT 2, 1, 5, 4, '["小组桌","白板"]'
+  UNION ALL SELECT 2, 2, 3, 2, '["插座"]'
+  UNION ALL SELECT 2, 2, 4, 2, '["插座","台灯"]'
+
+  UNION ALL SELECT 3, 1, 4, 3, '["隔板","静音区"]'
+  UNION ALL SELECT 3, 2, 3, 2, '["插座","台灯"]'
+  UNION ALL SELECT 4, 1, 4, 4, '["小组桌","电视"]'
+  UNION ALL SELECT 4, 2, 3, 2, '["插座"]'
+
+  UNION ALL SELECT 5, 1, 4, 3, '["隔板","静音区"]'
+  UNION ALL SELECT 5, 2, 3, 2, '["插座","台灯"]'
+  UNION ALL SELECT 6, 1, 4, 4, '["小组桌","白板","插座"]'
+  UNION ALL SELECT 6, 2, 3, 2, '["插座"]'
+
+  UNION ALL SELECT 7, 1, 4, 3, '["隔板","静音区"]'
+  UNION ALL SELECT 7, 2, 3, 2, '["插座","台灯"]'
+  UNION ALL SELECT 8, 1, 4, 4, '["小组桌","电视","插座"]'
+  UNION ALL SELECT 8, 2, 3, 2, '["插座"]'
+) t ON 1 = 1
+WHERE l.`name` = '浙江工商大学图书馆';
+
+-- 图书馆高密度测试座位数据（1-8楼，每层新增第3/4排，每排10列，共160个）
+-- 历史编号统一：无论旧规则是什么，都按 floor/row/col 统一为 A/B/C...-{排}{列}
+UPDATE `library_seat` s
+JOIN `library` l ON s.`library_id` = l.`id`
+SET s.`seat_label` = CONCAT(
+  CHAR(64 + s.`floor`),
+  '-',
+  s.`row_num`,
+  LPAD(s.`col_num`, 2, '0')
+)
+WHERE l.`name` = '浙江工商大学图书馆'
+  AND s.`seat_label` <> CONCAT(CHAR(64 + s.`floor`), '-', s.`row_num`, LPAD(s.`col_num`, 2, '0'));
+
+INSERT IGNORE INTO `library_seat` (
+  `library_id`, `seat_label`, `floor`, `row_num`, `col_num`, `seat_type`, `equipment`
+)
+SELECT
+  l.`id` AS `library_id`,
+  CONCAT(CHAR(64 + f.`floor`), '-', r.`row_num`, LPAD(c.`col_num`, 2, '0')) AS `seat_label`,
+  f.`floor`,
+  r.`row_num`,
+  c.`col_num`,
+  CASE
+    WHEN r.`row_num` = 3 AND c.`col_num` IN (1, 2, 3, 4) THEN 3
+    WHEN c.`col_num` IN (5, 6, 7) THEN 2
+    ELSE 1
+  END AS `seat_type`,
+  CASE
+    WHEN r.`row_num` = 3 AND c.`col_num` IN (1, 2, 3, 4) THEN '["隔板","静音区","插座"]'
+    WHEN c.`col_num` IN (5, 6, 7) THEN '["插座","台灯"]'
+    ELSE '["插座"]'
+  END AS `equipment`
+FROM `library` l
+JOIN (
+  SELECT 1 AS `floor` UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4
+  UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8
+) f ON 1 = 1
+JOIN (
+  SELECT 3 AS `row_num` UNION ALL SELECT 4
+) r ON 1 = 1
+JOIN (
+  SELECT 1 AS `col_num` UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5
+  UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9 UNION ALL SELECT 10
+) c ON 1 = 1
+WHERE l.`name` = '浙江工商大学图书馆';
 
 -- 插入课程数据
 -- 注意：course/time_slot/reservation 等表默认无唯一约束且未指定 id，会导致每次启动重复插入
@@ -1072,18 +1212,56 @@ ON DUPLICATE KEY UPDATE
   `checkin_time`     = VALUES(`checkin_time`);
 
 -- 插入预约记录 (预约图书馆座位)
+-- 注意：library_seat_id 不能写死，按“图书馆名 + 座位标签”动态解析，避免外键失败
 INSERT INTO `reservation` (
   `id`, `user_id`, `resource_type`, `library_seat_id`, `reservation_date`,
   `start_time`, `end_time`, `duration`, `purpose`, `status`, `checkin_time`
-) VALUES
--- 李四：已签到（图书馆座位）
-(6, 2, 2, 1, DATE_ADD(CURDATE(), INTERVAL 1 DAY), '19:00:00', '21:00:00', 120, '复习备考', 2, DATE_ADD(NOW(), INTERVAL -30 MINUTE)),
--- 李四：已完成（图书馆座位）
-(7, 2, 2, 2, DATE_ADD(CURDATE(), INTERVAL -1 DAY), '08:00:00', '12:00:00', 240, '图书馆自习', 3, DATE_ADD(NOW(), INTERVAL -1 DAY)),
--- 李四：已取消（图书馆座位）
-(8, 2, 2, 3, DATE_ADD(CURDATE(), INTERVAL -3 DAY), '14:00:00', '16:00:00', 120, '行程变更', 4, NULL),
--- 张三：已违约（图书馆座位）
-(9, 1, 2, 4, DATE_ADD(CURDATE(), INTERVAL -4 DAY), '10:00:00', '12:00:00', 120, '未按时到场', 5, NULL)
+)
+SELECT
+  t.`id`,
+  t.`user_id`,
+  2 AS `resource_type`,
+  s.`id` AS `library_seat_id`,
+  t.`reservation_date`,
+  t.`start_time`,
+  t.`end_time`,
+  t.`duration`,
+  t.`purpose`,
+  t.`status`,
+  t.`checkin_time`
+FROM (
+  SELECT
+    6 AS `id`,
+    2 AS `user_id`,
+    'A-01' AS `seat_label`,
+    DATE_ADD(CURDATE(), INTERVAL 1 DAY) AS `reservation_date`,
+    '19:00:00' AS `start_time`,
+    '21:00:00' AS `end_time`,
+    120 AS `duration`,
+    '复习备考' AS `purpose`,
+    2 AS `status`,
+    DATE_ADD(NOW(), INTERVAL -30 MINUTE) AS `checkin_time`
+  UNION ALL
+  SELECT
+    7, 2, 'A-02',
+    DATE_ADD(CURDATE(), INTERVAL -1 DAY),
+    '08:00:00', '12:00:00', 240,
+    '图书馆自习', 3, DATE_ADD(NOW(), INTERVAL -1 DAY)
+  UNION ALL
+  SELECT
+    8, 2, 'A-03',
+    DATE_ADD(CURDATE(), INTERVAL -3 DAY),
+    '14:00:00', '16:00:00', 120,
+    '行程变更', 4, NULL
+  UNION ALL
+  SELECT
+    9, 1, 'A-04',
+    DATE_ADD(CURDATE(), INTERVAL -4 DAY),
+    '10:00:00', '12:00:00', 120,
+    '未按时到场', 5, NULL
+) t
+JOIN `library` l ON l.`name` = '浙江工商大学图书馆'
+JOIN `library_seat` s ON s.`library_id` = l.`id` AND s.`seat_label` = t.`seat_label`
 ON DUPLICATE KEY UPDATE
   `user_id`          = VALUES(`user_id`),
   `resource_type`    = VALUES(`resource_type`),

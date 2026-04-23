@@ -105,7 +105,7 @@ onMounted(async () => {
       <van-empty description="请先登录后查看学习计划" />
     </template>
 
-    <van-popup v-model:show="showPlanDetail" round position="bottom" :style="{ height: '60%' }">
+    <van-popup v-model:show="showPlanDetail" class="ls-bottom-popup" round position="bottom" :style="{ height: '60%' }">
       <div class="detail-wrapper" v-if="planDetail">
         <div class="detail-title">学习计划详情</div>
         <div class="detail-row">标题：{{ planDetail.title }}</div>
@@ -123,27 +123,27 @@ onMounted(async () => {
 <style scoped>
 .profile-plan {
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background-color: var(--ls-bg);
 }
 
 .info-item {
-  background: #ffffff;
+  background: var(--ls-surface);
   margin: 12px 16px;
   padding: 12px 14px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(15, 35, 95, 0.04);
+  border-radius: var(--ls-radius-card);
+  box-shadow: var(--ls-shadow-card);
 }
 
 .info-item-title {
   font-size: 14px;
   font-weight: 500;
-  color: #111827;
+  color: var(--ls-text);
   margin-bottom: 4px;
 }
 
 .info-item-sub {
   font-size: 12px;
-  color: #6b7280;
+  color: var(--ls-text-muted);
 }
 
 .detail-wrapper {
@@ -158,7 +158,7 @@ onMounted(async () => {
 
 .detail-row {
   font-size: 14px;
-  color: #374151;
+  color: var(--ls-text-strong);
   margin-bottom: 8px;
 }
 </style>

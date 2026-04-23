@@ -429,7 +429,7 @@ onMounted(async () => {
 
     <van-empty v-else description="请先登录后查看预约记录" />
 
-    <van-popup v-model:show="showReservationDetail" round position="bottom" :style="{ height: '60%' }">
+    <van-popup v-model:show="showReservationDetail" class="ls-bottom-popup" round position="bottom" :style="{ height: '60%' }">
       <div class="detail-wrapper" v-if="reservationDetail">
         <div class="detail-title">预约详情</div>
         <div class="detail-row">地点：{{ getTitle(reservationDetail) }}</div>
@@ -458,7 +458,7 @@ onMounted(async () => {
 <style scoped>
 .profile-reservation {
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background-color: var(--ls-bg);
 }
 
 .page {
@@ -474,15 +474,15 @@ onMounted(async () => {
 
 .status-tag-item {
   padding: 8px 16px;
-  border-radius: 16px;
-  background-color: #f5f7fa;
+  border-radius: var(--ls-radius-pill);
+  background-color: var(--ls-surface-muted);
   font-size: 14px;
   white-space: nowrap;
 }
 
 .status-tag-item.active {
-  background-color: #4a90e2;
-  color: #ffffff;
+  background-color: var(--ls-primary);
+  color: var(--ls-surface);
 }
 
 .loading {
@@ -490,9 +490,9 @@ onMounted(async () => {
 }
 
 .booking-item {
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  background-color: var(--ls-surface);
+  border-radius: var(--ls-radius-card);
+  box-shadow: var(--ls-shadow-card);
   padding: 16px;
   margin-bottom: 12px;
 }
@@ -507,13 +507,13 @@ onMounted(async () => {
 .booking-title {
   font-size: 16px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--ls-text-strong);
   margin-bottom: 4px;
 }
 
 .booking-subtitle {
   font-size: 12px;
-  color: #909399;
+  color: var(--ls-text-muted);
 }
 
 .booking-status {
@@ -567,24 +567,28 @@ onMounted(async () => {
 
 .action-btn {
   padding: 6px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   border-radius: 8px;
   border: none;
   font-size: 13px;
 }
 
 .btn-secondary {
-  background-color: #f5f7fa;
-  color: #666666;
+  background-color: var(--ls-surface-muted);
+  color: var(--ls-text-muted);
 }
 
 .btn-primary {
-  background-color: #4a90e2;
-  color: #ffffff;
+  background-color: var(--ls-primary);
+  color: var(--ls-surface);
 }
 
 .btn-danger {
-  background-color: #f56c6c;
-  color: #ffffff;
+  background-color: var(--ls-danger);
+  color: var(--ls-surface);
 }
 
 .empty-text {
@@ -612,6 +616,9 @@ onMounted(async () => {
 
 .scan-modal-inner {
   padding: 18px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
 }
 
@@ -620,12 +627,16 @@ onMounted(async () => {
   font-weight: 700;
   color: #1a1a1a;
   margin-bottom: 6px;
+  width: 100%;
+  text-align: center;
 }
 
 .scan-subtitle {
   font-size: 12px;
   color: #8b8b8b;
   margin-bottom: 12px;
+  width: 100%;
+  text-align: center;
 }
 
 .scan-box {
@@ -670,10 +681,16 @@ onMounted(async () => {
   font-size: 13px;
   color: #606266;
   margin-bottom: 14px;
+  width: 100%;
+  text-align: center;
 }
 
 .scan-cancel-btn {
   min-width: 110px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   padding: 8px 18px;
   border-radius: 10px;
   border: 1px solid #d9e4f2;

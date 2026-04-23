@@ -686,21 +686,21 @@ onMounted(async () => {
 <style scoped>
 .profile-team {
   min-height: 100vh;
-  background-color: #f5f7fa;
+  background-color: var(--ls-bg);
   padding-bottom: 24px;
 }
 
 .header-right-btn {
   font-size: 14px;
-  color: #4a90e2;
+  color: var(--ls-primary);
   font-weight: 500;
 }
 
 .filter-tabs {
   display: flex;
-  background: #fff;
+  background: var(--ls-surface);
   padding: 8px 20px;
-  border-bottom: 1px solid #f5f7fa;
+  border-bottom: 1px solid var(--ls-divider);
 }
 
 .filter-tab {
@@ -708,13 +708,13 @@ onMounted(async () => {
   text-align: center;
   padding: 8px 0;
   font-size: 14px;
-  color: #909399;
+  color: var(--ls-text-muted);
   border-bottom: 2px solid transparent;
 }
 
 .filter-tab.active {
-  color: #4a90e2;
-  border-bottom-color: #4a90e2;
+  color: var(--ls-primary);
+  border-bottom-color: var(--ls-primary);
   font-weight: 600;
 }
 
@@ -730,9 +730,9 @@ onMounted(async () => {
 
 .collab-card {
   display: flex;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  background: var(--ls-surface);
+  border-radius: var(--ls-radius-card);
+  box-shadow: var(--ls-shadow-card);
   padding: 16px;
   align-items: flex-start;
 }
@@ -758,7 +758,7 @@ onMounted(async () => {
 .collab-title {
   font-size: 16px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--ls-text-strong);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -776,8 +776,8 @@ onMounted(async () => {
   min-width: 18px;
   height: 18px;
   border-radius: 9px;
-  background: #f56c6c;
-  color: #fff;
+  background: var(--ls-danger);
+  color: var(--ls-surface);
   font-size: 11px;
   line-height: 18px;
   text-align: center;
@@ -796,7 +796,7 @@ onMounted(async () => {
 
 .collab-meta {
   font-size: 12px;
-  color: #909399;
+  color: var(--ls-text-faint);
   margin-bottom: 8px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -805,7 +805,7 @@ onMounted(async () => {
 
 .collab-desc {
   font-size: 14px;
-  color: #666;
+  color: var(--ls-text-muted);
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -831,21 +831,21 @@ onMounted(async () => {
 .empty-title {
   font-size: 18px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--ls-text-strong);
   margin-bottom: 8px;
 }
 
 .empty-desc {
   font-size: 14px;
-  color: #909399;
+  color: var(--ls-text-faint);
   margin-bottom: 24px;
 }
 
 .empty-btn {
   padding: 10px 24px;
   border-radius: 8px;
-  background: #4a90e2;
-  color: #fff;
+  background: var(--ls-primary);
+  color: var(--ls-surface);
   border: none;
   font-size: 14px;
   font-weight: 500;
@@ -862,16 +862,16 @@ onMounted(async () => {
 }
 
 .collab-detail-header {
-  background: #fff;
+  background: var(--ls-surface);
   padding: 20px;
-  border-radius: 12px;
+  border-radius: var(--ls-radius-card);
   margin-bottom: 12px;
 }
 
 .detail-title {
   font-size: 20px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--ls-text-strong);
   margin-bottom: 8px;
 }
 
@@ -903,9 +903,9 @@ onMounted(async () => {
 
 .member-section,
 .plan-section {
-  background: #fff;
+  background: var(--ls-surface);
   padding: 20px;
-  border-radius: 12px;
+  border-radius: var(--ls-radius-card);
   margin-bottom: 12px;
 }
 
@@ -1064,8 +1064,8 @@ onMounted(async () => {
   display: flex;
   gap: 12px;
   padding: 16px 20px;
-  background: #fff;
-  border-top: 1px solid #f5f7fa;
+  background: var(--ls-surface);
+  border-top: 1px solid var(--ls-divider);
   z-index: 10;
 }
 
@@ -1083,13 +1083,13 @@ onMounted(async () => {
 }
 
 .primary-btn {
-  background: #4a90e2;
-  color: #fff;
+  background: var(--ls-primary);
+  color: var(--ls-surface);
 }
 
 .secondary-btn {
-  background: #edf4ff;
-  color: #2f6fb8;
+  background: color-mix(in srgb, var(--ls-primary) 10%, transparent);
+  color: var(--ls-primary);
 }
 
 .primary-btn:disabled {
@@ -1099,9 +1099,9 @@ onMounted(async () => {
 
 /* 发起协作表单 */
 .form-section {
-  background: #fff;
+  background: var(--ls-surface);
   padding: 20px;
-  border-radius: 12px;
+  border-radius: var(--ls-radius-card);
   margin-bottom: 12px;
 }
 
@@ -1179,8 +1179,8 @@ onMounted(async () => {
   height: 16px;
   padding: 0 4px;
   border-radius: 8px;
-  background: #f56c6c;
-  color: #fff;
+  background: var(--ls-danger);
+  color: var(--ls-surface);
   font-size: 10px;
   font-weight: 700;
   line-height: 16px;
@@ -1206,9 +1206,9 @@ onMounted(async () => {
 }
 
 .review-card {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  background: var(--ls-surface);
+  border-radius: var(--ls-radius-card);
+  box-shadow: var(--ls-shadow-card);
   padding: 16px;
   margin-bottom: 10px;
 }
@@ -1310,8 +1310,8 @@ onMounted(async () => {
 }
 
 .review-btn-approve {
-  background: #4a90e2;
-  color: #fff;
+  background: var(--ls-primary);
+  color: var(--ls-surface);
 }
 
 /* 成员：申请结果卡片 */

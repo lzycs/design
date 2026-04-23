@@ -494,6 +494,7 @@ onMounted(() => {
     <!-- 详情弹层 -->
     <van-popup
       v-model:show="showDetail"
+      class="ls-bottom-popup"
       round
       position="bottom"
       :style="{ height: '70%' }"
@@ -622,7 +623,7 @@ onMounted(() => {
     </van-popup>
 
     <!-- 发起小组弹层 -->
-    <van-popup v-model:show="showCreate" round position="bottom" :style="{ height: '60%' }">
+    <van-popup v-model:show="showCreate" class="ls-bottom-popup" round position="bottom" :style="{ height: '60%' }">
       <div class="create-wrapper">
         <div class="create-title">发起小组</div>
         <div class="create-form">
@@ -680,7 +681,7 @@ onMounted(() => {
  * --collab-inset-left / right 统管顶栏、分类条、列表及卡片的左右对齐
  * ------------------------------------------------------------------ */
 .collaboration {
-  --collab-page-gutter: 16px;
+  --collab-page-gutter: 8px;
   --collab-inset-left: max(
     var(--collab-page-gutter),
     env(safe-area-inset-left, 0px)
@@ -697,7 +698,7 @@ onMounted(() => {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  background-color: #f5f7fa;
+  background-color: var(--ls-bg);
 }
 
 .phone-container {
@@ -708,7 +709,7 @@ onMounted(() => {
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  background-color: #f5f7fa;
+  background-color: var(--ls-bg);
 }
 
 /* 顶栏：三列网格，左列留空、标题居中、操作贴右，与下方共用 inset */
@@ -718,8 +719,8 @@ onMounted(() => {
   align-items: center;
   column-gap: 8px;
   padding: 12px var(--collab-inset-right) 12px var(--collab-inset-left);
-  background-color: #ffffff;
-  border-bottom: 1px solid #f0f2f5;
+  background-color: var(--ls-surface);
+  border-bottom: 1px solid var(--ls-divider);
   position: sticky;
   top: 0;
   z-index: 30;
@@ -733,7 +734,7 @@ onMounted(() => {
   max-width: 100%;
   font-size: 17px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--ls-text-strong);
   line-height: 1.3;
   text-align: center;
 }
@@ -744,9 +745,9 @@ onMounted(() => {
   width: 28px;
   height: 28px;
   border: none;
-  border-radius: 14px;
-  background: #f5f7fa;
-  color: #4a5568;
+  border-radius: var(--ls-radius-pill);
+  background: var(--ls-surface-muted);
+  color: var(--ls-text-muted);
   font-size: 22px;
   line-height: 1;
   display: inline-flex;
@@ -765,7 +766,7 @@ onMounted(() => {
   background: none;
   font-size: 14px;
   font-weight: 500;
-  color: #4a90e2;
+  color: var(--ls-primary);
   line-height: 1.3;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -775,11 +776,11 @@ onMounted(() => {
 .category-bar {
   display: flex;
   align-items: center;
-  padding: 12px var(--collab-inset-right) 12px var(--collab-inset-left);
-  background-color: #ffffff;
+  padding: 10px var(--collab-inset-right) 10px var(--collab-inset-left);
+  background-color: var(--ls-surface);
   overflow-x: auto;
   white-space: nowrap;
-  border-bottom: 1px solid #f0f2f5;
+  border-bottom: 1px solid var(--ls-divider);
   position: sticky;
   top: 52px;
   z-index: 20;
@@ -795,9 +796,9 @@ onMounted(() => {
 .category-item {
   padding: 6px 14px;
   font-size: 14px;
-  color: #909399;
-  background-color: #f5f7fa;
-  border-radius: 20px;
+  color: var(--ls-text-muted);
+  background-color: var(--ls-surface-muted);
+  border-radius: var(--ls-radius-pill);
   margin-right: 10px;
   cursor: pointer;
   flex-shrink: 0;
@@ -808,14 +809,14 @@ onMounted(() => {
 }
 
 .category-item.active {
-  background-color: #4a90e2;
-  color: #ffffff;
+  background-color: var(--ls-primary);
+  color: var(--ls-surface);
 }
 
 .team-list {
   flex: 1;
   min-height: 0;
-  padding: 12px var(--collab-inset-right) 16px var(--collab-inset-left);
+  padding: 10px var(--collab-inset-right) 12px var(--collab-inset-left);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
@@ -833,11 +834,11 @@ onMounted(() => {
 }
 
 .team-card {
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  padding: 14px 16px;
-  margin-bottom: 10px;
+  background-color: var(--ls-surface);
+  border-radius: var(--ls-radius-card);
+  box-shadow: var(--ls-shadow-card);
+  padding: 12px 14px;
+  margin-bottom: 8px;
   cursor: pointer;
   box-sizing: border-box;
 }
@@ -868,7 +869,7 @@ onMounted(() => {
 .team-title {
   font-size: 16px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--ls-text-strong);
 }
 
 .team-tags {
@@ -882,13 +883,13 @@ onMounted(() => {
   font-size: 12px;
   padding: 2px 8px;
   border-radius: 4px;
-  background-color: #f5f7fa;
-  color: #666666;
+  background-color: var(--ls-surface-muted);
+  color: var(--ls-text-muted);
 }
 
 .team-desc {
   font-size: 14px;
-  color: #666666;
+  color: var(--ls-text-muted);
   line-height: 1.5;
 }
 
@@ -900,8 +901,8 @@ onMounted(() => {
 
 .team-detail-header {
   padding: 20px;
-  background-color: #4a90e2;
-  color: #ffffff;
+  background-color: var(--ls-primary);
+  color: var(--ls-surface);
 }
 
 .team-detail-title {
@@ -1161,7 +1162,7 @@ onMounted(() => {
 /* Web 端增强：移动端样式保持默认，仅在大屏渐进增强 */
 @media (min-width: 1024px) {
   .collaboration {
-    --collab-page-gutter: 24px;
+    --collab-page-gutter: 16px;
     height: 100vh;
     padding-bottom: 0;
     background:

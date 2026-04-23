@@ -6,7 +6,7 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
-  background-color: #f0f2f5;
+  background-color: var(--ls-bg);
   display: flex;
   justify-content: center;
   align-items: flex-start;
@@ -16,10 +16,10 @@ body {
   width: 100%;
   max-width: 420px;
   min-height: 100vh;
-  background-color: #ffffff;
+  background-color: var(--ls-surface);
   position: relative;
   overflow-x: hidden;
-  box-shadow: 0 0 24px rgba(0, 0, 0, 0.10);
+  box-shadow: 0 0 24px rgba(0, 0, 0, 0.1);
 }
 
 /* 全局顶部标题栏固定：统一所有 van-nav-bar 行为 */
@@ -27,7 +27,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 30;
-  background: #ffffff;
+  background: var(--ls-surface);
 }
 
 @media (min-width: 480px) {
@@ -47,7 +47,7 @@ body {
     background:
       radial-gradient(circle at 8% -12%, rgba(74, 144, 226, 0.08), transparent 42%),
       radial-gradient(circle at 90% 120%, rgba(59, 130, 246, 0.08), transparent 40%),
-      #f3f6fb;
+      var(--ls-bg);
     display: block;
   }
 
@@ -55,10 +55,10 @@ body {
     max-width: none;
     width: min(1280px, calc(100vw - 48px));
     margin: 0 auto;
-    background-color: #ffffff;
+    background-color: var(--ls-surface);
     box-shadow: 0 10px 36px rgba(15, 23, 42, 0.1);
-    border-left: 1px solid #e9eef6;
-    border-right: 1px solid #e9eef6;
+    border-left: 1px solid var(--ls-divider);
+    border-right: 1px solid var(--ls-divider);
   }
 
   .van-popup--bottom {
@@ -84,4 +84,82 @@ body,
   width: 0 !important;
   height: 0 !important;
   display: none;
+}
+
+/* 全局 Vant 主题变量（统一到“我的页面”视觉语言） */
+:root {
+  --van-primary-color: var(--ls-primary);
+  --van-success-color: var(--ls-success);
+  --van-danger-color: var(--ls-danger);
+  --van-text-color: var(--ls-text-strong);
+  --van-text-color-2: var(--ls-text-muted);
+  --van-text-color-3: var(--ls-text-faint);
+  --van-background: var(--ls-bg);
+  --van-background-2: var(--ls-surface-muted);
+  --van-white: var(--ls-surface);
+  --van-border-color: var(--ls-divider);
+  --van-border-width: 1px;
+  --van-font-size-md: var(--ls-font-size-base);
+  --van-font-size-sm: var(--ls-font-size-sm);
+  --van-font-size-lg: 16px;
+  --van-padding-md: var(--ls-space-5);
+  --van-padding-sm: var(--ls-space-3);
+  --van-radius-md: var(--ls-radius-soft);
+  --van-radius-lg: var(--ls-radius-card);
+  --van-nav-bar-background: var(--ls-surface);
+  --van-nav-bar-title-text-color: var(--ls-text-strong);
+  --van-nav-bar-text-color: var(--ls-primary);
+  --van-tab-text-color: var(--ls-text-muted);
+  --van-tab-active-text-color: var(--ls-primary);
+  --van-button-primary-background: var(--ls-primary);
+  --van-button-primary-border-color: var(--ls-primary);
+}
+
+/* 全局布局/卡片工具类 */
+.ui-page {
+  min-height: 100vh;
+  background: var(--ls-bg);
+}
+
+.ui-wrap {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--ls-space-5);
+}
+
+.ui-card {
+  background: var(--ls-surface);
+  border-radius: var(--ls-radius-card);
+  box-shadow: var(--ls-shadow-card);
+  border: 1px solid var(--ls-divider);
+}
+
+.ui-section-title {
+  font-size: var(--ls-font-size-section);
+  color: var(--ls-text-muted);
+  font-weight: var(--ls-font-weight-semibold);
+}
+
+.ui-divider {
+  border-bottom: 1px solid var(--ls-divider);
+}
+
+/* Reusable bottom sheet centering fix for desktop */
+@media (min-width: 1024px) {
+  .ls-bottom-popup {
+    width: min(920px, calc(100vw - 48px)) !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    border-radius: 16px 16px 0 0;
+    max-height: 88vh;
+  }
+}
+
+@media (max-width: 1023px) {
+  .ls-bottom-popup {
+    width: 100% !important;
+    left: 0 !important;
+    transform: none !important;
+  }
 }
