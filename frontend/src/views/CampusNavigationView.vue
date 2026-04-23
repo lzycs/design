@@ -23,6 +23,7 @@ type CampusMapPoint = {
 const router = useRouter()
 const loading = ref(false)
 const locating = ref(false)
+const routePlanning = ref(false)
 const keyword = ref('')
 const buildings = ref<BuildingWithCoord[]>([])
 const selectedBuildingId = ref<string | null>(null)
@@ -30,20 +31,76 @@ const myLocation = ref<{ lat: number; lng: number } | null>(null)
 // 公开地图 POI 坐标（浙工商下沙校区），用于补充非教学楼导航点位
 const extraSpots = ref<CampusSpot[]>([
   {
-    id: 'stadium-1',
-    name: '浙江工商大学第一田径场',
-    address: '浙江工商大学下沙校区（学正街18号）',
-    latitude: 30.307981,
-    longitude: 120.382695,
-    category: '体育场地',
+    id: 'zjgsu-xiasha-campus',
+    name: '浙江工商大学下沙校区',
+    address: '浙江省杭州市钱塘区学正街18号',
+    latitude: 30.311041,
+    longitude: 120.384348,
+    category: '校区主入口',
   },
   {
-    id: 'stadium-2',
-    name: '风雨操场',
-    address: '浙江工商大学下沙校区体育区',
-    latitude: 30.309825,
-    longitude: 120.37803,
-    category: '体育场地',
+    id: 'college-management',
+    name: '管理学院',
+    address: '浙江工商大学下沙校区管理学院楼',
+    latitude: 30.311868,
+    longitude: 120.381426,
+    category: '学院',
+  },
+  {
+    id: 'college-economics',
+    name: '经济学院',
+    address: '浙江工商大学下沙校区经济学院楼',
+    latitude: 30.311555,
+    longitude: 120.38143,
+    category: '学院',
+  },
+  {
+    id: 'college-foreign-languages',
+    name: '外国语学院',
+    address: '浙江工商大学下沙校区外国语学院',
+    latitude: 30.309589,
+    longitude: 120.382931,
+    category: '学院',
+  },
+  {
+    id: 'college-art-design',
+    name: '艺术设计学院',
+    address: '浙江工商大学下沙校区艺术设计学院',
+    latitude: 30.310088,
+    longitude: 120.38292,
+    category: '学院',
+  },
+  {
+    id: 'college-csie',
+    name: '计算机与信息工程学院',
+    address: '浙江工商大学下沙校区计算机与信息工程学院',
+    latitude: 30.309592,
+    longitude: 120.385008,
+    category: '学院',
+  },
+  {
+    id: 'college-iee',
+    name: '信息与电子工程学院',
+    address: '浙江工商大学下沙校区信息与电子工程学院',
+    latitude: 30.310043,
+    longitude: 120.384894,
+    category: '学院',
+  },
+  {
+    id: 'college-food-bio',
+    name: '食品与生物工程学院',
+    address: '浙江工商大学下沙校区食品与生物工程学院',
+    latitude: 30.309664,
+    longitude: 120.386302,
+    category: '学院',
+  },
+  {
+    id: 'college-environment',
+    name: '环境科学与工程学院（逸夫楼）',
+    address: '浙江工商大学下沙校区逸夫楼',
+    latitude: 30.30946,
+    longitude: 120.387631,
+    category: '学院',
   },
   {
     id: 'gym-center',
@@ -118,6 +175,11 @@ const wgs84ToGcj02 = (lng: number, lat: number) => {
   dLng = (dLng * 180.0) / ((a / sqrtMagic) * Math.cos(radLat) * Math.PI)
   return { lng: lng + dLng, lat: lat + dLat }
 }
+const gcj02ToWgs84 = (lng: number, lat: number) => {
+  if (outOfChina(lng, lat)) return { lng, lat }
+  const g = wgs84ToGcj02(lng, lat)
+  return { lng: lng * 2 - g.lng, lat: lat * 2 - g.lat }
+}
 
 const filteredBuildings = computed(() => {
   const kw = keyword.value.trim().toLowerCase()
@@ -186,6 +248,16 @@ const drawRouteLine = (target: { latitude: number; longitude: number }) => {
     { color: '#1f6feb', weight: 4, opacity: 0.75, dashArray: '6 8' },
   ).addTo(map)
 }
+const drawRoutePath = (path: Array<[number, number]>, summaryText?: string) => {
+  if (!map || path.length < 2) return
+  if (routeLayer) {
+    routeLayer.remove()
+  }
+  routeLayer = L.polyline(path, { color: '#1f6feb', weight: 5, opacity: 0.88 }).addTo(map)
+  if (summaryText) {
+    routeLayer.bindTooltip(summaryText, { sticky: true, direction: 'top' }).openTooltip()
+  }
+}
 
 const renderSelectedLabel = (point: CampusMapPoint) => {
   if (!map) return
@@ -253,17 +325,17 @@ const renderMyLocation = () => {
     .addTo(map)
 }
 
-const locateMe = () => {
+const locateMe = (silent = false) => {
   if (!navigator.geolocation) {
-    showToast('当前设备不支持定位')
+    if (!silent) showToast('当前设备不支持定位')
     return
   }
   locating.value = true
   navigator.geolocation.getCurrentPosition(
     (pos) => {
       myLocation.value = {
-        lat: pos.coords.latitude,
-        lng: pos.coords.longitude,
+        lat: wgs84ToGcj02(pos.coords.longitude, pos.coords.latitude).lat,
+        lng: wgs84ToGcj02(pos.coords.longitude, pos.coords.latitude).lng,
       }
       locating.value = false
       renderMyLocation()
@@ -271,26 +343,52 @@ const locateMe = () => {
       if (selectedBuilding.value) {
         drawRouteLine(selectedBuilding.value)
       }
-      showToast('定位成功')
+      if (!silent) showToast('定位成功')
     },
     () => {
       locating.value = false
-      showToast('定位失败，请检查权限后重试')
+      if (!silent) showToast('定位失败，请检查权限后重试')
     },
     { enableHighAccuracy: true, timeout: 8000 },
   )
 }
 
-const openExternalNavigation = () => {
+const openExternalNavigation = async () => {
   if (!selectedBuilding.value) {
     showToast('请先选择一个目的地')
     return
   }
-  const target = selectedBuilding.value
-  const targetName = encodeURIComponent(target.name)
-  const to = `${target.longitude},${target.latitude},${targetName}`
-  const gaodeUrl = `https://uri.amap.com/navigation?to=${to}&mode=walk&src=campus-learning-space`
-  window.open(gaodeUrl, '_blank')
+  if (!myLocation.value) {
+    showToast('请先定位当前位置')
+    return
+  }
+  routePlanning.value = true
+  try {
+    const fromWgs = gcj02ToWgs84(myLocation.value.lng, myLocation.value.lat)
+    const toWgs = gcj02ToWgs84(selectedBuilding.value.longitude, selectedBuilding.value.latitude)
+    const url = `https://router.project-osrm.org/route/v1/foot/${fromWgs.lng},${fromWgs.lat};${toWgs.lng},${toWgs.lat}?overview=full&geometries=geojson`
+    const res = await fetch(url)
+    const data = await res.json()
+    const route = data?.routes?.[0]
+    if (!route?.geometry?.coordinates?.length) {
+      drawRouteLine(selectedBuilding.value)
+      showToast('未获取到路径，已显示直线导航')
+      return
+    }
+    const path: Array<[number, number]> = route.geometry.coordinates.map((p: [number, number]) => {
+      const gcj = wgs84ToGcj02(p[0], p[1])
+      return [gcj.lat, gcj.lng]
+    })
+    const summary = `步行约 ${Math.round((route.distance || 0) / 100) / 10}km · ${Math.ceil((route.duration || 0) / 60)} 分钟`
+    drawRoutePath(path, summary)
+    showToast('已在地图内生成导航路径')
+  } catch (error) {
+    console.error(error)
+    drawRouteLine(selectedBuilding.value)
+    showToast('路径服务暂不可用，已显示直线导航')
+  } finally {
+    routePlanning.value = false
+  }
 }
 
 const initMap = async () => {
@@ -348,6 +446,7 @@ onMounted(async () => {
   await initMap()
   await loadBuildings()
   setTimeout(() => map?.invalidateSize(), 120)
+  locateMe(true)
 })
 
 onBeforeUnmount(() => {
@@ -369,7 +468,9 @@ onBeforeUnmount(() => {
           <van-button size="small" type="primary" plain :loading="locating" @click="locateMe">
             {{ locating ? '定位中...' : '我的位置' }}
           </van-button>
-          <van-button size="small" type="primary" @click="openExternalNavigation">一键导航</van-button>
+          <van-button size="small" type="primary" :loading="routePlanning" @click="openExternalNavigation">
+            {{ routePlanning ? '规划中...' : '一键导航' }}
+          </van-button>
         </div>
       </div>
 
