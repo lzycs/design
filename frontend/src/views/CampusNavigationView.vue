@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { showToast } from 'vant'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -21,6 +21,7 @@ type CampusMapPoint = {
 }
 
 const router = useRouter()
+const route = useRoute()
 const loading = ref(false)
 const locating = ref(false)
 const routePlanning = ref(false)
@@ -217,6 +218,11 @@ const selectedBuilding = computed(() => {
   if (!selectedBuildingId.value) return null
   return filteredBuildings.value.find((item) => item.id === selectedBuildingId.value) ?? null
 })
+const routeTargetName = computed(() => {
+  const value = route.query.targetName
+  return typeof value === 'string' ? value.trim() : ''
+})
+const autoPlannedByQuery = ref(false)
 
 const formatDistance = (meter: number) => {
   if (meter < 1000) return `${Math.round(meter)}m`
@@ -284,6 +290,15 @@ const selectBuilding = (building: CampusMapPoint) => {
   renderSelectedLabel(building)
 }
 
+const findPointByTargetName = (targetName: string) => {
+  const lower = targetName.toLowerCase()
+  return (
+    filteredBuildings.value.find((item) => item.name.toLowerCase() === lower) ||
+    filteredBuildings.value.find((item) => item.name.toLowerCase().includes(lower)) ||
+    filteredBuildings.value.find((item) => lower.includes(item.name.toLowerCase()))
+  )
+}
+
 const renderBuildingMarkers = () => {
   if (!map) return
   if (poiLayer) {
@@ -343,6 +358,7 @@ const locateMe = (silent = false) => {
       if (selectedBuilding.value) {
         drawRouteLine(selectedBuilding.value)
       }
+      void autoPlanFromQueryTarget()
       if (!silent) showToast('定位成功')
     },
     () => {
@@ -389,6 +405,17 @@ const openExternalNavigation = async () => {
   } finally {
     routePlanning.value = false
   }
+}
+
+const autoPlanFromQueryTarget = async () => {
+  if (autoPlannedByQuery.value) return
+  if (!routeTargetName.value) return
+  const target = findPointByTargetName(routeTargetName.value)
+  if (!target) return
+  selectBuilding(target)
+  if (!myLocation.value) return
+  autoPlannedByQuery.value = true
+  await openExternalNavigation()
 }
 
 const initMap = async () => {
@@ -445,6 +472,7 @@ const getDistanceText = (item: { latitude: number; longitude: number }) => {
 onMounted(async () => {
   await initMap()
   await loadBuildings()
+  await autoPlanFromQueryTarget()
   setTimeout(() => map?.invalidateSize(), 120)
   locateMe(true)
 })

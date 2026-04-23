@@ -351,7 +351,10 @@ const confirmReserve = async () => {
     showToast('预约成功')
     selectedLabels.value = []
     selectionHint.value = ''
-    await loadSlots()
+    await router.push({
+      path: '/profile/reservations',
+      query: { tab: 'pending' },
+    })
   } catch (e: unknown) {
     console.error(e)
     const ax = e as { response?: { data?: { message?: string } } }

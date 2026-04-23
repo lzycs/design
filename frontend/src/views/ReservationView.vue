@@ -247,7 +247,10 @@ const submitReservation = async (payload: ReservationPayload | null) => {
     await createReservation(payload)
     showToast('预约成功')
     await loadUserReservations()
-    statusTab.value = 'pending'
+    router.push({
+      path: '/profile/reservations',
+      query: { tab: 'pending' },
+    })
   } catch (e: unknown) {
     console.error(e)
     const ax = e as { response?: { data?: { message?: string } } }
@@ -415,6 +418,17 @@ const cancelScan = () => {
 const goRoomCollab = (item: Reservation) => {
   if (!item.id || item.resourceType !== 1) return
   router.push(`/reservation/room-collab/${item.id}`)
+}
+
+const goCampusNav = (item: Reservation) => {
+  const targetName = item.buildingName || item.resourceName || ''
+  router.push({
+    path: '/campus-nav',
+    query: {
+      targetName,
+      reservationId: item.id ? String(item.id) : undefined,
+    },
+  })
 }
 
 onMounted(() => {
@@ -614,6 +628,13 @@ onMounted(() => {
                   </div>
                 </div>
                 <div class="booking-actions">
+                  <button
+                    v-if="item.resourceType === 1"
+                    class="action-btn btn-secondary scan-btn"
+                    @click.stop="goCampusNav(item)"
+                  >
+                    导航
+                  </button>
                   <button class="action-btn btn-secondary scan-btn" @click.stop="startScan(item)">
                     签到
                   </button>

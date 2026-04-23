@@ -115,6 +115,17 @@ const goRoomCollab = (item: Reservation) => {
   router.push(`/reservation/room-collab/${item.id}`)
 }
 
+const goCampusNav = (item: Reservation) => {
+  const targetName = item.buildingName || item.resourceName || ''
+  router.push({
+    path: '/campus-nav',
+    query: {
+      targetName,
+      reservationId: item.id ? String(item.id) : undefined,
+    },
+  })
+}
+
 const cancelReservation = async (item: Reservation) => {
   const ok = await showConfirmDialog({
     title: '取消预约',
@@ -216,6 +227,11 @@ const cancelScan = () => {
 
 onMounted(async () => {
   loadFromStorage()
+  const query = new URLSearchParams(window.location.search)
+  const tab = query.get('tab')
+  if (tab === 'pending' || tab === 'done' || tab === 'cancelled' || tab === 'all') {
+    statusTab.value = tab
+  }
   if (storedUser.value?.id) {
     await loadReservations()
   }
@@ -322,6 +338,13 @@ onMounted(async () => {
                 </div>
               </div>
               <div class="booking-actions">
+                <button
+                  v-if="item.resourceType === 1"
+                  class="action-btn btn-primary"
+                  @click.stop="goCampusNav(item)"
+                >
+                  导航
+                </button>
                 <button class="action-btn btn-secondary" @click.stop="startScan(item)">扫码签到</button>
                 <button class="action-btn btn-danger" @click.stop="cancelReservation(item)">取消预约</button>
               </div>
@@ -552,6 +575,11 @@ onMounted(async () => {
 .btn-secondary {
   background-color: #f5f7fa;
   color: #666666;
+}
+
+.btn-primary {
+  background-color: #4a90e2;
+  color: #ffffff;
 }
 
 .btn-danger {
