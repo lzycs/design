@@ -85,6 +85,11 @@ const router = createRouter({
       component: () => import('../views/ProfileReviewView.vue'),
     },
     {
+      path: '/profile/my-courses',
+      name: 'profile-my-courses',
+      component: () => import('../views/ProfileMyCoursesView.vue'),
+    },
+    {
       path: '/profile/teams',
       name: 'profile-teams',
       component: () => import('../views/ProfileTeamView.vue'),

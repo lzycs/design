@@ -261,6 +261,21 @@ onMounted(async () => {
 
             <div
               class="menu-item"
+              @click="$router.push('/profile/my-courses')"
+            >
+              <div class="menu-left">
+                <div class="menu-icon">
+                  <van-icon name="todo-list-o" />
+                </div>
+                <div class="menu-text">我的课程表</div>
+              </div>
+              <div class="menu-right">
+                <van-icon name="arrow" class="menu-arrow" />
+              </div>
+            </div>
+
+            <div
+              class="menu-item"
               @click="$router.push({ path: '/feedback', query: { tab: 'evaluation', only: '1' } })"
             >
               <div class="menu-left">

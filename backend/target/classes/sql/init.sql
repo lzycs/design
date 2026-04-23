@@ -153,6 +153,41 @@ CREATE TABLE IF NOT EXISTS `course` (
     FOREIGN KEY (`classroom_id`) REFERENCES `classroom`(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='课程表';
 
+-- 用户课程关系（我的课程表）
+CREATE TABLE IF NOT EXISTS `user_course_enrollment` (
+    `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
+    `user_id` BIGINT NOT NULL COMMENT '用户ID',
+    `course_id` BIGINT NOT NULL COMMENT '课程ID',
+    `role_type` TINYINT NOT NULL DEFAULT 1 COMMENT '1-学生 2-教师',
+    `is_primary_teacher` TINYINT NOT NULL DEFAULT 0 COMMENT '是否主讲教师',
+    `source_type` TINYINT NOT NULL DEFAULT 1 COMMENT '1-管理员分配 2-导入 3-用户自加',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '删除标记: 0-未删除, 1-已删除',
+    UNIQUE KEY uk_uce_user_course_role (`user_id`, `course_id`, `role_type`, `deleted`),
+    INDEX idx_uce_user (`user_id`),
+    INDEX idx_uce_course (`course_id`),
+    FOREIGN KEY (`user_id`) REFERENCES `user`(`id`),
+    FOREIGN KEY (`course_id`) REFERENCES `course`(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户课程关系';
+
+-- 用户课程个性化（星标、备注、提醒）
+CREATE TABLE IF NOT EXISTS `user_course_note` (
+    `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
+    `user_id` BIGINT NOT NULL COMMENT '用户ID',
+    `course_id` BIGINT NOT NULL COMMENT '课程ID',
+    `is_starred` TINYINT NOT NULL DEFAULT 0 COMMENT '是否星标',
+    `note` VARCHAR(500) NULL COMMENT '个人备注',
+    `remind_before_minutes` INT NULL COMMENT '课前提醒分钟数',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '删除标记: 0-未删除, 1-已删除',
+    UNIQUE KEY uk_ucn_user_course (`user_id`, `course_id`, `deleted`),
+    INDEX idx_ucn_user (`user_id`),
+    FOREIGN KEY (`user_id`) REFERENCES `user`(`id`),
+    FOREIGN KEY (`course_id`) REFERENCES `course`(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户课程个性化';
+
 -- 预约记录表 (可预约教室或图书馆座位)
 CREATE TABLE IF NOT EXISTS `reservation` (
     `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '预约ID',
@@ -843,6 +878,38 @@ ON DUPLICATE KEY UPDATE
   `end_time`     = VALUES(`end_time`),
   `start_week`   = VALUES(`start_week`),
   `end_week`     = VALUES(`end_week`);
+
+-- 我的课程表：用户选课关系示例数据（学生：张三/李四；教师：王老师）
+INSERT INTO `user_course_enrollment` (`id`, `user_id`, `course_id`, `role_type`, `is_primary_teacher`, `source_type`) VALUES
+(1, 1, 1, 1, 0, 1),
+(2, 1, 3, 1, 0, 1),
+(3, 1, 9, 1, 0, 1),
+(4, 1, 18, 1, 0, 1),
+(5, 1, 21, 1, 0, 1),
+(6, 2, 2, 1, 0, 1),
+(7, 2, 7, 1, 0, 1),
+(8, 2, 10, 1, 0, 1),
+(9, 2, 20, 1, 0, 1),
+(10, 2, 30, 1, 0, 1),
+(11, 3, 1, 2, 1, 1),
+(12, 3, 18, 2, 1, 1),
+(13, 3, 26, 2, 1, 1)
+ON DUPLICATE KEY UPDATE
+  `user_id` = VALUES(`user_id`),
+  `course_id` = VALUES(`course_id`),
+  `role_type` = VALUES(`role_type`),
+  `is_primary_teacher` = VALUES(`is_primary_teacher`),
+  `source_type` = VALUES(`source_type`);
+
+-- 我的课程表：个性化数据示例
+INSERT INTO `user_course_note` (`id`, `user_id`, `course_id`, `is_starred`, `note`, `remind_before_minutes`) VALUES
+(1, 1, 1, 1, '高数重点看微分方程与级数', 20),
+(2, 1, 18, 1, '数据结构课后要刷 LeetCode', 15),
+(3, 2, 30, 0, '嵌入式实验提前准备开发板', 30)
+ON DUPLICATE KEY UPDATE
+  `is_starred` = VALUES(`is_starred`),
+  `note` = VALUES(`note`),
+  `remind_before_minutes` = VALUES(`remind_before_minutes`);
 
 -- 插入标准时间段数据
 INSERT INTO `time_slot` (`id`, `label`, `start_time`, `end_time`, `sort_order`) VALUES
