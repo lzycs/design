@@ -130,6 +130,11 @@ const router = createRouter({
       component: () => import('../views/ResourceMarketView.vue'),
     },
     {
+      path: '/campus-nav',
+      name: 'campus-nav',
+      component: () => import('../views/CampusNavigationView.vue'),
+    },
+    {
       path: '/ai-assistant',
       name: 'ai-assistant',
       component: () => import('../views/AiAssistantView.vue'),

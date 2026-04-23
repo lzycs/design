@@ -48,6 +48,10 @@ const goResourceMarket = () => {
   router.push('/resource-market')
 }
 
+const goCampusNav = () => {
+  router.push('/campus-nav')
+}
+
 const goMine = () => {
   router.push('/profile')
 }
@@ -107,6 +111,10 @@ onMounted(() => {
           <div class="function-item" @click="goResourceMarket">
             <van-icon name="shop-o" class="func-icon" />
             <p>资源集市</p>
+          </div>
+          <div class="function-item" @click="goCampusNav">
+            <van-icon name="location-o" class="func-icon" />
+            <p>校园导航</p>
           </div>
         </div>
       </div>
@@ -485,7 +493,7 @@ onMounted(() => {
   }
 
   .function-grid {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 18px;
     padding: 0;
   }
