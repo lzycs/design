@@ -22,7 +22,7 @@ public class RepairVO {
     private String handleRemark;
     private Long handlerId;
 
-    /** 地点展示：教学楼名称-房间号，如 第一教学楼-101 */
+    /** 地点展示：教学楼名称-房间号，如 A教学楼-101 */
     private String location;
     /** 维修人员姓名 */
     private String handlerName;

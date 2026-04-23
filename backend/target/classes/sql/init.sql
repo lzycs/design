@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS `user` (
 -- 教学楼表（与后端 Building 实体的 building 表对应）
 CREATE TABLE IF NOT EXISTS `building` (
     `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '教学楼ID',
-    `name` VARCHAR(100) NOT NULL COMMENT '教学楼名称 (如：第一教学楼)',
+    `name` VARCHAR(100) NOT NULL COMMENT '教学楼名称 (如：A教学楼)',
     `building_number` VARCHAR(50) DEFAULT NULL COMMENT '楼栋号',
     `address` VARCHAR(255) COMMENT '地址',
     `floor_count` INT NOT NULL COMMENT '楼层数',
@@ -759,18 +759,103 @@ INSERT IGNORE INTO `user` (`username`, `password`, `real_name`, `student_id`, `e
 ('wangwu', '123456', '王五', NULL, NULL, '13800138006', 1, 1);
 
 -- 插入教学楼数据
+-- 历史数据迁移：将旧“第一/第二/第三/第四教学楼”映射到浙工商下沙校区真实教学楼
+-- 1) 如果新楼已存在，则把旧楼下教室并到新楼，再删除旧楼（避免 name 唯一键冲突）
+UPDATE `classroom` c
+JOIN `building` oldb ON c.`building_id` = oldb.`id` AND oldb.`name` = '第一教学楼'
+JOIN `building` newb ON newb.`name` = 'A教学楼'
+SET c.`building_id` = newb.`id`
+WHERE oldb.`id` <> newb.`id`;
+DELETE oldb FROM `building` oldb
+JOIN `building` newb ON newb.`name` = 'A教学楼'
+WHERE oldb.`name` = '第一教学楼' AND oldb.`id` <> newb.`id`;
+
+UPDATE `classroom` c
+JOIN `building` oldb ON c.`building_id` = oldb.`id` AND oldb.`name` = '第二教学楼'
+JOIN `building` newb ON newb.`name` = 'B教学楼'
+SET c.`building_id` = newb.`id`
+WHERE oldb.`id` <> newb.`id`;
+DELETE oldb FROM `building` oldb
+JOIN `building` newb ON newb.`name` = 'B教学楼'
+WHERE oldb.`name` = '第二教学楼' AND oldb.`id` <> newb.`id`;
+
+UPDATE `classroom` c
+JOIN `building` oldb ON c.`building_id` = oldb.`id` AND oldb.`name` = '第三教学楼'
+JOIN `building` newb ON newb.`name` = 'C教学楼'
+SET c.`building_id` = newb.`id`
+WHERE oldb.`id` <> newb.`id`;
+DELETE oldb FROM `building` oldb
+JOIN `building` newb ON newb.`name` = 'C教学楼'
+WHERE oldb.`name` = '第三教学楼' AND oldb.`id` <> newb.`id`;
+
+UPDATE `classroom` c
+JOIN `building` oldb ON c.`building_id` = oldb.`id` AND oldb.`name` = '第四教学楼'
+JOIN `building` newb ON newb.`name` = 'D教学楼'
+SET c.`building_id` = newb.`id`
+WHERE oldb.`id` <> newb.`id`;
+DELETE oldb FROM `building` oldb
+JOIN `building` newb ON newb.`name` = 'D教学楼'
+WHERE oldb.`name` = '第四教学楼' AND oldb.`id` <> newb.`id`;
+
+-- 2) 如果新楼不存在，则把旧楼直接改名为新楼
+UPDATE `building` SET
+  `name`='A教学楼',
+  `building_number`='A',
+  `address`='浙江工商大学下沙校区学正街18号（A教学楼）',
+  `floor_count`=5,
+  `description`='浙工商下沙校区A教学楼。',
+  `latitude`=30.311653,
+  `longitude`=120.387037
+WHERE `name`='第一教学楼'
+  AND NOT EXISTS (SELECT 1 FROM (SELECT `id` FROM `building` WHERE `name`='A教学楼' LIMIT 1) t);
+
+UPDATE `building` SET
+  `name`='B教学楼',
+  `building_number`='B',
+  `address`='浙江工商大学下沙校区学正街18号（B教学楼）',
+  `floor_count`=6,
+  `description`='浙工商下沙校区B教学楼。',
+  `latitude`=30.312099,
+  `longitude`=120.387609
+WHERE `name`='第二教学楼'
+  AND NOT EXISTS (SELECT 1 FROM (SELECT `id` FROM `building` WHERE `name`='B教学楼' LIMIT 1) t);
+
+UPDATE `building` SET
+  `name`='C教学楼',
+  `building_number`='C',
+  `address`='浙江工商大学下沙校区学正街18号（C教学楼）',
+  `floor_count`=7,
+  `description`='浙工商下沙校区C教学楼。',
+  `latitude`=30.312561,
+  `longitude`=120.387256
+WHERE `name`='第三教学楼'
+  AND NOT EXISTS (SELECT 1 FROM (SELECT `id` FROM `building` WHERE `name`='C教学楼' LIMIT 1) t);
+
+UPDATE `building` SET
+  `name`='D教学楼',
+  `building_number`='D',
+  `address`='浙江工商大学下沙校区学正街18号（D教学楼）',
+  `floor_count`=6,
+  `description`='浙工商下沙校区D教学楼。',
+  `latitude`=30.311836,
+  `longitude`=120.389461
+WHERE `name`='第四教学楼'
+  AND NOT EXISTS (SELECT 1 FROM (SELECT `id` FROM `building` WHERE `name`='D教学楼' LIMIT 1) t);
+
 INSERT IGNORE INTO `building` (`name`, `building_number`, `address`, `floor_count`, `description`, `latitude`, `longitude`) VALUES
-('第一教学楼', 'J1', '学校东区主路1号', 5, '主教学楼，设施较新。', 39.904989, 116.405285),
-('第二教学楼', 'J2', '学校西区科技路2号', 6, '以理工科实验室为主。', 39.905500, 116.406000),
-('第三教学楼', 'J3', '学校南区学术路3号', 7, '综合教学楼，含多媒体大教室与公共讨论区。', 39.906210, 116.405120),
-('第四教学楼', 'J4', '学校北区创新路4号', 4, '创新实践教学楼，侧重研讨与项目实践。', 39.907060, 116.406680);
+('A教学楼', 'A', '浙江工商大学下沙校区学正街18号（A教学楼）', 5, '浙工商下沙校区A教学楼。', 30.311653, 120.387037),
+('B教学楼', 'B', '浙江工商大学下沙校区学正街18号（B教学楼）', 6, '浙工商下沙校区B教学楼。', 30.312099, 120.387609),
+('C教学楼', 'C', '浙江工商大学下沙校区学正街18号（C教学楼）', 7, '浙工商下沙校区C教学楼。', 30.312561, 120.387256),
+('D教学楼', 'D', '浙江工商大学下沙校区学正街18号（D教学楼）', 6, '浙工商下沙校区D教学楼。', 30.311836, 120.389461),
+('E教学楼', 'E', '浙江工商大学下沙校区学正街18号（E教学楼）', 6, '浙工商下沙校区E教学楼。', 30.312266, 120.390143),
+('F教学楼', 'F', '浙江工商大学下沙校区学正街18号（F教学楼）', 6, '浙工商下沙校区F教学楼。', 30.312603, 120.391039);
 
 -- 插入图书馆数据
 INSERT IGNORE INTO `library` (`name`, `address`, `floor_count`, `description`, `latitude`, `longitude`, `opening_hours`) VALUES
-('中心图书馆', '校园中心区', 8, '馆藏丰富，学习环境优越。', 39.903500, 116.404000, '08:00-22:00'),
-('科技分馆', '西区科研楼旁', 4, '侧重科技类书籍和期刊。', 39.906000, 116.407000, '09:00-21:00');
+('浙江工商大学图书馆', '浙江工商大学下沙校区学正街18号（图书馆）', 8, '浙工商下沙校区主图书馆。', 30.312244, 120.385042, '08:00-22:00'),
+('综合大楼阅览空间', '浙江工商大学下沙校区综合大楼', 3, '综合大楼内学习阅览空间。', 30.311106, 120.383718, '09:00-21:00');
 
--- 插入教室数据 (属于第一教学楼)
+-- 插入教室数据 (属于A教学楼)
 INSERT IGNORE INTO `classroom` (`building_id`, `name`, `room_number`, `floor`, `type`, `capacity`, `equipment`) VALUES
 (1, '101多媒体教室', '101', 1, 1, 60, '["投影仪", "电脑", "音响"]'),
 (1, '102普通教室', '102', 1, 1, 50, '["白板"]'),
@@ -783,7 +868,7 @@ INSERT IGNORE INTO `classroom` (`building_id`, `name`, `room_number`, `floor`, `
 (1, '301普通教室', '301', 3, 1, 65, '["投影仪", "白板"]'),
 (1, '302普通教室', '302', 3, 1, 60, '["投影仪", "空调"]');
 
--- 插入教室数据 (属于第二教学楼)
+-- 插入教室数据 (属于B教学楼)
 INSERT IGNORE INTO `classroom` (`building_id`, `name`, `room_number`, `floor`, `type`, `capacity`, `equipment`) VALUES
 (2, '301实验室', '301', 3, 1, 30, '["实验台", "电脑", "专用仪器"]'),
 (2, '302普通教室', '302', 3, 1, 45, '["白板", "投影仪"]'),
@@ -863,7 +948,7 @@ INSERT INTO `course` (`id`, `classroom_id`, `course_name`, `teacher_name`, `week
 (15, 15, '通信原理', '高老师', 5, '08:00:00', '10:00:00', 1, 16),
 (16, 16, '项目管理实务', '冯老师', 2, '16:00:00', '18:00:00', 6, 16),
 (17, 17, '创新创业研讨', '潘老师', 4, '14:00:00', '16:00:00', 1, 16),
--- 第一教学楼（重点补充：周四，便于“当日课程表”直观看到课程名）
+-- A教学楼（重点补充：周四，便于“当日课程表”直观看到课程名）
 (18, 1, '数据结构', '蒋老师', 4, '08:00:00', '10:00:00', 1, 16),
 (19, 2, '离散数学', '邓老师', 4, '10:00:00', '12:00:00', 1, 16),
 (20, 3, '操作系统', '侯老师', 4, '12:00:00', '14:00:00', 1, 16),
@@ -872,12 +957,12 @@ INSERT INTO `course` (`id`, `classroom_id`, `course_name`, `teacher_name`, `week
 (23, 10, '人工智能导论', '曹老师', 4, '08:00:00', '10:00:00', 1, 16),
 (24, 5, '软件测试研讨', '贾老师', 4, '10:00:00', '12:00:00', 1, 16),
 (25, 6, '网络攻防研讨', '许老师', 4, '14:00:00', '16:00:00', 1, 16),
--- 第一教学楼补充其他工作日，方便切换日期联调
+-- A教学楼补充其他工作日，方便切换日期联调
 (26, 1, '高等代数', '欧老师', 1, '08:00:00', '10:00:00', 1, 16),
 (27, 2, '大学物理实验', '莫老师', 2, '10:00:00', '12:00:00', 1, 16),
 (28, 3, '计算机网络实验', '陆老师', 3, '14:00:00', '16:00:00', 1, 16),
 (29, 4, '软件工程', '梁老师', 5, '16:00:00', '18:00:00', 1, 16),
--- 第二教学楼补充周四课程
+-- B教学楼补充周四课程
 (30, 11, '嵌入式原理', '唐老师', 4, '08:00:00', '10:00:00', 1, 16),
 (31, 12, '电路分析', '宋老师', 4, '10:00:00', '12:00:00', 1, 16),
 (32, 13, '数字逻辑', '袁老师', 4, '14:00:00', '16:00:00', 1, 16),
@@ -1013,10 +1098,10 @@ ON DUPLICATE KEY UPDATE
 
 -- 插入报修工单（与“我的报修”页面对应：待处理/处理中/已完成各一条，类型 1-照明 2-空调 3-桌椅 4-多媒体 5-网络 6-其他，状态 1-待处理 2-处理中 3-已修复）
 INSERT INTO `repair` (`id`, `user_id`, `resource_type`, `classroom_id`, `title`, `description`, `type`, `priority`, `status`, `handler_id`, `handle_time`, `create_time`) VALUES
-(1, 1, 1, 1, '第一教学楼-101', '教室投影仪无法正常开启，开机后屏幕显示蓝屏，影响正常教学使用，请尽快处理。', 4, 2, 1, NULL, NULL, '2026-03-05 09:15:00'),
-(2, 1, 1, 3, '第一教学楼-201A', '研讨室其中一把椅子的靠背松动，存在安全隐患，需要加固或更换。', 3, 2, 2, 5, NULL, '2026-03-04 16:30:00'),
-(3, 1, 1, 4, '第二教学楼-202B', '教室空调遥控器失灵，无法调节温度，现在天气较热，影响学习环境。', 2, 2, 3, 5, '2026-03-03 17:45:00', '2026-03-03 14:20:00'),
-(4, 1, 1, 2, '第一教学楼-102', '教室白板划痕严重，影响教学展示，需要重新处理或更换。', 3, 2, 4, 5, '2026-03-02 15:20:00', '2026-03-02 10:10:00')
+(1, 1, 1, 1, 'A教学楼-101', '教室投影仪无法正常开启，开机后屏幕显示蓝屏，影响正常教学使用，请尽快处理。', 4, 2, 1, NULL, NULL, '2026-03-05 09:15:00'),
+(2, 1, 1, 3, 'A教学楼-201A', '研讨室其中一把椅子的靠背松动，存在安全隐患，需要加固或更换。', 3, 2, 2, 5, NULL, '2026-03-04 16:30:00'),
+(3, 1, 1, 4, 'B教学楼-202B', '教室空调遥控器失灵，无法调节温度，现在天气较热，影响学习环境。', 2, 2, 3, 5, '2026-03-03 17:45:00', '2026-03-03 14:20:00'),
+(4, 1, 1, 2, 'A教学楼-102', '教室白板划痕严重，影响教学展示，需要重新处理或更换。', 3, 2, 4, 5, '2026-03-02 15:20:00', '2026-03-02 10:10:00')
 ON DUPLICATE KEY UPDATE
   `user_id`       = VALUES(`user_id`),
   `resource_type` = VALUES(`resource_type`),
@@ -1371,7 +1456,7 @@ INSERT INTO `resource_market_item`
 (`id`,`user_id`,`title`,`description`,`category`,`resource_type`,`price`,`is_free`,`origin_type`,`source_reference`,`course_id`,`team_request_id`,`tags`,`recommended_place`,`status`)
 VALUES
 (1,1,'高等数学考研笔记（手写版）','重点章节整理，附真题题型总结。','考研笔记',2,NULL,1,1,NULL,1,10,'["考研","数学"]','图书馆服务台',1),
-(2,2,'二手《操作系统》教材','九成新，含课堂批注，按成本转让。','闲置教材',1,15.00,0,1,NULL,NULL,NULL,'["教材","计算机"]','第二教学楼一层大厅',1),
+(2,2,'二手《操作系统》教材','九成新，含课堂批注，按成本转让。','闲置教材',1,15.00,0,1,NULL,NULL,NULL,'["教材","计算机"]','B教学楼一层大厅',1),
 (3,6,'Python编程辅导（互助）','可帮忙排查作业报错，按时间成本收费。','技能服务',3,20.00,0,1,NULL,NULL,12,'["编程","辅导"]','线上沟通后线下',0),
 (4,3,'英语六级高频词汇资料','教师整理资料，免费共享。','课程资料',2,NULL,1,1,NULL,NULL,NULL,'["英语","六级"]','图书馆服务台',1)
 ON DUPLICATE KEY UPDATE
@@ -1389,5 +1474,10 @@ ON DUPLICATE KEY UPDATE
   `tags` = VALUES(`tags`),
   `recommended_place` = VALUES(`recommended_place`),
   `status` = VALUES(`status`);
+
+-- 历史文案迁移：将旧楼宇名称同步替换为当前真实楼宇命名
+UPDATE `repair` SET `title` = REPLACE(`title`, '第一教学楼', 'A教学楼');
+UPDATE `repair` SET `title` = REPLACE(`title`, '第二教学楼', 'B教学楼');
+UPDATE `resource_market_item` SET `recommended_place` = REPLACE(`recommended_place`, '第二教学楼', 'B教学楼');
 
 SELECT '测试数据插入完成。' AS result; 

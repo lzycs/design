@@ -234,10 +234,10 @@ INSERT INTO `user` (`username`, `password`, `real_name`, `student_id`, `email`, 
 ('student2', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5E', '李四', '2024002', 'lisi@campus.edu', 1),
 ('maintainer', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5E', '王师傅', NULL, 'wang@campus.edu', 4);
 
-INSERT INTO `building` (`name`, `address`, `floor_count`, `description`) VALUES
-('第一教学楼', '校园东区', 6, '主要教学楼'),
-('图书馆', '校园中心', 5, '图书馆'),
-('第二教学楼', '校园西区', 5, '实验教学楼');
+INSERT INTO `building` (`name`, `address`, `floor_count`, `description`, `latitude`, `longitude`) VALUES
+('A教学楼', '浙江工商大学下沙校区学正街18号（A教学楼）', 5, '浙工商下沙校区A教学楼', 30.311653, 120.387037),
+('浙江工商大学图书馆', '浙江工商大学下沙校区学正街18号（图书馆）', 8, '浙工商下沙校区主图书馆', 30.312244, 120.385042),
+('B教学楼', '浙江工商大学下沙校区学正街18号（B教学楼）', 6, '浙工商下沙校区B教学楼', 30.312099, 120.387609);
 
 INSERT INTO `classroom` (`building_id`, `name`, `room_number`, `floor`, `type`, `capacity`, `equipment`, `status`, `environment_score`) VALUES
 (1, '101教室', 'A101', 1, 1, 60, '{"projector":true,"aircondition":true,"wifi":true}', 1, 4.5),

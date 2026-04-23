@@ -131,13 +131,13 @@ onMounted(loadBuildings)
     <div class="content-area">
       <div v-if="showForm" class="admin-card form-card">
         <label class="form-label">教学楼名称</label>
-        <input v-model="form.name" class="form-input" placeholder="例如：第一教学楼" />
+        <input v-model="form.name" class="form-input" placeholder="例如：A教学楼" />
 
         <label class="form-label">楼栋号</label>
-        <input v-model="form.buildingNumber" class="form-input" placeholder="例如：J1 / 1号楼" />
+        <input v-model="form.buildingNumber" class="form-input" placeholder="例如：A / B / C" />
 
         <label class="form-label">位置</label>
-        <input v-model="form.location" class="form-input" placeholder="例如：学校东区主路1号" />
+        <input v-model="form.location" class="form-input" placeholder="例如：浙江工商大学下沙校区学正街18号（A教学楼）" />
 
         <button class="submit-btn" @click="save">保存教学楼信息</button>
         <button
