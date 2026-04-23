@@ -233,130 +233,138 @@ onMounted(async () => {
   <div class="profile">
     <div class="my-page">
       <template v-if="isLoggedIn">
-        <div class="user-header">
-          <div class="user-info">
-            <div class="user-name">{{ storedUser?.realName || storedUser?.username }}</div>
-            <div class="user-id">
-              学号/工号：{{ storedUser?.studentId || '未填写' }}
+        <div class="page-wrap">
+          <!-- 移动端用户信息卡片 -->
+          <div class="mobile-user-card">
+            <div class="avatar">
+              <van-icon name="user-circle-o" />
+            </div>
+            <div class="user-meta">
+              <div class="user-title">{{ storedUser?.realName || storedUser?.username }}</div>
+              <div class="user-sub">学号/工号：{{ storedUser?.studentId || '未填写' }}</div>
+            </div>
+            <button class="setting-btn" type="button" @click="$router.push('/profile/info')">
+              <van-icon name="notes-o" />
+            </button>
+          </div>
+
+          <!-- 功能菜单（置顶） -->
+          <div class="card menu-card top-card">
+            <div class="card-hd with-divider">功能菜单</div>
+            <div class="menu-list">
+              <button class="menu-row" type="button" @click="$router.push('/profile/reservations')">
+                <div class="menu-left">
+                  <div class="mini-icon"><van-icon name="calendar-o" /></div>
+                  <span>我的预约</span>
+                </div>
+                <van-icon name="arrow" class="arrow" />
+              </button>
+              <button class="menu-row" type="button" @click="$router.push('/profile/my-courses')">
+                <div class="menu-left">
+                  <div class="mini-icon"><van-icon name="todo-list-o" /></div>
+                  <span>我的课程表</span>
+                </div>
+                <van-icon name="arrow" class="arrow" />
+              </button>
+              <button
+                class="menu-row"
+                type="button"
+                @click="$router.push({ path: '/feedback', query: { tab: 'evaluation', only: '1' } })"
+              >
+                <div class="menu-left">
+                  <div class="mini-icon"><van-icon name="star-o" /></div>
+                  <span>我的评价</span>
+                </div>
+                <van-icon name="arrow" class="arrow" />
+              </button>
+              <button class="menu-row" type="button" @click="$router.push('/profile/repairs')">
+                <div class="menu-left">
+                  <div class="mini-icon"><van-icon name="setting-o" /></div>
+                  <span>我的报修</span>
+                </div>
+                <van-icon name="arrow" class="arrow" />
+              </button>
             </div>
           </div>
-        </div>
 
-        <div class="function-menu">
-          <div class="menu-group">
-            <div
-              class="menu-item"
-              @click="$router.push('/profile/reservations')"
-            >
-              <div class="menu-left">
-                <div class="menu-icon">
-                  <van-icon name="calendar-o" />
-                </div>
-                <div class="menu-text">我的预约</div>
-              </div>
-              <div class="menu-right">
-                <van-icon name="arrow" class="menu-arrow" />
+          <!-- 功能卡片区域 -->
+          <div class="cards-grid">
+            <!-- 更多服务（与“我的数据”并列） -->
+            <div class="card more-card">
+              <div class="card-hd with-divider">更多服务</div>
+              <div class="menu-list">
+                <button class="menu-row" type="button" @click="$router.push('/profile/resources')">
+                  <div class="menu-left">
+                    <div class="mini-icon"><van-icon name="shop-o" /></div>
+                    <span>我的资源</span>
+                  </div>
+                  <van-icon name="arrow" class="arrow" />
+                </button>
+                <button class="menu-row" type="button" @click="$router.push('/profile/teams')">
+                  <div class="menu-left">
+                    <div class="mini-icon"><van-icon name="friends-o" /></div>
+                    <span>我的协作</span>
+                    <span v-if="teamBadgeTotal > 0" class="pill-badge">{{ teamBadgeTotal }}</span>
+                  </div>
+                  <van-icon name="arrow" class="arrow" />
+                </button>
+                <button class="menu-row" type="button" @click="$router.push('/profile/team-messages')">
+                  <div class="menu-left">
+                    <div class="mini-icon"><van-icon name="chat-o" /></div>
+                    <span>小组消息</span>
+                    <span v-if="teamChatStore.totalUnread > 0" class="pill-badge">
+                      {{ teamChatStore.totalUnread > 99 ? '99+' : teamChatStore.totalUnread }}
+                    </span>
+                  </div>
+                  <van-icon name="arrow" class="arrow" />
+                </button>
               </div>
             </div>
 
-            <div
-              class="menu-item"
-              @click="$router.push('/profile/my-courses')"
-            >
-              <div class="menu-left">
-                <div class="menu-icon">
-                  <van-icon name="todo-list-o" />
+            <!-- 我的数据 -->
+            <div class="card data-card">
+              <div class="card-hd">我的数据</div>
+              <div class="data-list">
+                <div class="data-row">
+                  <div class="data-left">
+                    <div class="data-icon primary">
+                      <van-icon name="calendar-o" />
+                    </div>
+                    <div>
+                      <div class="data-label">已预约</div>
+                      <div class="data-value">{{ reservations.length }}</div>
+                    </div>
+                  </div>
                 </div>
-                <div class="menu-text">我的课程表</div>
-              </div>
-              <div class="menu-right">
-                <van-icon name="arrow" class="menu-arrow" />
-              </div>
-            </div>
-
-            <div
-              class="menu-item"
-              @click="$router.push({ path: '/feedback', query: { tab: 'evaluation', only: '1' } })"
-            >
-              <div class="menu-left">
-                <div class="menu-icon">
-                  <van-icon name="star-o" />
+                <div class="data-row">
+                  <div class="data-left">
+                    <div class="data-icon success">
+                      <van-icon name="passed" />
+                    </div>
+                    <div>
+                      <div class="data-label">已完成</div>
+                      <div class="data-value">
+                        {{ reservations.filter((r) => r.status === 3 || r.status === 2).length }}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div class="menu-text">我的评价</div>
-              </div>
-              <div class="menu-right">
-                <van-icon name="arrow" class="menu-arrow" />
-              </div>
-            </div>
-
-            <div
-              class="menu-item"
-              @click="$router.push('/profile/repairs')"
-            >
-              <div class="menu-left">
-                <div class="menu-icon">
-                  <van-icon name="setting-o" />
+                <div class="data-row">
+                  <div class="data-left">
+                    <div class="data-icon secondary">
+                      <van-icon name="star-o" />
+                    </div>
+                    <div>
+                      <div class="data-label">已评价</div>
+                      <div class="data-value">{{ reviews.length }}</div>
+                    </div>
+                  </div>
                 </div>
-                <div class="menu-text">我的报修</div>
-              </div>
-              <div class="menu-right">
-                <van-icon name="arrow" class="menu-arrow" />
-              </div>
-            </div>
-
-            <div
-              class="menu-item"
-              @click="$router.push('/profile/resources')"
-            >
-              <div class="menu-left">
-                <div class="menu-icon">
-                  <van-icon name="shop-o" />
-                </div>
-                <div class="menu-text">我的资源</div>
-              </div>
-              <div class="menu-right">
-                <van-icon name="arrow" class="menu-arrow" />
-              </div>
-            </div>
-
-            <div
-              class="menu-item"
-              @click="$router.push('/profile/teams')"
-            >
-              <div class="menu-left">
-                <div class="menu-icon">
-                  <van-icon name="friends-o" />
-                </div>
-                <div class="menu-text">我的协作</div>
-              </div>
-              <div class="menu-right">
-                <div v-if="teamBadgeTotal > 0" class="menu-badge">{{ teamBadgeTotal }}</div>
-                <van-icon name="arrow" class="menu-arrow" />
-              </div>
-            </div>
-
-            <div
-              class="menu-item"
-              @click="$router.push('/profile/team-messages')"
-            >
-              <div class="menu-left">
-                <div class="menu-icon">
-                  <van-icon name="chat-o" />
-                </div>
-                <div class="menu-text">小组消息</div>
-              </div>
-              <div class="menu-right">
-                <div v-if="teamChatStore.totalUnread > 0" class="menu-badge">
-                  {{ teamChatStore.totalUnread > 99 ? '99+' : teamChatStore.totalUnread }}
-                </div>
-                <van-icon name="arrow" class="menu-arrow" />
               </div>
             </div>
           </div>
-        </div>
 
-        <div class="profile-actions">
-          <van-button type="primary" block @click="handleLogout">退出登录</van-button>
+          <button class="logout-btn" type="button" @click="handleLogout">退出登录</button>
         </div>
       </template>
 
@@ -428,103 +436,217 @@ onMounted(async () => {
   padding-bottom: 72px;
 }
 
-.user-header {
-  width: 100%;
-  height: 160px;
-  background: linear-gradient(135deg, #4a90e2 0%, #5c6bc0 100%);
-  border-radius: 0 0 24px 24px;
+.page-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.mobile-user-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 16px;
   display: flex;
   align-items: center;
-  padding: 0 24px;
-  color: #ffffff;
-}
-
-.user-info {
-  flex: 1;
-}
-
-.user-name {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-
-.user-id {
-  font-size: 12px;
-  opacity: 0.8;
-}
-
-.function-menu {
-  padding: 20px;
-}
-
-.menu-group {
-  background-color: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  gap: 12px;
   margin-bottom: 16px;
 }
 
-.menu-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid #f5f7fa;
-}
-
-.menu-item:last-child {
-  border-bottom: none;
-}
-
-.menu-left {
+.avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  background: rgba(66, 133, 244, 0.1);
+  color: #4285f4;
   display: flex;
   align-items: center;
-}
-
-.menu-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background-color: #ecf5ff;
-  display: flex;
   justify-content: center;
-  align-items: center;
-  margin-right: 12px;
+  flex: 0 0 auto;
+}
+.avatar :deep(.van-icon) {
+  font-size: 30px;
 }
 
-.menu-icon :deep(.van-icon) {
-  font-size: 16px;
-  color: #4a90e2;
+.user-meta {
+  min-width: 0;
 }
-
-.menu-text {
-  font-size: 16px;
-  color: #1a1a1a;
-  font-weight: 500;
+.user-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f2937;
+  line-height: 1.2;
 }
-
-.menu-right {
-  display: flex;
-  align-items: center;
-}
-
-.menu-badge {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background-color: #f56c6c;
-  color: #ffffff;
+.user-sub {
+  margin-top: 6px;
   font-size: 12px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-right: 8px;
+  color: #6b7280;
 }
 
-.menu-arrow :deep(.van-icon) {
+.setting-btn {
+  margin-left: auto;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: none;
+  background: #f3f4f6;
+  color: #4b5563;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.setting-btn :deep(.van-icon) {
   font-size: 16px;
-  color: #909399;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.top-card {
+  margin-bottom: 16px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+.card-hd {
+  padding: 14px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+}
+.card-hd.with-divider {
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.data-card .data-list {
+  padding: 0 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.data-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.data-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.data-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.data-icon.primary {
+  background: rgba(66, 133, 244, 0.12);
+  color: #4285f4;
+}
+.data-icon.success {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+}
+.data-icon.secondary {
+  background: rgba(138, 180, 248, 0.18);
+  color: #4285f4;
+}
+.data-icon :deep(.van-icon) {
+  font-size: 18px;
+}
+.data-label {
+  font-size: 12px;
+  color: #6b7280;
+}
+.data-value {
+  margin-top: 2px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.menu-list {
+  display: flex;
+  flex-direction: column;
+}
+.menu-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border: none;
+  background: transparent;
+  border-top: 1px solid #f3f4f6;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 600;
+}
+.menu-row:first-of-type {
+  border-top: none;
+}
+.menu-row:active {
+  background: #f9fafb;
+}
+.menu-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.mini-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: rgba(66, 133, 244, 0.12);
+  color: #4285f4;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.mini-icon :deep(.van-icon) {
+  font-size: 16px;
+}
+.arrow {
+  color: #c0c4cc;
+}
+.pill-badge {
+  margin-left: 6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.logout-btn {
+  width: 100%;
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #ef4444;
+  font-weight: 700;
+  font-size: 14px;
+}
+.logout-btn:active {
+  background: rgba(239, 68, 68, 0.06);
 }
 
 .form {
@@ -544,7 +666,18 @@ onMounted(async () => {
   padding: 8px 0;
 }
 
-.profile-actions {
-  padding: 0 16px 24px;
+@media (min-width: 768px) {
+  .page-wrap {
+    padding: 18px 12px;
+  }
+  .cards-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 1024px) {
+  .page-wrap {
+    padding: 22px 16px;
+  }
 }
 </style>

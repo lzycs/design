@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人中心 - 校园学习空间预约系统</title>
+    <!-- 引入Tailwind和图标库 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
+    <!-- 引入Inter字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4285F4', // 谷歌蓝，更清爽的主色
+                        secondary: '#8AB4F8', // 浅蓝辅助色
+                        neutral: {
+                            50: '#F9FAFB',
+                            100: '#F3F4F6',
+                            200: '#E5E7EB',
+                            300: '#D1D5DB',
+                            400: '#9CA3AF',
+                            500: '#6B7280',
+                            600: '#4B5563',
+                            700: '#374151',
+                            800: '#1F2937',
+                        },
+                        success: '#10B981',
+                        danger: '#EF4444',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'card': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+                        'card-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .nav-indicator {
+                width: 24px;
+                height: 2px;
+                border-radius: 1px;
+                background-color: theme('colors.primary');
+                margin-top: 2px;
+            }
+            .list-item-hover {
+                @apply hover:bg-neutral-50 transition-colors duration-200;
+            }
+        }
+        
+        /* 全局样式重置 */
+        body {
+            @apply font-inter bg-neutral-50 text-neutral-700;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- PC端顶部导航（移动端隐藏） -->
+    <header class="hidden md:block sticky top-0 z-50 bg-white shadow-sm">
+        <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <i class="ri-user-3-line text-primary text-xl"></i>
+                <h1 class="text-lg font-semibold text-neutral-800">个人中心</h1>
+            </div>
+            <div class="flex items-center gap-6">
+                <button class="text-neutral-600 hover:text-primary transition-colors">
+                    <i class="ri-notification-3-line text-lg"></i>
+                </button>
+                <div class="flex items-center gap-3">
+                    <div class="text-right">
+                        <p class="text-sm font-medium text-neutral-800">李四</p>
+                        <p class="text-xs text-neutral-500">20220002</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                        <i class="ri-user-fill text-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 py-6 md:py-8 pb-24 md:pb-12">
+        <!-- 移动端用户信息卡片（PC端隐藏） -->
+        <div class="md:hidden bg-white rounded-2xl shadow-card p-5 mb-5">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                    <i class="ri-user-fill text-2xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-semibold text-neutral-800">李四</h2>
+                    <p class="text-xs text-neutral-500 mt-1">学号：20220002</p>
+                </div>
+                <div class="ml-auto">
+                    <button class="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-600 hover:bg-neutral-200 transition-colors">
+                        <i class="ri-settings-3-line text-sm"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 功能卡片区域 -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
+            <!-- 数据概览卡片 -->
+            <div class="md:col-span-1 bg-white rounded-2xl shadow-card p-5 hover:shadow-card-hover transition-shadow duration-300">
+                <h3 class="text-sm font-medium text-neutral-500 mb-4">我的数据</h3>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                                <i class="ri-calendar-check-line"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">已预约</p>
+                                <p class="text-lg font-semibold text-neutral-800">8</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center text-success">
+                                <i class="ri-check-double-line"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">已完成</p>
+                                <p class="text-lg font-semibold text-neutral-800">6</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center text-primary">
+                                <i class="ri-star-line"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">已评价</p>
+                                <p class="text-lg font-semibold text-neutral-800">5</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 主要功能列表 -->
+            <div class="md:col-span-2 bg-white rounded-2xl shadow-card overflow-hidden hover:shadow-card-hover transition-shadow duration-300">
+                <div class="p-5 border-b border-neutral-100">
+                    <h3 class="text-sm font-medium text-neutral-500">功能菜单</h3>
+                </div>
+                <ul class="divide-y divide-neutral-100">
+                    <li class="list-item-hover">
+                        <a href="#" class="flex items-center justify-between px-5 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                                    <i class="ri-calendar-line text-sm"></i>
+                                </div>
+                                <span class="text-sm font-medium text-neutral-700">我的预约</span>
+                            </div>
+                            <i class="ri-arrow-right-s-line text-neutral-400 text-xs"></i>
+                        </a>
+                    </li>
+                    <li class="list-item-hover">
+                        <a href="#" class="flex items-center justify-between px-5 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                                    <i class="ri-table-2-line text-sm"></i>
+                                </div>
+                                <span class="text-sm font-medium text-neutral-700">我的课程表</span>
+                            </div>
+                            <i class="ri-arrow-right-s-line text-neutral-400 text-xs"></i>
+                        </a>
+                    </li>
+                    <li class="list-item-hover">
+                        <a href="#" class="flex items-center justify-between px-5 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                                    <i class="ri-star-fill text-sm"></i>
+                                </div>
+                                <span class="text-sm font-medium text-neutral-700">我的评价</span>
+                            </div>
+                            <i class="ri-arrow-right-s-line text-neutral-400 text-xs"></i>
+                        </a>
+                    </li>
+                    <li class="list-item-hover">
+                        <a href="#" class="flex items-center justify-between px-5 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                                    <i class="ri-tools-line text-sm"></i>
+                                </div>
+                                <span class="text-sm font-medium text-neutral-700">我的报修</span>
+                            </div>
+                            <i class="ri-arrow-right-s-line text-neutral-400 text-xs"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 更多功能列表 -->
+        <div class="bg-white rounded-2xl shadow-card overflow-hidden hover:shadow-card-hover transition-shadow duration-300 mb-6">
+            <div class="p-5 border-b border-neutral-100">
+                <h3 class="text-sm font-medium text-neutral-500">更多服务</h3>
+            </div>
+            <ul class="divide-y divide-neutral-100">
+                <li class="list-item-hover">
+                    <a href="#" class="flex items-center justify-between px-5 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                                <i class="ri-folder-line text-sm"></i>
+                            </div>
+                            <span class="text-sm font-medium text-neutral-700">我的资源</span>
+                        </div>
+                        <i class="ri-arrow-right-s-line text-neutral-400 text-xs"></i>
+                    </a>
+                </li>
+                <li class="list-item-hover">
+                    <a href="#" class="flex items-center justify-between px-5 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                                <i class="ri-team-line text-sm"></i>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-medium text-neutral-700">我的协作</span>
+                                <span class="w-5 h-5 rounded-full bg-danger text-white flex items-center justify-center text-[10px] font-medium">1</span>
+                            </div>
+                        </div>
+                        <i class="ri-arrow-right-s-line text-neutral-400 text-xs"></i>
+                    </a>
+                </li>
+                <li class="list-item-hover">
+                    <a href="#" class="flex items-center justify-between px-5 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                                <i class="ri-chat-3-line text-sm"></i>
+                            </div>
+                            <span class="text-sm font-medium text-neutral-700">小组消息</span>
+                        </div>
+                        <i class="ri-arrow-right-s-line text-neutral-400 text-xs"></i>
+                    </a>
+                </li>
+                <li class="list-item-hover">
+                    <a href="#" class="flex items-center justify-between px-5 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                                <i class="ri-settings-3-line text-sm"></i>
+                            </div>
+                            <span class="text-sm font-medium text-neutral-700">账号设置</span>
+                        </div>
+                        <i class="ri-arrow-right-s-line text-neutral-400 text-xs"></i>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- 退出登录按钮 -->
+        <button class="w-full py-3.5 rounded-2xl bg-white border border-neutral-200 text-danger font-medium text-sm hover:bg-danger/5 transition-colors shadow-sm">
+            <i class="ri-logout-box-line mr-2"></i>退出登录
+        </button>
+    </main>
+
+    <!-- 移动端底部导航（PC端隐藏） -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 z-50 px-6 py-3">
+        <div class="flex justify-between items-center">
+            <a href="#" class="flex flex-col items-center text-neutral-400">
+                <i class="ri-home-line text-xl"></i>
+                <span class="text-xs mt-1">首页</span>
+            </a>
+            <a href="#" class="flex flex-col items-center text-neutral-400">
+                <i class="ri-calendar-add-line text-xl"></i>
+                <span class="text-xs mt-1">预约</span>
+            </a>
+            <a href="#" class="flex flex-col items-center text-neutral-400">
+                <i class="ri-message-3-line text-xl"></i>
+                <span class="text-xs mt-1">消息</span>
+            </a>
+            <a href="#" class="flex flex-col items-center text-primary">
+                <i class="ri-user-3-line text-xl"></i>
+                <span class="text-xs mt-1">我的</span>
+                <div class="nav-indicator"></div>
+            </a>
+        </div>
+    </nav>
+</body>
+</html>
