@@ -55,36 +55,54 @@ onMounted(() => {
 <template>
   <div class="home">
     <div class="home-page">
-      <!-- 顶部 Banner -->
-      <div class="banner">
-        <h1>校园学习空间预约系统</h1>
-        <p>便捷预约，高效学习</p>
-        <div class="banner-avatar">
-          <van-icon name="user-circle-o" class="avatar-icon" />
+      <!-- 顶部轻量头部 -->
+      <div class="top-header">
+        <div class="header-main">
+          <div class="header-text">
+            <h1>校园学习空间预约系统</h1>
+            <p>便捷预约 · 高效学习</p>
+          </div>
+          <div class="header-avatar" @click="goMine">
+            <van-icon name="user-o" class="avatar-icon" />
+          </div>
+        </div>
+        <div class="header-tags">
+          <span class="header-tag">今日可预约</span>
+          <span class="header-tag">多端协作</span>
         </div>
       </div>
 
       <!-- 功能入口 -->
-      <div class="function-grid">
-        <div class="function-item" @click="goReservation">
-          <van-icon name="calendar-o" class="func-icon" />
-          <p>在线预约</p>
+      <div class="quick-section">
+        <div class="quick-title">
+          <div class="quick-title-left">
+            <div class="quick-logo">
+              <van-icon name="apps-o" />
+            </div>
+            <span>快捷功能</span>
+          </div>
         </div>
-        <div class="function-item" @click="goFeedback">
-          <van-icon name="setting-o" class="func-icon" />
-          <p>反馈评价</p>
-        </div>
-        <div class="function-item" @click="goCollaboration">
-          <van-icon name="friends-o" class="func-icon" />
-          <p>组队匹配</p>
-        </div>
-        <div class="function-item" @click="goSharedPlan">
-          <van-icon name="notes-o" class="func-icon" />
-          <p>共享计划</p>
-        </div>
-        <div class="function-item" @click="goResourceMarket">
-          <van-icon name="shop-o" class="func-icon" />
-          <p>资源集市</p>
+        <div class="function-grid">
+          <div class="function-item" @click="goReservation">
+            <van-icon name="calendar-o" class="func-icon" />
+            <p>在线预约</p>
+          </div>
+          <div class="function-item" @click="goFeedback">
+            <van-icon name="setting-o" class="func-icon" />
+            <p>反馈评价</p>
+          </div>
+          <div class="function-item" @click="goCollaboration">
+            <van-icon name="friends-o" class="func-icon" />
+            <p>组队匹配</p>
+          </div>
+          <div class="function-item" @click="goSharedPlan">
+            <van-icon name="notes-o" class="func-icon" />
+            <p>共享计划</p>
+          </div>
+          <div class="function-item" @click="goResourceMarket">
+            <van-icon name="shop-o" class="func-icon" />
+            <p>资源集市</p>
+          </div>
         </div>
       </div>
 
@@ -147,55 +165,111 @@ onMounted(() => {
   padding-bottom: 72px;
 }
 
-.banner {
-  width: 100%;
-  height: 180px;
-  background: linear-gradient(135deg, #4a90e2 0%, #5c6bc0 100%);
+.top-header {
+  background-color: #ffffff;
   border-radius: 0 0 24px 24px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  color: #ffffff;
-  padding: 20px;
-  position: relative;
-}
-
-.banner h1 {
-  font-size: 24px;
-  font-weight: 600;
+  box-shadow: 0 2px 14px rgba(15, 23, 42, 0.06);
+  padding: 18px 20px 16px;
   margin-bottom: 8px;
 }
 
-.banner p {
-  font-size: 14px;
-  opacity: 0.9;
+.header-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.banner-avatar {
-  position: absolute;
-  bottom: -30px;
-  right: 20px;
-  width: 60px;
-  height: 60px;
+.header-text h1 {
+  font-size: 20px;
+  line-height: 1.25;
+  color: #4a90e2;
+  font-weight: 700;
+}
+
+.header-text p {
+  margin-top: 7px;
+  font-size: 12px;
+  color: #98a2b3;
+}
+
+.header-avatar {
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background-color: #ffffff;
+  background-color: #edf4ff;
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.header-tags {
+  margin-top: 14px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.header-tag {
+  font-size: 11px;
+  color: #3c6ea8;
+  background-color: #f4f8ff;
+  border: 1px solid #e0ecfb;
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+
+.quick-section {
+  margin: 20px;
+  background: linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
+  border-radius: 16px;
+  border: 1px solid #e8eef7;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+  padding: 16px 16px 18px;
+}
+
+.quick-title {
+  padding: 0 0 12px;
+}
+
+.quick-title-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.quick-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #e8f2ff 0%, #f2f7ff 100%);
+  color: #4a90e2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quick-logo :deep(.van-icon) {
+  font-size: 20px;
+}
+
+.quick-title-left span {
+  font-size: 22px;
+  color: #1e3657;
+  font-weight: 700;
+  letter-spacing: 0.2px;
 }
 
 .avatar-icon {
-  font-size: 32px;
+  font-size: 20px;
   color: #4a90e2;
 }
 
 .function-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-  padding: 40px 20px 20px;
+  gap: 14px;
+  padding: 0;
 }
 
 .function-item {
@@ -204,9 +278,10 @@ onMounted(() => {
   justify-content: center;
   align-items: center;
   background-color: #ffffff;
+  border: 1px solid #e2eaf5;
   padding: 16px 8px;
   border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
 }
 
 .func-icon {
@@ -258,9 +333,11 @@ onMounted(() => {
 }
 
 .building-item {
-  padding: 16px;
-  border-radius: 12px;
-  background-color: #f5f7fa;
+  padding: 16px 8px;
+  border-radius: 16px;
+  background-color: #ffffff;
+  border: 1px solid #e2eaf5;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -320,45 +397,73 @@ onMounted(() => {
     padding-bottom: 84px;
   }
 
-  .banner {
-    height: 220px;
+  .top-header {
     border-radius: 0 0 28px 28px;
+    padding: 20px 28px 18px;
+    margin-bottom: 8px;
   }
 
-  .banner h1 {
-    font-size: 30px;
+  .quick-title {
+    padding: 0 0 14px;
   }
 
-  .banner p {
-    font-size: 16px;
+  .quick-section {
+    margin: 24px 28px;
+    padding: 20px 24px 24px;
+    border: 1px solid #dfe8f4;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
   }
 
-  .banner-avatar {
-    width: 72px;
-    height: 72px;
-    right: 32px;
-    bottom: -36px;
+  .quick-logo {
+    width: 34px;
+    height: 34px;
+  }
+
+  .quick-title-left span {
+    font-size: 24px;
+  }
+
+  .header-text h1 {
+    font-size: 24px;
+  }
+
+  .header-text p {
+    font-size: 14px;
+  }
+
+  .header-avatar {
+    width: 48px;
+    height: 48px;
   }
 
   .avatar-icon {
-    font-size: 40px;
+    font-size: 24px;
+  }
+
+  .header-tags {
+    margin-top: 14px;
+  }
+
+  .header-tag {
+    font-size: 12px;
+    padding: 4px 12px;
   }
 
   .function-grid {
     grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 18px;
-    padding: 52px 28px 24px;
+    padding: 0;
   }
 
   .function-item {
     min-height: 126px;
-    border: 1px solid #e9eef6;
-    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+    border: 1px solid #dce7f4;
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.09);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
 
   .building-nav {
-    margin: 24px 28px;
+    margin: 0 28px 24px;
     padding: 24px;
     border: 1px solid #e9eef6;
     box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
@@ -372,7 +477,8 @@ onMounted(() => {
   .building-item {
     min-height: 116px;
     justify-content: center;
-    border: 1px solid #e8edf5;
+    border: 1px solid #dce7f4;
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.09);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
 
