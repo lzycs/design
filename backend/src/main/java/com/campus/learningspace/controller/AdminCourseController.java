@@ -39,7 +39,10 @@ public class AdminCourseController {
 
     @GetMapping
     public Result<List<AdminCourseVO>> list(@RequestHeader(value = "X-Admin-Token", required = false) String token,
-                                             @RequestParam(required = false) String keyword) {
+                                             @RequestParam(required = false) String keyword,
+                                             @RequestParam(required = false) Long buildingId,
+                                             @RequestParam(required = false) Integer floor,
+                                             @RequestParam(required = false) Long classroomId) {
         var session = adminAuthService.getSession(token);
         if (session == null) return Result.error(401, "未登录或登录已过期");
         if (!adminPermissionService.hasPermission(session, "base:manage")) {
@@ -47,11 +50,19 @@ public class AdminCourseController {
         }
 
         List<AdminCourseVO> all = courseMapper.selectAdminCourseList();
-        if (keyword == null || keyword.trim().isEmpty()) return Result.success(all);
+        if (keyword == null || keyword.trim().isEmpty()) {
+            List<AdminCourseVO> filtered = new ArrayList<>();
+            for (AdminCourseVO vo : all) {
+                if (!matchFilter(vo, buildingId, floor, classroomId)) continue;
+                filtered.add(vo);
+            }
+            return Result.success(filtered);
+        }
 
         String kw = keyword.trim().toLowerCase();
         List<AdminCourseVO> filtered = new ArrayList<>();
         for (AdminCourseVO vo : all) {
+            if (!matchFilter(vo, buildingId, floor, classroomId)) continue;
             String location = vo.getLocation() == null ? "" : vo.getLocation().toLowerCase();
             String courseName = vo.getCourseName() == null ? "" : vo.getCourseName().toLowerCase();
             String teacherName = vo.getTeacherName() == null ? "" : vo.getTeacherName().toLowerCase();
@@ -99,6 +110,9 @@ public class AdminCourseController {
             eq(Course::getEndWeek, course.getEndWeek());
         }});
         if (exists > 0) return Result.error(400, "该课程已存在，请勿重复");
+        if (course.getStartWeek() > course.getEndWeek()) return Result.error(400, "开始周次不能大于结束周次");
+        if (!course.getStartTime().isBefore(course.getEndTime())) return Result.error(400, "开始时间必须早于结束时间");
+        if (hasCourseConflict(course, null)) return Result.error(400, "课程时段与同教室已有课程冲突");
 
         boolean ok = courseService.save(course);
         if (ok) {
@@ -156,6 +170,9 @@ public class AdminCourseController {
             ne(Course::getId, course.getId());
         }});
         if (exists > 0) return Result.error(400, "该课程已存在，请勿重复");
+        if (course.getStartWeek() > course.getEndWeek()) return Result.error(400, "开始周次不能大于结束周次");
+        if (!course.getStartTime().isBefore(course.getEndTime())) return Result.error(400, "开始时间必须早于结束时间");
+        if (hasCourseConflict(course, course.getId())) return Result.error(400, "课程时段与同教室已有课程冲突");
 
         boolean ok = courseService.updateById(course);
         if (ok) {
@@ -167,6 +184,30 @@ public class AdminCourseController {
             adminOperationLogService.save(log);
         }
         return Result.success(ok);
+    }
+
+    private boolean matchFilter(AdminCourseVO vo, Long buildingId, Integer floor, Long classroomId) {
+        if (buildingId != null && !buildingId.equals(vo.getBuildingId())) return false;
+        if (floor != null && !floor.equals(vo.getFloor())) return false;
+        if (classroomId != null && !classroomId.equals(vo.getClassroomId())) return false;
+        return true;
+    }
+
+    private boolean hasCourseConflict(Course course, Long excludeId) {
+        List<Course> sameWeekDayCourses = courseService.list(new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<Course>() {{
+            eq(Course::getDeleted, 0);
+            eq(Course::getClassroomId, course.getClassroomId());
+            eq(Course::getWeekDay, course.getWeekDay());
+            if (excludeId != null) ne(Course::getId, excludeId);
+        }});
+        for (Course existing : sameWeekDayCourses) {
+            boolean weekOverlap = course.getStartWeek() <= existing.getEndWeek() && course.getEndWeek() >= existing.getStartWeek();
+            boolean timeOverlap = course.getStartTime().isBefore(existing.getEndTime()) && course.getEndTime().isAfter(existing.getStartTime());
+            if (weekOverlap && timeOverlap) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @DeleteMapping("/{id}")

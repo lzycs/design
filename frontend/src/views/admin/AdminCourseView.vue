@@ -4,17 +4,23 @@ import { showToast } from 'vant'
 import {
   createAdminCourse,
   deleteAdminCourse,
+  getAdminBuildings,
   getAdminClassrooms,
   getAdminCourses,
   updateAdminCourse,
+  type AdminBuildingVO,
   type AdminClassroomVO,
   type AdminCourseVO,
 } from '@/api/admin'
 
 const keyword = ref('')
+const filterBuildingId = ref<number | undefined>(undefined)
+const filterFloor = ref<number | undefined>(undefined)
+const filterClassroomId = ref<number | undefined>(undefined)
 const courses = ref<AdminCourseVO[]>([])
 const loading = ref(false)
 
+const buildings = ref<AdminBuildingVO[]>([])
 const classrooms = ref<AdminClassroomVO[]>([])
 
 const showForm = ref(false)
@@ -51,7 +57,12 @@ const normalizeTime = (v: string) => {
 const loadCourses = async () => {
   loading.value = true
   try {
-    const res = await getAdminCourses({ keyword: keyword.value || undefined })
+    const res = await getAdminCourses({
+      keyword: keyword.value || undefined,
+      buildingId: filterBuildingId.value,
+      floor: filterFloor.value,
+      classroomId: filterClassroomId.value,
+    })
     if (res.code !== 200) {
       showToast(res.message || '加载失败')
       return
@@ -63,6 +74,11 @@ const loadCourses = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const loadBuildings = async () => {
+  const res = await getAdminBuildings({})
+  if (res.code === 200) buildings.value = res.data ?? []
 }
 
 const loadClassrooms = async () => {
@@ -161,6 +177,7 @@ const del = async (id: number) => {
 }
 
 onMounted(async () => {
+  await loadBuildings()
   await loadClassrooms()
   await loadCourses()
 })
@@ -177,6 +194,18 @@ onMounted(async () => {
     <div class="search-bar" style="justify-content: space-between; align-items: center">
       <input v-model="keyword" type="text" class="search-input" placeholder="搜索课程/教师/教室位置" />
       <button class="action-btn primary-btn" @click="loadCourses">搜索</button>
+    </div>
+    <div class="filter-bar">
+      <select v-model.number="filterBuildingId" class="filter-item">
+        <option :value="undefined">全部楼栋</option>
+        <option v-for="b in buildings" :key="b.id" :value="b.id">{{ b.name }}</option>
+      </select>
+      <input v-model.number="filterFloor" class="filter-item" type="number" placeholder="楼层" />
+      <select v-model.number="filterClassroomId" class="filter-item">
+        <option :value="undefined">全部教室</option>
+        <option v-for="c in classrooms" :key="c.id" :value="c.id">{{ c.buildingName }}-{{ c.roomNumber }}</option>
+      </select>
+      <button class="action-btn primary-btn" @click="loadCourses">应用筛选</button>
     </div>
 
     <div class="content-area">

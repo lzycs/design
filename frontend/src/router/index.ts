@@ -25,6 +25,11 @@ const router = createRouter({
       component: () => import('../views/BuildingNavDetailView.vue'),
     },
     {
+      path: '/building-schedule/:buildingId',
+      name: 'building-schedule',
+      component: () => import('../views/BuildingScheduleView.vue'),
+    },
+    {
       path: '/reservation',
       name: 'reservation',
       component: () => import('../views/ReservationView.vue'),

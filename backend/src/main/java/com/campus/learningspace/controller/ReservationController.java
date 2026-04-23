@@ -4,6 +4,7 @@ import com.campus.learningspace.common.Result;
 import com.campus.learningspace.dto.ReservationLimitVO;
 import com.campus.learningspace.entity.Reservation;
 import com.campus.learningspace.entity.ReservationVO;
+import com.campus.learningspace.service.CourseScheduleService;
 import com.campus.learningspace.service.ReservationLimitService;
 import com.campus.learningspace.service.ReservationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,8 @@ public class ReservationController {
 
     @Autowired
     private ReservationLimitService reservationLimitService;
+    @Autowired
+    private CourseScheduleService courseScheduleService;
 
     /**
      * 当前预约规则（每人每周次数上限、单次最长分钟数），供用户端展示
@@ -52,7 +55,7 @@ public class ReservationController {
     public Result<List<Map<String, Object>>> getClassroomSlotStatuses(
             @PathVariable Long classroomId,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
-        return Result.success(reservationService.getClassroomSlotStatuses(classroomId, date));
+        return Result.success(courseScheduleService.getClassroomSlotStatusMaps(classroomId, date));
     }
 
     @GetMapping("/{id:\\d+}")

@@ -150,7 +150,8 @@ const loadApprovedFeedback = async (classroomId: number) => {
 const loadSlots = async () => {
   if (!classroom.value?.id) return
   try {
-    const res = await getClassroomSlots(classroom.value.id, getCurrentDate())
+    const currentDate = getCurrentDate()
+    const res = await getClassroomSlots(classroom.value.id, currentDate)
     const maybe = (res as unknown as { data?: unknown }).data
     if (Array.isArray(maybe)) {
       const list = maybe as ClassroomSlotStatus[]
@@ -270,7 +271,12 @@ const mergedSelection = computed((): MergedSelection => {
 })
 
 const toggleTime = (timeSlot: ClassroomSlotStatus) => {
-  if (timeSlot.status !== 'available') return
+  if (timeSlot.status !== 'available') {
+    if (timeSlot.status === 'course_occupied') {
+      selectionHint.value = '该时段有课程占用'
+    }
+    return
+  }
   const prev = [...selectedLabels.value]
   const i = prev.indexOf(timeSlot.label)
   if (i >= 0) {
@@ -477,11 +483,11 @@ onMounted(() => {
             class="time-item"
             :class="{
               active: selectedLabels.includes(timeSlot.label),
-              disabled: timeSlot.status === 'occupied'
+              disabled: timeSlot.status !== 'available'
             }"
             @click.stop="toggleTime(timeSlot)"
           >
-            {{ timeSlot.label }}
+            {{ timeSlot.label }}{{ timeSlot.status === 'course_occupied' ? '(课程中)' : '' }}
           </div>
         </div>
 

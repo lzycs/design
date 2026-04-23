@@ -83,7 +83,7 @@ const loadSlotStatus = async (list: Classroom[]) => {
 const getRoomStatusText = (room: Classroom) => {
   if (room.realTimeStatus === 2 || room.status === 2) return '维修中'
   const slots = room.id ? (classroomSlots.value[room.id] ?? []) : []
-  if (slots.length > 0 && slots.every((s) => s.status === 'occupied')) return '已约满'
+  if (slots.length > 0 && slots.every((s) => s.status !== 'available')) return '已约满'
   return '可预约'
 }
 

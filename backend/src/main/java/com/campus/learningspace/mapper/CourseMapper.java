@@ -15,6 +15,10 @@ public interface CourseMapper extends BaseMapper<Course> {
         SELECT
           co.id AS id,
           co.classroom_id AS classroomId,
+          c.building_id AS buildingId,
+          b.name AS buildingName,
+          c.floor AS floor,
+          c.room_number AS roomNumber,
           CONCAT(IFNULL(b.name, ''), '-', IFNULL(c.room_number, '')) AS location,
           co.course_name AS courseName,
           co.teacher_name AS teacherName,

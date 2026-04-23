@@ -38,6 +38,11 @@ const goClassroomReservation = (classroomId?: number) => {
   router.push(`/reservation/classroom/${classroomId}`)
 }
 
+const goSchedule = () => {
+  if (!buildingId) return
+  router.push(`/building-schedule/${buildingId}`)
+}
+
 const loadData = async () => {
   loading.value = true
   try {
@@ -65,6 +70,7 @@ onMounted(() => {
         <div class="name">{{ building.name }}</div>
         <div class="sub">{{ building.buildingNumber || '--' }} · {{ building.address || '暂无地址' }}</div>
         <div class="sub">楼层数：{{ building.floorCount || '--' }}</div>
+        <button class="schedule-btn" @click="goSchedule">查看课程表</button>
       </div>
 
       <div class="floor-tabs">
@@ -100,6 +106,14 @@ onMounted(() => {
 .top-card { background: #fff; border-radius: 12px; padding: 14px; }
 .name { font-size: 17px; font-weight: 700; color: #1a1a1a; }
 .sub { margin-top: 6px; font-size: 12px; color: #8b8b8b; }
+.schedule-btn {
+  margin-top: 8px;
+  border: none;
+  border-radius: 10px;
+  padding: 6px 10px;
+  background: #eef4ff;
+  color: #3370e7;
+}
 .floor-tabs { margin-top: 12px; display: flex; gap: 8px; overflow-x: auto; }
 .tab { border: none; background: #eef2f7; color: #666; border-radius: 14px; padding: 6px 12px; }
 .tab.active { background: #4a90e2; color: #fff; }

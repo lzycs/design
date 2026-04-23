@@ -19,6 +19,11 @@ const goToClassrooms = (buildingId: number) => {
   router.push(`/building-nav/${buildingId}`)
 }
 
+const goToBuildingSchedule = (buildingId?: number) => {
+  if (!buildingId) return
+  router.push(`/building-schedule/${buildingId}`)
+}
+
 const goBuildingNav = () => {
   router.push('/building-nav')
 }
@@ -125,6 +130,7 @@ onMounted(() => {
             <div class="building-status" :class="{ maintenance: building.status !== 1 }">
               {{ building.status === 1 ? '可预约' : '部分维护' }}
             </div>
+            <button class="course-btn" @click.stop="goToBuildingSchedule(building.id)">课程表</button>
           </div>
         </div>
       </div>
@@ -376,6 +382,15 @@ onMounted(() => {
 
 .building-status.maintenance {
   color: var(--color-danger);
+}
+.course-btn {
+  margin-top: 6px;
+  border: none;
+  border-radius: 10px;
+  padding: 4px 8px;
+  background: #eef4ff;
+  color: #3370e7;
+  font-size: 12px;
 }
 
 .tab-bar {

@@ -11,6 +11,10 @@ import java.time.LocalTime;
 public class AdminCourseVO {
     private Long id;
     private Long classroomId;
+    private Long buildingId;
+    private String buildingName;
+    private Integer floor;
+    private String roomNumber;
     private String location;
 
     private String courseName;

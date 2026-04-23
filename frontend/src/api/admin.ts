@@ -110,6 +110,10 @@ export interface AdminClassroomVO {
 export interface AdminCourseVO {
   id: number
   classroomId: number
+  buildingId?: number
+  buildingName?: string
+  floor?: number
+  roomNumber?: string
   location: string
   courseName: string
   teacherName: string
@@ -181,7 +185,12 @@ export const deleteAdminClassroom = (id: number) => {
   return request.delete<unknown, Result<boolean>>(`/admin/classrooms/${id}`)
 }
 
-export const getAdminCourses = (params?: { keyword?: string }) => {
+export const getAdminCourses = (params?: {
+  keyword?: string
+  buildingId?: number
+  floor?: number
+  classroomId?: number
+}) => {
   return request.get<unknown, Result<AdminCourseVO[]>>('/admin/courses', { params })
 }
 

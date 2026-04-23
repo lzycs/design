@@ -112,6 +112,16 @@ const visibleBuildings = computed(() => {
   return list
 })
 
+const goBuildingDetail = (id?: number) => {
+  if (!id) return
+  router.push(`/building-nav/${id}`)
+}
+
+const goBuildingSchedule = (id?: number) => {
+  if (!id) return
+  router.push(`/building-schedule/${id}`)
+}
+
 onMounted(() => {
   loadBuildings()
 })
@@ -131,7 +141,7 @@ onMounted(() => {
       </div>
 
       <div class="list-wrap" v-if="!loading">
-        <div v-for="b in visibleBuildings" :key="b.id" class="item" @click="router.push(`/building-nav/${b.id}`)">
+        <div v-for="b in visibleBuildings" :key="b.id" class="item" @click="goBuildingDetail(b.id)">
           <div class="item-main">
             <div class="title-row">
               <div class="title">{{ b.name }}</div>
@@ -139,6 +149,10 @@ onMounted(() => {
             </div>
             <div class="sub">{{ b.buildingNumber || '--' }} · {{ b.address || '暂无地址' }}</div>
             <div class="meta">距离 {{ formatDistance(b.distanceMeter) }} · 步行约 {{ walkMinute(b.distanceMeter) }}</div>
+            <div class="action-row">
+              <button class="action-btn primary" @click.stop="goBuildingDetail(b.id)">楼栋详情</button>
+              <button class="action-btn" @click.stop="goBuildingSchedule(b.id)">课程表</button>
+            </div>
           </div>
         </div>
         <van-empty v-if="visibleBuildings.length === 0" description="没有找到匹配教学楼" />
@@ -167,6 +181,19 @@ onMounted(() => {
 .status.off { color: #e6a23c; background: #fff7e8; }
 .sub { margin-top: 5px; font-size: 12px; color: #8b8b8b; }
 .meta { margin-top: 5px; font-size: 12px; color: #4a90e2; }
+.action-row { margin-top: 8px; display: flex; gap: 8px; }
+.action-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 4px 10px;
+  font-size: 12px;
+  background: #eef4ff;
+  color: #3370e7;
+}
+.action-btn.primary {
+  background: #f5f7fa;
+  color: #667085;
+}
 .locate-btn {
   position: fixed; right: 14px; bottom: 16px; border: none; background: #1f6feb; color: #fff;
   border-radius: 20px; padding: 10px 14px; box-shadow: 0 4px 12px rgba(31,111,235,.3); font-size: 12px;

@@ -58,10 +58,13 @@ export const getReservationById = (id: number) => {
 }
 
 export interface ClassroomSlotStatus {
+  slotId?: number
   label: string
   startTime: string
   endTime: string
-  status: 'available' | 'occupied'
+  status: 'available' | 'reservation_occupied' | 'course_occupied'
+  courseName?: string
+  teacherName?: string
 }
 
 export const getClassroomSlots = (classroomId: number, date: string) => {
