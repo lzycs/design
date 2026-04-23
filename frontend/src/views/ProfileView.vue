@@ -291,6 +291,21 @@ onMounted(async () => {
 
             <div
               class="menu-item"
+              @click="$router.push('/profile/resources')"
+            >
+              <div class="menu-left">
+                <div class="menu-icon">
+                  <van-icon name="shop-o" />
+                </div>
+                <div class="menu-text">我的资源</div>
+              </div>
+              <div class="menu-right">
+                <van-icon name="arrow" class="menu-arrow" />
+              </div>
+            </div>
+
+            <div
+              class="menu-item"
               @click="$router.push('/profile/teams')"
             >
               <div class="menu-left">

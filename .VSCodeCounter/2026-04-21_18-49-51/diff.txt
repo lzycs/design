@@ -1,0 +1,124 @@
+Date : 2026-04-21 18:49:51
+Directory : d:\AAAAAAAAAAA\TestA\frontend\src\views\admin
+Total : 76 files,  -25308 codes, -141 comments, -1698 blanks, all -27147 lines
+
+Languages
++--------------------+------------+------------+------------+------------+------------+
+| language           | files      | code       | comment    | blank      | total      |
++--------------------+------------+------------+------------+------------+------------+
+| XML                |          1 |         -1 |          0 |         -1 |         -2 |
+| HTML               |          1 |        -13 |          0 |         -1 |        -14 |
+| JSON with Comments |          2 |        -18 |          0 |         -2 |        -20 |
+| PostCSS            |          2 |       -145 |         -5 |        -25 |       -175 |
+| JavaScript         |          3 |       -256 |          0 |        -55 |       -311 |
+| TypeScript         |         25 |     -1,229 |        -97 |       -227 |     -1,553 |
+| vue                |         35 |    -11,526 |        -39 |     -1,377 |    -12,942 |
+| JSON               |          7 |    -12,120 |          0 |        -10 |    -12,130 |
++--------------------+------------+------------+------------+------------+------------+
+
+Directories
++-------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                          | files      | code       | comment    | blank      | total      |
++-------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                             |         76 |    -25,308 |       -141 |     -1,698 |    -27,147 |
+| ..                                                                            |         76 |    -25,308 |       -141 |     -1,698 |    -27,147 |
+| .. (Files)                                                                    |         26 |    -11,228 |        -38 |     -1,333 |    -12,599 |
+| ..\..                                                                         |         50 |    -14,080 |       -103 |       -365 |    -14,548 |
+| ..\.. (Files)                                                                 |          2 |        -70 |          0 |        -13 |        -83 |
+| ..\..\..                                                                      |         19 |    -12,521 |        -65 |        -96 |    -12,682 |
+| ..\..\.. (Files)                                                              |         14 |    -12,256 |        -63 |        -38 |    -12,357 |
+| ..\..\..\e2e                                                                  |          2 |         -9 |         -2 |         -3 |        -14 |
+| ..\..\..\electron                                                             |          3 |       -256 |          0 |        -55 |       -311 |
+| ..\..\api                                                                     |         12 |       -813 |        -24 |       -165 |     -1,002 |
+| ..\..\assets                                                                  |          3 |       -146 |         -5 |        -26 |       -177 |
+| ..\..\components                                                              |          9 |       -249 |         -1 |        -40 |       -290 |
+| ..\..\components (Files)                                                      |          3 |       -194 |          0 |        -32 |       -226 |
+| ..\..\components\__tests__                                                    |          1 |         -9 |          0 |         -3 |        -12 |
+| ..\..\components\icons                                                        |          5 |        -46 |         -1 |         -5 |        -52 |
+| ..\..\router                                                                  |          1 |       -178 |          0 |         -3 |       -181 |
+| ..\..\stores                                                                  |          2 |        -59 |          0 |        -11 |        -70 |
+| ..\..\utils                                                                   |          2 |        -44 |         -8 |        -11 |        -63 |
++-------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++-------------------------------------------------------------------------------+--------------------+------------+------------+------------+------------+
+| filename                                                                      | language           | code       | comment    | blank      | total      |
++-------------------------------------------------------------------------------+--------------------+------------+------------+------------+------------+
+| d:\AAAAAAAAAAA\TestA\frontend\.oxlintrc.json                                  | JSON               |        -10 |          0 |         -1 |        -11 |
+| d:\AAAAAAAAAAA\TestA\frontend\.prettierrc.json                                | JSON               |         -6 |          0 |         -1 |         -7 |
+| d:\AAAAAAAAAAA\TestA\frontend\e2e\tsconfig.json                               | JSON with Comments |         -4 |          0 |         -1 |         -5 |
+| d:\AAAAAAAAAAA\TestA\frontend\e2e\vue.spec.ts                                 | TypeScript         |         -5 |         -2 |         -2 |         -9 |
+| d:\AAAAAAAAAAA\TestA\frontend\electron\main.cjs                               | JavaScript         |       -225 |          0 |        -45 |       -270 |
+| d:\AAAAAAAAAAA\TestA\frontend\electron\preload.cjs                            | JavaScript         |         -4 |          0 |         -2 |         -6 |
+| d:\AAAAAAAAAAA\TestA\frontend\electron\prepare-backend.cjs                    | JavaScript         |        -27 |          0 |         -8 |        -35 |
+| d:\AAAAAAAAAAA\TestA\frontend\env.d.ts                                        | TypeScript         |          0 |         -1 |         -1 |         -2 |
+| d:\AAAAAAAAAAA\TestA\frontend\eslint.config.ts                                | TypeScript         |        -26 |         -4 |         -9 |        -39 |
+| d:\AAAAAAAAAAA\TestA\frontend\index.html                                      | HTML               |        -13 |          0 |         -1 |        -14 |
+| d:\AAAAAAAAAAA\TestA\frontend\package-lock.json                               | JSON               |    -11,963 |          0 |         -1 |    -11,964 |
+| d:\AAAAAAAAAAA\TestA\frontend\package.json                                    | JSON               |       -102 |          0 |         -1 |       -103 |
+| d:\AAAAAAAAAAA\TestA\frontend\playwright.config.ts                            | TypeScript         |        -44 |        -57 |        -10 |       -111 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\App.vue                                     | vue                |        -58 |          0 |         -7 |        -65 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\api\admin.ts                                | TypeScript         |       -214 |         -4 |        -45 |       -263 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\api\building.ts                             | TypeScript         |        -32 |          0 |         -8 |        -40 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\api\classroom.ts                            | TypeScript         |        -57 |         -5 |        -12 |        -74 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\api\feedback.ts                             | TypeScript         |        -63 |         -1 |        -12 |        -76 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\api\library.ts                              | TypeScript         |        -20 |          0 |         -5 |        -25 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\api\librarySeat.ts                          | TypeScript         |        -20 |          0 |         -5 |        -25 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\api\reservation.ts                          | TypeScript         |        -80 |         -4 |        -17 |       -101 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\api\resourceMarket.ts                       | TypeScript         |        -58 |          0 |        -11 |        -69 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\api\scanDevice.ts                           | TypeScript         |        -12 |         -1 |         -4 |        -17 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\api\studyPlan.ts                            | TypeScript         |        -51 |          0 |         -8 |        -59 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\api\team.ts                                 | TypeScript         |       -140 |         -9 |        -26 |       -175 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\api\teamChat.ts                             | TypeScript         |        -66 |          0 |        -12 |        -78 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\assets\base.css                             | PostCSS            |        -71 |         -2 |        -14 |        -87 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\assets\logo.svg                             | XML                |         -1 |          0 |         -1 |         -2 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\assets\main.css                             | PostCSS            |        -74 |         -3 |        -11 |        -88 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\components\HelloWorld.vue                   | vue                |        -36 |          0 |         -6 |        -42 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\components\TheWelcome.vue                   | vue                |        -82 |          0 |        -14 |        -96 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\components\WelcomeItem.vue                  | vue                |        -76 |          0 |        -12 |        -88 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\components\__tests__\HelloWorld.spec.ts     | TypeScript         |         -9 |          0 |         -3 |        -12 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\components\icons\IconCommunity.vue          | vue                |         -7 |          0 |         -1 |         -8 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\components\icons\IconDocumentation.vue      | vue                |         -7 |          0 |         -1 |         -8 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\components\icons\IconEcosystem.vue          | vue                |         -7 |          0 |         -1 |         -8 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\components\icons\IconSupport.vue            | vue                |         -7 |          0 |         -1 |         -8 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\components\icons\IconTooling.vue            | vue                |        -18 |         -1 |         -1 |        -20 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\main.ts                                     | TypeScript         |        -12 |          0 |         -6 |        -18 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\router\index.ts                             | TypeScript         |       -178 |          0 |         -3 |       -181 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\stores\counter.ts                           | TypeScript         |        -10 |          0 |         -3 |        -13 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\stores\teamChat.ts                          | TypeScript         |        -49 |          0 |         -8 |        -57 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\utils\publicUrl.ts                          | TypeScript         |        -15 |         -6 |         -5 |        -26 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\utils\request.ts                            | TypeScript         |        -29 |         -2 |         -6 |        -37 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\views\AboutView.vue                         | vue                |        -14 |          0 |         -2 |        -16 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\views\BuildingNavDetailView.vue             | vue                |        -99 |          0 |        -14 |       -113 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\views\BuildingNavView.vue                   | vue                |       -159 |          0 |        -17 |       -176 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\views\ClassroomDetailView.vue               | vue                |       -653 |          0 |        -76 |       -729 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\views\ClassroomReviewsView.vue              | vue                |       -227 |          0 |        -38 |       -265 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\views\ClassroomsView.vue                    | vue                |        -93 |          0 |        -11 |       -104 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\views\CollaborationView.vue                 | vue                |     -1,225 |         -5 |       -135 |     -1,365 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\views\FeedbackView.vue                      | vue                |       -994 |         -9 |       -119 |     -1,122 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\views\HomeView.vue                          | vue                |       -336 |         -4 |        -52 |       -392 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\views\ProfileInfoView.vue                   | vue                |        -59 |          0 |        -13 |        -72 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\views\ProfilePlanView.vue                   | vue                |       -143 |          0 |        -23 |       -166 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\views\ProfileRepairView.vue                 | vue                |       -356 |         -1 |        -49 |       -406 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\views\ProfileReservationView.vue            | vue                |       -589 |          0 |        -70 |       -659 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\views\ProfileReviewView.vue                 | vue                |       -141 |          0 |        -23 |       -164 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\views\ProfileTeamView.vue                   | vue                |     -1,218 |         -7 |       -144 |     -1,369 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\views\ProfileView.vue                       | vue                |       -469 |          0 |        -52 |       -521 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\views\ReservationBuildingClassroomsView.vue | vue                |       -188 |          0 |        -19 |       -207 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\views\ReservationView.vue                   | vue                |     -1,340 |          0 |       -158 |     -1,498 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\views\ResourceMarketView.vue                | vue                |       -370 |          0 |        -29 |       -399 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\views\RoomCollabView.vue                    | vue                |       -337 |         -4 |        -52 |       -393 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\views\ScanDeviceView.vue                    | vue                |       -120 |          0 |        -12 |       -132 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\views\ScanReservationView.vue               | vue                |        -89 |          0 |        -10 |        -99 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\views\SettingsView.vue                      | vue                |        -32 |          0 |         -6 |        -38 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\views\SharedPlanView.vue                    | vue                |     -1,140 |         -8 |       -137 |     -1,285 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\views\TeamChatView.vue                      | vue                |       -751 |          0 |        -60 |       -811 |
+| d:\AAAAAAAAAAA\TestA\frontend\src\views\TeamMessageCenterView.vue             | vue                |        -86 |          0 |        -12 |        -98 |
+| d:\AAAAAAAAAAA\TestA\frontend\tsconfig.app.json                               | JSON               |        -11 |          0 |         -2 |        -13 |
+| d:\AAAAAAAAAAA\TestA\frontend\tsconfig.json                                   | JSON with Comments |        -14 |          0 |         -1 |        -15 |
+| d:\AAAAAAAAAAA\TestA\frontend\tsconfig.node.json                              | JSON               |        -18 |          0 |         -2 |        -20 |
+| d:\AAAAAAAAAAA\TestA\frontend\tsconfig.vitest.json                            | JSON               |        -10 |          0 |         -2 |        -12 |
+| d:\AAAAAAAAAAA\TestA\frontend\vite.config.ts                                  | TypeScript         |        -26 |         -1 |         -4 |        -31 |
+| d:\AAAAAAAAAAA\TestA\frontend\vitest.config.ts                                | TypeScript         |        -13 |          0 |         -2 |        -15 |
+| Total                                                                         |                    |    -25,308 |       -141 |     -1,698 |    -27,147 |
++-------------------------------------------------------------------------------+--------------------+------------+------------+------------+------------+

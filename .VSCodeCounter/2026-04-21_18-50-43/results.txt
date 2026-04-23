@@ -1,0 +1,213 @@
+Date : 2026-04-21 18:50:43
+Directory : d:\AAAAAAAAAAA\TestA\backend
+Total : 157 files,  8840 codes, 695 comments, 1630 blanks, all 11165 lines
+
+Languages
++------------+------------+------------+------------+------------+------------+
+| language   | files      | code       | comment    | blank      | total      |
++------------+------------+------------+------------+------------+------------+
+| Java       |        140 |      5,947 |        501 |      1,397 |      7,845 |
+| MS SQL     |          2 |      2,166 |        182 |        160 |      2,508 |
+| PowerShell |          4 |        488 |          9 |         37 |        534 |
+| XML        |          5 |        132 |          1 |         14 |        147 |
+| YAML       |          2 |         96 |          2 |         18 |        116 |
+| Batch      |          3 |          8 |          0 |          3 |         11 |
+| Properties |          1 |          3 |          0 |          1 |          4 |
++------------+------------+------------+------------+------------+------------+
+
+Directories
++---------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                                                | files      | code       | comment    | blank      | total      |
++---------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                                                   |        157 |      8,840 |        695 |      1,630 |     11,165 |
+| . (Files)                                                                                                           |          8 |        571 |         10 |         54 |        635 |
+| .idea                                                                                                               |          4 |         57 |          0 |          0 |         57 |
+| src                                                                                                                 |        142 |      7,078 |        593 |      1,486 |      9,157 |
+| src\main                                                                                                            |        142 |      7,078 |        593 |      1,486 |      9,157 |
+| src\main\java                                                                                                       |        140 |      5,947 |        501 |      1,397 |      7,845 |
+| src\main\java\com                                                                                                   |        140 |      5,947 |        501 |      1,397 |      7,845 |
+| src\main\java\com\campus                                                                                            |        140 |      5,947 |        501 |      1,397 |      7,845 |
+| src\main\java\com\campus\learningspace                                                                              |        140 |      5,947 |        501 |      1,397 |      7,845 |
+| src\main\java\com\campus\learningspace (Files)                                                                      |          1 |         14 |          0 |          5 |         19 |
+| src\main\java\com\campus\learningspace\common                                                                       |          2 |         36 |          3 |         10 |         49 |
+| src\main\java\com\campus\learningspace\config                                                                       |          6 |         92 |          6 |         28 |        126 |
+| src\main\java\com\campus\learningspace\controller                                                                   |         23 |      2,089 |        103 |        379 |      2,571 |
+| src\main\java\com\campus\learningspace\dto                                                                          |          4 |         94 |          8 |         21 |        123 |
+| src\main\java\com\campus\learningspace\entity                                                                       |         45 |        972 |        208 |        488 |      1,668 |
+| src\main\java\com\campus\learningspace\mapper                                                                       |         28 |        652 |         41 |        134 |        827 |
+| src\main\java\com\campus\learningspace\service                                                                      |         28 |      1,825 |        131 |        309 |      2,265 |
+| src\main\java\com\campus\learningspace\task                                                                         |          1 |         12 |          0 |          5 |         17 |
+| src\main\java\com\campus\learningspace\ws                                                                           |          2 |        161 |          1 |         18 |        180 |
+| src\main\resources                                                                                                  |          2 |      1,131 |         92 |         89 |      1,312 |
+| src\main\resources (Files)                                                                                          |          1 |         48 |          1 |          9 |         58 |
+| src\main\resources\sql                                                                                              |          1 |      1,083 |         91 |         80 |      1,254 |
+| target                                                                                                              |          3 |      1,134 |         92 |         90 |      1,316 |
+| target\classes                                                                                                      |          2 |      1,131 |         92 |         89 |      1,312 |
+| target\classes (Files)                                                                                              |          1 |         48 |          1 |          9 |         58 |
+| target\classes\sql                                                                                                  |          1 |      1,083 |         91 |         80 |      1,254 |
+| target\maven-archiver                                                                                               |          1 |          3 |          0 |          1 |          4 |
++---------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++---------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| filename                                                                                                            | language   | code       | comment    | blank      | total      |
++---------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| d:\AAAAAAAAAAA\TestA\backend\.idea\compiler.xml                                                                     | XML        |         19 |          0 |          0 |         19 |
+| d:\AAAAAAAAAAA\TestA\backend\.idea\encodings.xml                                                                    | XML        |          6 |          0 |          0 |          6 |
+| d:\AAAAAAAAAAA\TestA\backend\.idea\jarRepositories.xml                                                              | XML        |         20 |          0 |          0 |         20 |
+| d:\AAAAAAAAAAA\TestA\backend\.idea\misc.xml                                                                         | XML        |         12 |          0 |          0 |         12 |
+| d:\AAAAAAAAAAA\TestA\backend\init_db.bat                                                                            | Batch      |          2 |          0 |          1 |          3 |
+| d:\AAAAAAAAAAA\TestA\backend\init_db.cmd                                                                            | Batch      |          2 |          0 |          1 |          3 |
+| d:\AAAAAAAAAAA\TestA\backend\init_db.ps1                                                                            | PowerShell |        233 |          1 |         14 |        248 |
+| d:\AAAAAAAAAAA\TestA\backend\init_db_final.ps1                                                                      | PowerShell |         16 |          3 |          4 |         23 |
+| d:\AAAAAAAAAAA\TestA\backend\init_db_interactive.ps1                                                                | PowerShell |        237 |          4 |         18 |        259 |
+| d:\AAAAAAAAAAA\TestA\backend\init_db_simple.cmd                                                                     | Batch      |          4 |          0 |          1 |          5 |
+| d:\AAAAAAAAAAA\TestA\backend\init_db_simple.ps1                                                                     | PowerShell |          2 |          1 |          1 |          4 |
+| d:\AAAAAAAAAAA\TestA\backend\pom.xml                                                                                | XML        |         75 |          1 |         14 |         90 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\CampusLearningSpaceApplication.java             | Java       |         14 |          0 |          5 |         19 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\common\ReservationRuleException.java            | Java       |          6 |          3 |          3 |         12 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\common\Result.java                              | Java       |         30 |          0 |          7 |         37 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\config\CorsConfig.java                          | Java       |         16 |          0 |          4 |         20 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\config\GlobalExceptionHandler.java              | Java       |         15 |          0 |          4 |         19 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\config\MyBatisConfig.java                       | Java       |         13 |          0 |          5 |         18 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\config\MyMetaObjectHandler.java                 | Java       |         21 |          0 |          6 |         27 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\config\ReservationProperties.java               | Java       |          9 |          6 |          5 |         20 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\config\WebSocketConfig.java                     | Java       |         18 |          0 |          4 |         22 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\controller\AdminAuthController.java             | Java       |        101 |          0 |         20 |        121 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\controller\AdminBuildingController.java         | Java       |        160 |          1 |         22 |        183 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\controller\AdminClassroomController.java        | Java       |        160 |          2 |         25 |        187 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\controller\AdminCourseController.java           | Java       |        169 |          1 |         23 |        193 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\controller\AdminMarketAuditController.java      | Java       |         62 |          0 |         11 |         73 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\controller\AdminRepairController.java           | Java       |        109 |          4 |         18 |        131 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\controller\AdminReservationLimitController.java | Java       |         45 |          0 |          8 |         53 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\controller\AdminReviewController.java           | Java       |         85 |          0 |         13 |         98 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\controller\AdminScanDeviceController.java       | Java       |         82 |         11 |         19 |        112 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\controller\BuildingController.java              | Java       |         34 |          0 |         10 |         44 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\controller\ClassroomController.java             | Java       |         48 |          3 |         13 |         64 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\controller\ClassroomFeedbackController.java     | Java       |        290 |         20 |         59 |        369 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\controller\LibraryController.java               | Java       |         18 |          0 |          7 |         25 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\controller\LibrarySeatController.java           | Java       |         19 |          0 |          7 |         26 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\controller\RepairController.java                | Java       |         68 |          1 |         10 |         79 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\controller\ReservationController.java           | Java       |         83 |         23 |         18 |        124 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\controller\ResourceMarketController.java        | Java       |         78 |          0 |         16 |         94 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\controller\ReviewController.java                | Java       |         45 |          0 |         11 |         56 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\controller\ScanDeviceAuthorizeController.java   | Java       |         37 |          4 |         11 |         52 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\controller\StudyPlanController.java             | Java       |         52 |          5 |         14 |         71 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\controller\TeamChatController.java              | Java       |        154 |          0 |         12 |        166 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\controller\TeamController.java                  | Java       |        148 |         28 |         25 |        201 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\controller\UserController.java                  | Java       |         42 |          0 |          7 |         49 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\dto\CreateStudyPlanDTO.java                     | Java       |         17 |          5 |          5 |         27 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\dto\ReservationLimitUpdateDTO.java              | Java       |          7 |          0 |          3 |         10 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\dto\ReservationLimitVO.java                     | Java       |         11 |          0 |          3 |         14 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\dto\TeamChatDtos.java                           | Java       |         59 |          3 |         10 |         72 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\AdminBuildingVO.java                     | Java       |         12 |          3 |          5 |         20 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\AdminClassroomVO.java                    | Java       |         19 |          6 |          8 |         33 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\AdminCourseVO.java                       | Java       |         16 |          3 |          7 |         26 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\AdminLoginResponse.java                  | Java       |         10 |          3 |          4 |         17 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\AdminMenu.java                           | Java       |         20 |          6 |         12 |         38 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\AdminOperationLog.java                   | Java       |         18 |          3 |         11 |         32 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\AdminOverviewVO.java                     | Java       |          8 |          3 |          4 |         15 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\AdminPermission.java                     | Java       |         19 |          0 |         11 |         30 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\AdminRepairStatusUpdateRequest.java      | Java       |          7 |          6 |          5 |         18 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\AdminRepairVO.java                       | Java       |         22 |          3 |         10 |         35 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\AdminReviewAuditRequest.java             | Java       |          7 |          6 |          5 |         18 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\AdminReviewVO.java                       | Java       |         16 |          6 |         10 |         32 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\AdminRole.java                           | Java       |         19 |          6 |         11 |         36 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\AdminRolePermission.java                 | Java       |         15 |          0 |          8 |         23 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\Building.java                            | Java       |         25 |          3 |         14 |         42 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\CampusCredit.java                        | Java       |         18 |          0 |          6 |         24 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\Classroom.java                           | Java       |         31 |          0 |         20 |         51 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\ClassroomDetailVO.java                   | Java       |         11 |          7 |          4 |         22 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\ClassroomFeedback.java                   | Java       |         29 |         12 |         19 |         60 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\Course.java                              | Java       |         25 |          0 |         14 |         39 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\Library.java                             | Java       |         25 |          0 |         17 |         42 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\LibrarySeat.java                         | Java       |         28 |          9 |         20 |         57 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\Notification.java                        | Java       |         23 |          0 |         13 |         36 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\Repair.java                              | Java       |         28 |          1 |         18 |         47 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\RepairVO.java                            | Java       |         21 |          6 |          5 |         32 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\Reservation.java                         | Java       |         37 |         23 |         24 |         84 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\ReservationLimitConfig.java              | Java       |         15 |          0 |          8 |         23 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\ReservationVO.java                       | Java       |         35 |         10 |          7 |         52 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\ResourceMarketItem.java                  | Java       |         42 |          4 |          9 |         55 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\ResourceMarketTrade.java                 | Java       |         35 |          1 |         10 |         46 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\Review.java                              | Java       |         23 |          0 |         13 |         36 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\ScanDevice.java                          | Java       |         19 |         12 |         11 |         42 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\ScanDevicePairToken.java                 | Java       |         21 |         15 |         13 |         49 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\StudyPlan.java                           | Java       |         28 |          1 |         16 |         45 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\StudyPlanVO.java                         | Java       |         27 |         10 |          5 |         42 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\TeamJoinApplication.java                 | Java       |         23 |         11 |         13 |         47 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\TeamJoinApplicationVO.java               | Java       |         19 |          6 |          6 |         31 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\TeamMember.java                          | Java       |         20 |          0 |         10 |         30 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\TeamMemberVO.java                        | Java       |         12 |          4 |          5 |         21 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\TeamMessage.java                         | Java       |         26 |         12 |         18 |         56 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\TeamMessageRead.java                     | Java       |         25 |          0 |         11 |         36 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\TeamRequest.java                         | Java       |         25 |          3 |         15 |         43 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\TeamRequestVO.java                       | Java       |         19 |          4 |          5 |         28 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\TimeSlot.java                            | Java       |         23 |          0 |         12 |         35 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\entity\User.java                                | Java       |         26 |          0 |         16 |         42 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\mapper\AdminMenuMapper.java                     | Java       |         26 |          0 |          6 |         32 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\mapper\AdminOperationLogMapper.java             | Java       |          7 |          0 |          4 |         11 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\mapper\AdminPermissionMapper.java               | Java       |         18 |          0 |          5 |         23 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\mapper\AdminRoleMapper.java                     | Java       |         16 |          0 |          6 |         22 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\mapper\BuildingMapper.java                      | Java       |          5 |          0 |          3 |          8 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\mapper\CampusCreditMapper.java                  | Java       |          5 |          0 |          3 |          8 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\mapper\ClassroomFeedbackMapper.java             | Java       |          5 |          0 |          4 |          9 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\mapper\ClassroomMapper.java                     | Java       |         31 |          0 |          5 |         36 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\mapper\CourseMapper.java                        | Java       |         29 |          0 |          5 |         34 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\mapper\LibraryMapper.java                       | Java       |          5 |          0 |          4 |          9 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\mapper\LibrarySeatMapper.java                   | Java       |          5 |          0 |          4 |          9 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\mapper\NotificationMapper.java                  | Java       |          5 |          0 |          3 |          8 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\mapper\RepairMapper.java                        | Java       |         88 |          0 |          7 |         95 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\mapper\ReservationLimitConfigMapper.java        | Java       |          5 |          0 |          3 |          8 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\mapper\ReservationMapper.java                   | Java       |         64 |          3 |          5 |         72 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\mapper\ResourceMarketItemMapper.java            | Java       |          5 |          0 |          3 |          8 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\mapper\ResourceMarketTradeMapper.java           | Java       |          5 |          0 |          3 |          8 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\mapper\ReviewMapper.java                        | Java       |         30 |          0 |          5 |         35 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\mapper\ScanDeviceMapper.java                    | Java       |          9 |          0 |          4 |         13 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\mapper\ScanDevicePairTokenMapper.java           | Java       |          5 |          0 |          4 |          9 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\mapper\StudyPlanMapper.java                     | Java       |         60 |          9 |          7 |         76 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\mapper\TeamJoinApplicationMapper.java           | Java       |         85 |         15 |         10 |        110 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\mapper\TeamMemberMapper.java                    | Java       |         37 |          8 |          7 |         52 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\mapper\TeamMessageMapper.java                   | Java       |         30 |          0 |          5 |         35 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\mapper\TeamMessageReadMapper.java               | Java       |         15 |          0 |          5 |         20 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\mapper\TeamRequestMapper.java                   | Java       |         45 |          6 |          7 |         58 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\mapper\TimeSlotMapper.java                      | Java       |          5 |          0 |          4 |          9 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\mapper\UserMapper.java                          | Java       |          7 |          0 |          3 |         10 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\service\AdminAuthService.java                   | Java       |         44 |          0 |         14 |         58 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\service\AdminOperationLogService.java           | Java       |          8 |          0 |          4 |         12 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\service\AdminPermissionService.java             | Java       |         23 |          0 |          9 |         32 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\service\BuildingService.java                    | Java       |         15 |          0 |          5 |         20 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\service\CampusCreditService.java                | Java       |         55 |          0 |         11 |         66 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\service\ClassroomFeedbackService.java           | Java       |        138 |         18 |         14 |        170 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\service\ClassroomService.java                   | Java       |         64 |          3 |         13 |         80 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\service\CourseService.java                      | Java       |          8 |          0 |          4 |         12 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\service\LibrarySeatService.java                 | Java       |         17 |          0 |          6 |         23 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\service\LibraryService.java                     | Java       |         15 |          0 |          6 |         21 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\service\NotificationService.java                | Java       |          8 |          0 |          4 |         12 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\service\RepairService.java                      | Java       |         55 |          6 |         13 |         74 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\service\ReservationLimitService.java            | Java       |         87 |          3 |         10 |        100 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\service\ReservationService.java                 | Java       |        206 |         27 |         30 |        263 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\service\ResourceMarketItemService.java          | Java       |        153 |          0 |         19 |        172 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\service\ResourceMarketTradeService.java         | Java       |         65 |          0 |         12 |         77 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\service\ReviewService.java                      | Java       |         42 |          2 |          9 |         53 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\service\ScanDevicePairTokenService.java         | Java       |         44 |          0 |          9 |         53 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\service\ScanDeviceService.java                  | Java       |         48 |          9 |          8 |         65 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\service\StudyPlanService.java                   | Java       |        132 |         16 |         20 |        168 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\service\TeamChatService.java                    | Java       |        217 |          0 |         16 |        233 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\service\TeamJoinApplicationService.java         | Java       |         96 |         17 |         13 |        126 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\service\TeamMemberService.java                  | Java       |         35 |          3 |          9 |         47 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\service\TeamMessageReadService.java             | Java       |          8 |          0 |          3 |         11 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\service\TeamMessageService.java                 | Java       |         21 |          1 |          6 |         28 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\service\TeamRequestService.java                 | Java       |        191 |         26 |         31 |        248 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\service\TimeSlotService.java                    | Java       |         15 |          0 |          6 |         21 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\service\UserService.java                        | Java       |         15 |          0 |          5 |         20 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\task\ReservationTask.java                       | Java       |         12 |          0 |          5 |         17 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\ws\TeamChatWebSocketHandler.java                | Java       |         84 |          1 |          7 |         92 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\java\com\campus\learningspace\ws\TeamChatWsHub.java                           | Java       |         77 |          0 |         11 |         88 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\resources\application.yml                                                     | YAML       |         48 |          1 |          9 |         58 |
+| d:\AAAAAAAAAAA\TestA\backend\src\main\resources\sql\init.sql                                                        | MS SQL     |      1,083 |         91 |         80 |      1,254 |
+| d:\AAAAAAAAAAA\TestA\backend\target\classes\application.yml                                                         | YAML       |         48 |          1 |          9 |         58 |
+| d:\AAAAAAAAAAA\TestA\backend\target\classes\sql\init.sql                                                            | MS SQL     |      1,083 |         91 |         80 |      1,254 |
+| d:\AAAAAAAAAAA\TestA\backend\target\maven-archiver\pom.properties                                                   | Properties |          3 |          0 |          1 |          4 |
+| Total                                                                                                               |            |      8,840 |        695 |      1,630 |     11,165 |
++---------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+

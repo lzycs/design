@@ -100,6 +100,11 @@ const router = createRouter({
       component: () => import('../views/ProfilePlanView.vue'),
     },
     {
+      path: '/profile/resources',
+      name: 'profile-resources',
+      component: () => import('../views/ProfileResourcesView.vue'),
+    },
+    {
       path: '/feedback',
       name: 'feedback',
       component: () => import('../views/FeedbackView.vue'),
