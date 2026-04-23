@@ -67,7 +67,7 @@ onMounted(() => {
           </div>
         </div>
         <div class="header-tags">
-          <span class="header-tag">今日可预约</span>
+          <span class="header-tag active">今日可预约</span>
           <span class="header-tag">多端协作</span>
         </div>
       </div>
@@ -122,7 +122,7 @@ onMounted(() => {
           >
             <div class="building-number">{{ index + 1 }}</div>
             <div class="building-name">{{ building.name }}</div>
-            <div class="building-status">
+            <div class="building-status" :class="{ maintenance: building.status !== 1 }">
               {{ building.status === 1 ? '可预约' : '部分维护' }}
             </div>
           </div>
@@ -159,6 +159,11 @@ onMounted(() => {
 }
 
 .home-page {
+  --color-primary: #3370e7;
+  --color-primary-soft: #6691f7;
+  --color-primary-bg: #eef4ff;
+  --color-success: #2daf60;
+  --color-danger: #f56c6c;
   width: 100%;
   min-height: 100vh;
   background-color: #f5f5f5;
@@ -167,10 +172,10 @@ onMounted(() => {
 
 .top-header {
   background-color: #ffffff;
-  border-radius: 0 0 24px 24px;
+  border-radius: 0 0 16px 16px;
   box-shadow: 0 2px 14px rgba(15, 23, 42, 0.06);
   padding: 18px 20px 16px;
-  margin-bottom: 8px;
+  margin-bottom: 16px;
 }
 
 .header-main {
@@ -182,7 +187,7 @@ onMounted(() => {
 .header-text h1 {
   font-size: 20px;
   line-height: 1.25;
-  color: #4a90e2;
+  color: var(--color-primary);
   font-weight: 700;
 }
 
@@ -196,7 +201,7 @@ onMounted(() => {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: #edf4ff;
+  background-color: var(--color-primary-bg);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -212,17 +217,23 @@ onMounted(() => {
 
 .header-tag {
   font-size: 11px;
-  color: #3c6ea8;
-  background-color: #f4f8ff;
+  color: var(--color-primary);
+  background-color: var(--color-primary-bg);
   border: 1px solid #e0ecfb;
-  border-radius: 999px;
+  border-radius: 16px;
   padding: 3px 10px;
+}
+
+.header-tag.active {
+  color: #ffffff;
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
 }
 
 .quick-section {
   margin: 20px;
   background: linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
-  border-radius: 16px;
+  border-radius: 12px;
   border: 1px solid #e8eef7;
   box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
   padding: 16px 16px 18px;
@@ -241,9 +252,9 @@ onMounted(() => {
 .quick-logo {
   width: 32px;
   height: 32px;
-  border-radius: 10px;
+  border-radius: 8px;
   background: linear-gradient(135deg, #e8f2ff 0%, #f2f7ff 100%);
-  color: #4a90e2;
+  color: var(--color-primary-soft);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -254,21 +265,21 @@ onMounted(() => {
 }
 
 .quick-title-left span {
-  font-size: 22px;
+  font-size: 18px;
   color: #1e3657;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.2px;
 }
 
 .avatar-icon {
-  font-size: 20px;
-  color: #4a90e2;
+  font-size: 18px;
+  color: var(--color-primary);
 }
 
 .function-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
+  gap: 16px;
   padding: 0;
 }
 
@@ -280,28 +291,29 @@ onMounted(() => {
   background-color: #ffffff;
   border: 1px solid #e2eaf5;
   padding: 16px 8px;
-  border-radius: 16px;
-  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
 }
 
 .func-icon {
-  font-size: 28px;
-  color: #4a90e2;
-  margin-bottom: 8px;
+  font-size: 24px;
+  color: var(--color-primary-soft);
+  margin-bottom: 12px;
 }
 
 .function-item p {
-  font-size: 14px;
+  font-size: 16px;
   color: #333333;
   font-weight: 500;
 }
 
 .building-nav {
-  margin: 20px;
-  background-color: #ffffff;
-  border-radius: 16px;
+  margin: 0 20px 24px;
+  background: linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
+  border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  padding: 20px;
+  padding: 16px;
 }
 
 .module-title {
@@ -316,28 +328,28 @@ onMounted(() => {
   margin-left: auto;
   border: none;
   background: transparent;
-  color: #4a90e2;
+  color: var(--color-primary);
   font-size: 12px;
 }
 
 .module-icon {
-  font-size: 20px;
-  color: #4a90e2;
+  font-size: 18px;
+  color: var(--color-primary);
   margin-right: 8px;
 }
 
 .building-list {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: 16px;
 }
 
 .building-item {
   padding: 16px 8px;
-  border-radius: 16px;
+  border-radius: 12px;
   background-color: #ffffff;
   border: 1px solid #e2eaf5;
-  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -346,19 +358,24 @@ onMounted(() => {
 .building-number {
   font-size: 24px;
   font-weight: 600;
-  color: #4a90e2;
+  color: var(--color-primary);
   margin-bottom: 4px;
 }
 
 .building-name {
-  font-size: 14px;
+  font-size: 16px;
   color: #333333;
+  font-weight: 500;
 }
 
 .building-status {
   font-size: 12px;
-  color: #67c23a;
+  color: var(--color-success);
   margin-top: 4px;
+}
+
+.building-status.maintenance {
+  color: var(--color-danger);
 }
 
 .tab-bar {
@@ -389,18 +406,21 @@ onMounted(() => {
 }
 
 .tab-item.active {
-  color: #4a90e2;
+  color: var(--color-primary);
+  border-bottom: 2px solid var(--color-primary);
 }
 
 @media (min-width: 1024px) {
   .home-page {
     padding-bottom: 84px;
+    max-width: 1200px;
+    margin: 0 auto;
   }
 
   .top-header {
-    border-radius: 0 0 28px 28px;
+    border-radius: 0 0 16px 16px;
     padding: 20px 28px 18px;
-    margin-bottom: 8px;
+    margin-bottom: 24px;
   }
 
   .quick-title {
@@ -420,7 +440,7 @@ onMounted(() => {
   }
 
   .quick-title-left span {
-    font-size: 24px;
+    font-size: 18px;
   }
 
   .header-text h1 {
@@ -458,7 +478,7 @@ onMounted(() => {
   .function-item {
     min-height: 126px;
     border: 1px solid #dce7f4;
-    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.09);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
 
@@ -478,7 +498,7 @@ onMounted(() => {
     min-height: 116px;
     justify-content: center;
     border: 1px solid #dce7f4;
-    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.09);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
 
@@ -491,7 +511,15 @@ onMounted(() => {
   .function-item:hover,
   .building-item:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  }
+}
+
+@media (max-width: 375px) {
+  .function-grid,
+  .building-list {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
 }
 </style>
