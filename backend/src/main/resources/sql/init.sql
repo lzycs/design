@@ -188,6 +188,22 @@ CREATE TABLE IF NOT EXISTS `user_course_note` (
     FOREIGN KEY (`course_id`) REFERENCES `course`(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户课程个性化';
 
+-- 用户可用时段（智能助手：计划生成输入）
+CREATE TABLE IF NOT EXISTS `user_availability` (
+    `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
+    `user_id` BIGINT NOT NULL COMMENT '用户ID',
+    `week_day` TINYINT NOT NULL COMMENT '星期: 1-7',
+    `slot_id` BIGINT NOT NULL COMMENT 'time_slot.id',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '删除标记: 0-未删除, 1-已删除',
+    UNIQUE KEY uk_ua_user_day_slot (`user_id`, `week_day`, `slot_id`, `deleted`),
+    INDEX idx_ua_user (`user_id`),
+    INDEX idx_ua_slot (`slot_id`),
+    FOREIGN KEY (`user_id`) REFERENCES `user`(`id`),
+    FOREIGN KEY (`slot_id`) REFERENCES `time_slot`(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户可用时段';
+
 -- 预约记录表 (可预约教室或图书馆座位)
 CREATE TABLE IF NOT EXISTS `reservation` (
     `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '预约ID',
@@ -923,6 +939,25 @@ ON DUPLICATE KEY UPDATE
   `start_time` = VALUES(`start_time`),
   `end_time`   = VALUES(`end_time`),
   `sort_order` = VALUES(`sort_order`);
+
+-- 用户可用时段示例：张三（周一到周五：14-16、16-18），李四（周四：10-12、14-16）
+INSERT INTO `user_availability` (`id`, `user_id`, `week_day`, `slot_id`) VALUES
+(1, 1, 1, 4),
+(2, 1, 1, 5),
+(3, 1, 2, 4),
+(4, 1, 2, 5),
+(5, 1, 3, 4),
+(6, 1, 3, 5),
+(7, 1, 4, 4),
+(8, 1, 4, 5),
+(9, 1, 5, 4),
+(10, 1, 5, 5),
+(11, 2, 4, 2),
+(12, 2, 4, 4)
+ON DUPLICATE KEY UPDATE
+  `user_id` = VALUES(`user_id`),
+  `week_day` = VALUES(`week_day`),
+  `slot_id` = VALUES(`slot_id`);
 
 -- 插入预约记录 (预约教室)
 INSERT INTO `reservation` (

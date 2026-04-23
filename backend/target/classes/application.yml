@@ -8,6 +8,12 @@ app:
     max-duration-minutes: 240
   course-schedule:
     term-start-date: 2026-02-24
+  llm:
+    provider: mvp_stub
+    openai:
+      base-url: ${OPENAI_BASE_URL:https://api.openai.com}
+      api-key: ${OPENAI_API_KEY:}
+      model: ${OPENAI_MODEL:gpt-4.1-mini}
 
 spring:
   application:
