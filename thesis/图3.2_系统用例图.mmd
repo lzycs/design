@@ -1,0 +1,62 @@
+%%{init: {"theme":"base","themeVariables":{"background":"#ffffff","primaryColor":"#ffffff","primaryTextColor":"#111111","primaryBorderColor":"#111111","lineColor":"#111111","secondaryColor":"#ffffff","tertiaryColor":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#666666","edgeLabelBackground":"#ffffff"}}}%%
+flowchart LR
+  %% 图3.2 系统用例图（黑白版，Mermaid 近似表达）
+  %% Mermaid 原生 UML 用例图支持有限，此图用“角色 -> 用例（圆角矩形）”表达。
+
+  subgraph Actors[角色]
+    direction TB
+    U[用户（学生/教师）]
+    AD[管理员]
+    RV[评价审核员]
+    MT[维修人员]
+    MD[资源审核员]
+    SD[扫码设备]
+  end
+
+  subgraph UseCases[主要用例]
+    direction LR
+    UC01([登录/退出])
+    UC02([浏览楼宇/教室/座位])
+    UC03([查询课表与占用状态])
+    UC04([发起预约（教室/座位）])
+    UC05([生成二维码/查看二维码状态])
+    UC06([扫码核销预约])
+    UC07([评价：提交/删除个人/查看公开])
+    UC08([报修：提交/查看进度])
+    UC09([协作：创建小组/申请加入/审核/聊天])
+    UC10([学习计划：创建/更新/与预约联动])
+    UC11([资源市场：发布/浏览/交易])
+    UC12([后台：基础数据/规则/设备管理])
+    UC13([评价审核])
+    UC14([报修工单处理])
+    UC15([资源内容审核])
+  end
+
+  %% 关联
+  U --> UC01
+  U --> UC02
+  U --> UC03
+  U --> UC04
+  U --> UC05
+  U --> UC07
+  U --> UC08
+  U --> UC09
+  U --> UC10
+  U --> UC11
+
+  SD --> UC06
+  U -. 可选入口 .-> UC06
+
+  AD --> UC12
+  RV --> UC13
+  MT --> UC14
+  MD --> UC15
+
+  %% 黑白打印风格
+  classDef actor fill:#FFFFFF,stroke:#111111,stroke-width:1px,color:#111111;
+  classDef uc fill:#FFFFFF,stroke:#111111,stroke-width:1px,color:#111111;
+  classDef group fill:#FFFFFF,stroke:#666666,stroke-width:1px,stroke-dasharray: 4 3,color:#111111;
+  class U,AD,RV,MT,MD,SD actor;
+  class UC01,UC02,UC03,UC04,UC05,UC06,UC07,UC08,UC09,UC10,UC11,UC12,UC13,UC14,UC15 uc;
+  class Actors,UseCases group;
+

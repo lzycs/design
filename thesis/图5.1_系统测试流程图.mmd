@@ -1,0 +1,15 @@
+flowchart TD
+  %% 图5.1 系统测试流程图（黑白版）
+  S([开始]) --> R[需求与测试范围确认]
+  R --> C[设计测试用例\n功能/性能/安全]
+  C --> E[搭建测试环境并准备数据]
+  E --> F[执行功能测试]
+  F --> P[执行性能测试]
+  P --> Sec[执行安全与兼容性测试]
+  Sec --> A[汇总结果与缺陷分析]
+  A --> O[优化与回归验证]
+  O --> End([结束])
+
+  classDef node fill:#FFFFFF,stroke:#111111,stroke-width:1px,color:#111111;
+  class S,R,C,E,F,P,Sec,A,O,End node;
+

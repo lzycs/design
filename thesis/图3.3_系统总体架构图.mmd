@@ -1,0 +1,39 @@
+flowchart TB
+  %% 图3.3 系统总体架构图（黑白版）
+
+  subgraph Client[客户端]
+    Web[Web/移动端前台\nVue 3 + Pinia + Router]
+    Admin[管理端前台\nVue 3（管理入口）]
+    Device[扫码设备端\n（设备UID + 核销）]
+  end
+
+  subgraph Server[服务端]
+    API[REST API\nSpring Boot\nController/Service/Mapper]
+    WS[WebSocket\n实时推送]
+    Upload[文件上传\nMultipart（报修图片）]
+  end
+
+  subgraph Storage[数据与中间件]
+    MySQL[(MySQL\n业务数据)]
+    Redis[(Redis\n缓存/临时状态)]
+    File[(文件存储\n本地/对象存储)]
+  end
+
+  Web -->|HTTP/JSON| API
+  Admin -->|HTTP/JSON| API
+  Device -->|HTTP/JSON| API
+
+  Web <--> |WebSocket| WS
+  Admin <--> |WebSocket（可选）| WS
+
+  API -->|读写| MySQL
+  API -->|缓存访问| Redis
+  Upload -->|保存文件| File
+  API -->|保存元信息| MySQL
+
+  %% 黑白打印风格
+  classDef node fill:#FFFFFF,stroke:#111111,stroke-width:1px,color:#111111;
+  classDef group fill:#FFFFFF,stroke:#666666,stroke-width:1px,stroke-dasharray: 4 3,color:#111111;
+  class Web,Admin,Device,API,WS,Upload,MySQL,Redis,File node;
+  class Client,Server,Storage group;
+

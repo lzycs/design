@@ -1,0 +1,31 @@
+flowchart LR
+  %% 图3.1 学习空间服务闭环流程图（黑白版）
+
+  Q[查询空间信息\n（楼/教室/座位/课表）] --> R[发起预约\n（规则校验/冲突校验）]
+  R --> QR[生成预约二维码\n（qrcode/有效期）]
+  QR --> C[到场扫码核销\n（状态更新）]
+  C --> U[使用学习空间\n（自习/研讨）]
+  U --> F[反馈\n（评价/报修）]
+  F --> G[治理\n（审核/工单处理/规则配置）]
+  G --> Q
+
+  %% 角色标注（虚线表示参与）
+  subgraph UserSide[用户端]
+    Q
+    R
+    QR
+    C
+    U
+    F
+  end
+
+  subgraph AdminSide[管理端/治理端]
+    G
+  end
+
+  %% 黑白打印风格
+  classDef node fill:#FFFFFF,stroke:#111111,stroke-width:1px,color:#111111;
+  classDef group fill:#FFFFFF,stroke:#666666,stroke-width:1px,stroke-dasharray: 4 3,color:#111111;
+  class Q,R,QR,C,U,F,G node;
+  class UserSide,AdminSide group;
+

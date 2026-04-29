@@ -1,0 +1,72 @@
+%%{init: {"theme":"base","themeVariables":{"background":"#ffffff","primaryColor":"#ffffff","primaryTextColor":"#111111","primaryBorderColor":"#111111","lineColor":"#111111","secondaryColor":"#ffffff","tertiaryColor":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#666666","edgeLabelBackground":"#ffffff"}}}%%
+flowchart LR
+  %% 图3.4 核心E-R图（Chen风格近似版）
+
+  USER[用户信息]
+  CLASSROOM[学习空间资源]
+  RESERVATION[预约业务信息]
+  REVIEW[评价业务信息]
+  REPAIR[报修业务信息]
+  TEAM[协作组队信息]
+  PLAN[学习计划信息]
+
+  BOOK{提交预约}
+  EVAL{提交评价}
+  FIX{提交报修}
+  CREATE{发起组队}
+  LINK{形成计划}
+
+  USER --- U1(用户编号)
+  USER --- U2(用户名)
+  USER --- U3(角色类型)
+
+  CLASSROOM --- C1(资源编号)
+  CLASSROOM --- C2(空间名称)
+  CLASSROOM --- C3(资源类型)
+
+  RESERVATION --- R1(预约编号)
+  RESERVATION --- R2(预约日期)
+  RESERVATION --- R3(预约状态)
+
+  REVIEW --- V1(评价编号)
+  REVIEW --- V2(评分)
+  REVIEW --- V3(审核状态)
+
+  REPAIR --- P1(工单编号)
+  REPAIR --- P2(报修类型)
+  REPAIR --- P3(处理状态)
+
+  TEAM --- T1(组队编号)
+  TEAM --- T2(组队主题)
+
+  PLAN --- S1(计划编号)
+  PLAN --- S2(计划日期)
+  PLAN --- S3(计划状态)
+
+  USER -- "1" --- BOOK
+  BOOK -- "n" --- RESERVATION
+  CLASSROOM -- "1" --- BOOK
+
+  USER -- "1" --- EVAL
+  EVAL -- "n" --- REVIEW
+  CLASSROOM -- "1" --- EVAL
+  RESERVATION -- "1" --- EVAL
+
+  USER -- "1" --- FIX
+  FIX -- "n" --- REPAIR
+  CLASSROOM -- "1" --- FIX
+
+  USER -- "1" --- CREATE
+  CREATE -- "n" --- TEAM
+
+  TEAM -- "1" --- LINK
+  LINK -- "n" --- PLAN
+  RESERVATION -- "1" --- LINK
+
+  classDef entity fill:#FFFFFF,stroke:#111111,stroke-width:1px,color:#111111;
+  classDef relation fill:#FFFFFF,stroke:#111111,stroke-width:1px,color:#111111;
+  classDef attr fill:#FFFFFF,stroke:#111111,stroke-width:1px,color:#111111;
+  class USER,CLASSROOM,RESERVATION,REVIEW,REPAIR,TEAM,PLAN entity;
+  class BOOK,EVAL,FIX,CREATE,LINK relation;
+  class U1,U2,U3,C1,C2,C3,R1,R2,R3,V1,V2,V3,P1,P2,P3,T1,T2,S1,S2,S3 attr;
+

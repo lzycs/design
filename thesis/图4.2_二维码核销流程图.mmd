@@ -1,0 +1,22 @@
+flowchart TD
+  %% 图4.2 二维码核销流程图（黑白版）
+
+  S([开始]) --> Pre{预约状态是否允许生成二维码\nstatus=1 待签到}
+  Pre -->|否| Stop[返回错误\n不可生成二维码]
+  Pre -->|是| Gen[生成二维码\nPOST /api/reservation/:id/qrcode\n写入 reservation.qrcode/有效期]
+  Gen --> Poll[用户端轮询二维码状态\nGET /api/reservation/qrcode/:code/status]
+
+  Poll --> Dev[设备端扫码核销\nPOST /api/reservation/qrcode/:code/scan\nbody: deviceUid]
+  Dev --> Verify{服务端校验二维码}
+  Verify -->|无效/过期| Reject[返回核销失败\n记录 scan_status]
+  Verify -->|有效| Update[更新预约核销信息\nscan_time/device_uid\n状态流转]
+
+  Update --> Notify[状态变化反馈用户端\n轮询命中 或 实时推送]
+  Notify --> E([结束])
+  Stop --> E
+  Reject --> Poll
+
+  %% 黑白打印风格
+  classDef node fill:#FFFFFF,stroke:#111111,stroke-width:1px,color:#111111;
+  class S,Pre,Stop,Gen,Poll,Dev,Verify,Reject,Update,Notify,E node;
+

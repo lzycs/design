@@ -1,0 +1,29 @@
+sequenceDiagram
+  %% 图4.8 预约与核销时序图（黑白版）
+  autonumber
+  participant U as 用户端
+  participant API as 后端服务
+  participant DB as MySQL
+  participant D as 扫码设备端
+
+  U->>API: 查询时段占用与预约限制
+  API->>DB: 读取 course/time_slot/reservation_limit_config
+  DB-->>API: 返回可用时段与规则
+  API-->>U: 返回可预约结果
+
+  U->>API: 提交预约
+  API->>DB: 规则与冲突校验后写入 reservation
+  DB-->>API: 返回 reservation_id
+  API-->>U: 预约成功
+
+  U->>API: 生成二维码
+  API->>DB: 写入 qrcode 及有效期
+  DB-->>API: 成功
+  API-->>U: 返回二维码内容
+
+  D->>API: 扫码核销(code, deviceUid)
+  API->>DB: 校验二维码并更新核销状态
+  DB-->>API: 返回核销结果
+  API-->>D: 核销结果
+  API-->>U: 状态可查询为已核销
+

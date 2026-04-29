@@ -1,0 +1,26 @@
+sequenceDiagram
+  %% 图2.3 WebSocket 通信时序图
+  autonumber
+
+  %% 黑白/灰度打印风格（Mermaid 主题依赖渲染器；此处通过内容控制保持黑白可读）
+
+  participant C as 客户端（Web/移动端）
+  participant WS as 服务端 WebSocket
+  participant API as 服务端 REST API
+  participant DB as MySQL/Redis
+
+  Note over C,WS: 建立连接阶段
+  C->>WS: 发起 WebSocket 握手连接
+  WS-->>C: 连接成功（session/连接ID）
+
+  Note over C,API: 业务操作阶段（以“扫码核销/审核通过”等事件为例）
+  C->>API: 发起业务请求（携带 Token）
+  API->>DB: 校验/读写数据（更新状态）
+  DB-->>API: 返回处理结果
+  API-->>C: 返回 Result<T>（操作成功/失败）
+
+  Note over WS,C: 实时推送阶段
+  API->>WS: 触发推送事件（状态变更消息）
+  WS-->>C: 推送消息（例如：预约已核销、审核通过）
+  C-->>C: 更新界面/红点角标/列表刷新
+

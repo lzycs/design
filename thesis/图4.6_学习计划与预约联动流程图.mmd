@@ -1,0 +1,19 @@
+flowchart TD
+  %% 图4.6 学习计划与预约联动流程图（黑白版）
+
+  S([开始]) --> Plan[创建/编辑学习计划]
+  Plan --> Link{是否关联预约？}
+  Link -->|是| CreateWithRes[实现学习计划与预约联动创建并绑定预约关联字段信息]
+  Link -->|否| Save[单独保存学习计划完成计划新增或信息更新]
+
+  CreateWithRes --> Show1[共享学习计划页面内容展示]
+  Save --> Show1
+
+  Show1 --> ByTeam[按照小组维度进行计划查看]
+  Show1 --> ByRes[按照预约维度进行计划查看]
+
+  ByRes --> Jump[由学习计划页面跳转至预约详情与研讨室协作界面]
+  Jump --> E([结束])
+
+  classDef node fill:#FFFFFF,stroke:#111111,stroke-width:1px,color:#111111;
+  class S,Plan,Link,CreateWithRes,Save,Show1,ByTeam,ByRes,Jump,E node;

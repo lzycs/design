@@ -1,0 +1,225 @@
+erDiagram
+  %% 图4.7 系统核心数据模型 E-R 图（更完整，按真实库表命名）
+  %% Mermaid erDiagram 默认黑白；建议用于论文打印版。
+
+  USER ||--o{ RESERVATION : creates
+  USER ||--o{ REVIEW : writes
+  USER ||--o{ CLASSROOM_FEEDBACK : submits
+  USER ||--o{ REPAIR : reports
+  USER ||--o{ TEAM_REQUEST : owns
+  USER ||--o{ TEAM_MEMBER : joins
+  USER ||--o{ TEAM_JOIN_APPLICATION : applies
+  USER ||--o{ TEAM_MESSAGE : sends
+  USER ||--o{ STUDY_PLAN : creates
+  USER ||--o{ NOTIFICATION : receives
+  USER ||--|| CAMPUS_CREDIT : has
+
+  BUILDING ||--o{ CLASSROOM : contains
+  LIBRARY ||--o{ LIBRARY_SEAT : contains
+
+  CLASSROOM ||--o{ COURSE : schedules
+  CLASSROOM ||--o{ RESERVATION : bookedBy
+  LIBRARY_SEAT ||--o{ RESERVATION : bookedBy
+
+  RESERVATION ||--o{ REVIEW : links
+  RESERVATION ||--o{ CLASSROOM_FEEDBACK : generates
+  RESERVATION ||--o{ STUDY_PLAN : links
+
+  TEAM_REQUEST ||--o{ TEAM_MEMBER : has
+  TEAM_REQUEST ||--o{ TEAM_MESSAGE : has
+  TEAM_REQUEST ||--o{ TEAM_JOIN_APPLICATION : has
+  TEAM_REQUEST ||--o{ STUDY_PLAN : plans
+
+  RESOURCE_MARKET_ITEM ||--o{ RESOURCE_MARKET_TRADE : trades
+  USER ||--o{ RESOURCE_MARKET_ITEM : publishes
+  USER ||--o{ RESOURCE_MARKET_TRADE : participates
+  COURSE ||--o{ RESOURCE_MARKET_ITEM : references
+  TEAM_REQUEST ||--o{ RESOURCE_MARKET_ITEM : references
+
+  SCAN_DEVICE ||--o{ SCAN_DEVICE_PAIR_TOKEN : redeems
+  %% 注意：reservation 表中仅以 qrcode_scan_device_uid 字符串记录扫码设备UID，非外键关系，此处不画 FK 连接
+
+  ADMIN_ROLE ||--o{ ADMIN_ROLE_PERMISSION : grants
+  ADMIN_PERMISSION ||--o{ ADMIN_ROLE_PERMISSION : includes
+  %% 注意：admin_menu.permission_key 字段引用 admin_permission.perm_key（逻辑引用，非外键），此处不画 FK 连接
+  USER ||--o{ ADMIN_OPERATION_LOG : performs
+  ADMIN_ROLE ||--o{ ADMIN_OPERATION_LOG : logs
+
+  USER {
+    BIGINT id PK
+    VARCHAR username
+    TINYINT role
+    TINYINT status
+  }
+  BUILDING {
+    BIGINT id PK
+    VARCHAR name
+    DECIMAL latitude
+    DECIMAL longitude
+  }
+  CLASSROOM {
+    BIGINT id PK
+    BIGINT building_id FK
+    VARCHAR room_number
+    TINYINT type
+    TINYINT status
+    TINYINT real_time_status
+  }
+  LIBRARY {
+    BIGINT id PK
+    VARCHAR name
+  }
+  LIBRARY_SEAT {
+    BIGINT id PK
+    BIGINT library_id FK
+    VARCHAR seat_label
+    TINYINT status
+  }
+  TIME_SLOT {
+    BIGINT id PK
+    TIME start_time
+    TIME end_time
+  }
+  COURSE {
+    BIGINT id PK
+    BIGINT classroom_id FK
+    TINYINT week_day
+    TIME start_time
+    TIME end_time
+  }
+  RESERVATION {
+    BIGINT id PK
+    BIGINT user_id FK
+    TINYINT resource_type
+    BIGINT classroom_id FK
+    BIGINT library_seat_id FK
+    DATE reservation_date
+    TIME start_time
+    TIME end_time
+    TINYINT status
+    VARCHAR qrcode
+    VARCHAR qrcode_scan_device_uid
+  }
+  REVIEW {
+    BIGINT id PK
+    BIGINT user_id FK
+    BIGINT reservation_id FK
+    TINYINT status
+    TINYINT score
+  }
+  CLASSROOM_FEEDBACK {
+    BIGINT id PK
+    BIGINT user_id FK
+    BIGINT classroom_id FK
+    BIGINT reservation_id FK
+    TINYINT status
+  }
+  REPAIR {
+    BIGINT id PK
+    BIGINT user_id FK
+    TINYINT resource_type
+    BIGINT classroom_id FK
+    BIGINT library_seat_id FK
+    TINYINT type
+    TINYINT priority
+    TINYINT status
+    BIGINT handler_id FK
+  }
+  TEAM_REQUEST {
+    BIGINT id PK
+    BIGINT user_id FK
+    TINYINT status
+  }
+  TEAM_MEMBER {
+    BIGINT id PK
+    BIGINT team_request_id FK
+    BIGINT user_id FK
+    TINYINT role
+  }
+  TEAM_JOIN_APPLICATION {
+    BIGINT id PK
+    BIGINT team_request_id FK
+    BIGINT applicant_id FK
+    TINYINT status
+  }
+  TEAM_MESSAGE {
+    BIGINT id PK
+    BIGINT team_request_id FK
+    BIGINT sender_id FK
+    TINYINT type
+  }
+  TEAM_MESSAGE_READ {
+    BIGINT id PK
+    BIGINT team_request_id FK
+    BIGINT user_id FK
+    BIGINT last_read_message_id
+  }
+  STUDY_PLAN {
+    BIGINT id PK
+    BIGINT user_id FK
+    BIGINT team_request_id FK
+    BIGINT reservation_id FK
+    TINYINT status
+  }
+  NOTIFICATION {
+    BIGINT id PK
+    BIGINT user_id FK
+    TINYINT type
+    TINYINT is_read
+  }
+  RESOURCE_MARKET_ITEM {
+    BIGINT id PK
+    BIGINT user_id FK
+    VARCHAR category
+    TINYINT status
+    BIGINT audit_by FK
+  }
+  RESOURCE_MARKET_TRADE {
+    BIGINT id PK
+    BIGINT item_id FK
+    BIGINT publisher_id FK
+    BIGINT receiver_id FK
+    TINYINT status
+  }
+  CAMPUS_CREDIT {
+    BIGINT id PK
+    BIGINT user_id FK
+    INT credit_score
+  }
+  SCAN_DEVICE {
+    BIGINT id PK
+    VARCHAR device_uid
+    TINYINT enabled
+  }
+  SCAN_DEVICE_PAIR_TOKEN {
+    BIGINT id PK
+    VARCHAR token
+    DATETIME expired_time
+    TINYINT used_status
+    VARCHAR redeemed_device_uid
+  }
+  ADMIN_ROLE {
+    BIGINT id PK
+    VARCHAR name
+    TINYINT user_role
+  }
+  ADMIN_PERMISSION {
+    BIGINT id PK
+    VARCHAR perm_key
+  }
+  ADMIN_ROLE_PERMISSION {
+    BIGINT role_id PK
+    BIGINT permission_id PK
+  }
+  ADMIN_MENU {
+    BIGINT id PK
+    VARCHAR path
+    VARCHAR permission_key
+  }
+  ADMIN_OPERATION_LOG {
+    BIGINT id PK
+    BIGINT admin_user_id FK
+    BIGINT admin_role_id FK
+    VARCHAR action
+  }
+

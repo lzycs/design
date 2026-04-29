@@ -1,0 +1,15 @@
+flowchart TD
+    S([开始]) --> Browse[浏览协作广场]
+    Browse --> Detail[查看小组详情与成员]
+
+    Detail --> Apply[提交加入申请]
+    Apply --> Pending[组长查看待处理申请]
+    Pending --> Review{组长审核}
+    Review -->|通过| Approve[更新申请状态 通过]
+    Review -->|拒绝| Deny[更新申请状态 拒绝]
+
+    Approve --> Chat[进入小组聊天与协作]
+    Deny --> End1([结束])
+    Chat --> E([结束])
+
+classDef default fill:#fff,stroke:#000,stroke-width:1px

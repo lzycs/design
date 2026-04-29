@@ -1,0 +1,46 @@
+flowchart LR
+  %% 图2.1 系统技术架构与技术栈示意图
+  %% 建议在导出到 Word 时标题写：图2.1 系统技术架构与技术栈示意图
+
+  subgraph FE[前端（Vue 3）]
+    FE_UI[页面与组件\nVue 3 + Vant]
+    FE_Router[路由\nVue Router]
+    FE_State[状态管理\nPinia]
+    FE_HTTP[接口封装\nAxios]
+    FE_Charts[可视化（可扩展）\nECharts]
+  end
+
+  subgraph BE[后端（Spring Boot）]
+    BE_API[REST API\nController / Service / Mapper]
+    BE_WS[WebSocket\n实时推送]
+    BE_Upload[文件上传\nMultipart（报修图片）]
+  end
+
+  subgraph DATA[数据与中间件]
+    DB[(MySQL\n业务数据)]
+    RDS[(Redis\n缓存/临时状态)]
+    FS[(文件存储\n本地/对象存储)]
+  end
+
+  FE_HTTP -->|HTTP/JSON| BE_API
+  BE_WS -->|实时消息推送| FE_UI
+  FE_UI -->|建立连接| BE_WS
+
+  BE_API -->|读写| DB
+  BE_API -->|缓存访问| RDS
+  BE_Upload -->|保存文件| FS
+  BE_API -->|保存元信息| DB
+
+  FE_UI --- FE_Router
+  FE_UI --- FE_State
+  FE_UI --- FE_HTTP
+  FE_UI --- FE_Charts
+
+  %% 黑白/灰度打印风格：白底 + 黑描边 + 灰分组
+  classDef fe fill:#FFFFFF,stroke:#111111,stroke-width:1px,color:#111111;
+  classDef be fill:#FFFFFF,stroke:#111111,stroke-width:1px,color:#111111;
+  classDef data fill:#FFFFFF,stroke:#111111,stroke-width:1px,color:#111111;
+  class FE_UI,FE_Router,FE_State,FE_HTTP,FE_Charts fe;
+  class BE_API,BE_WS,BE_Upload be;
+  class DB,RDS,FS data;
+

@@ -1,0 +1,17 @@
+flowchart LR
+  %% 图5.3 性能测试响应时间趋势图（黑白版，示意）
+  %% 说明：Mermaid旧版本对折线图支持有限，此处用趋势示意图表达
+
+  A[并发50\nAvg 120ms] --> B[并发100\nAvg 190ms]
+  B --> C[并发150\nAvg 260ms]
+  C --> D[并发200\nAvg 340ms]
+
+  A2[并发50\nP95 210ms] --> B2[并发100\nP95 340ms]
+  B2 --> C2[并发150\nP95 470ms]
+  C2 --> D2[并发200\nP95 620ms]
+
+  A -.平均响应时间趋势.-> A2
+
+  classDef node fill:#FFFFFF,stroke:#111111,stroke-width:1px,color:#111111;
+  class A,B,C,D,A2,B2,C2,D2 node;
+

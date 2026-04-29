@@ -1,0 +1,16 @@
+flowchart LR
+  %% 图4.9 后台RBAC权限控制图（黑白版）
+
+  U[管理员用户] --> R[管理员角色]
+  R --> RP[管理员角色权限关联]
+  RP --> P[管理员权限]
+  P --> M[管理员菜单]
+
+  U --> L[管理员操作日志]
+  R --> L
+
+  M --> V[前端可见菜单]
+  P --> A[后端接口权限校验]
+
+  classDef node fill:#FFFFFF,stroke:#111111,stroke-width:1px,color:#111111;
+  class U,R,RP,P,M,L,V,A node;

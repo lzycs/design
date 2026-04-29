@@ -1,0 +1,32 @@
+flowchart LR
+  %% 图6.1 系统成果与后续演进路线图（黑白版）
+
+  subgraph Now[当前成果]
+    N1[学习空间服务闭环\n查询 预约 核销 反馈 治理]
+    N2[用户端核心能力\n预约 评价 报修 协作 计划 导航]
+    N3[管理端治理能力\nRBAC 审核 工单 规则配置]
+    N4[工程基础\n前后端分离 统一返回 日志留痕]
+  end
+
+  N1 --> F1
+  N2 --> F2
+  N3 --> F3
+  N4 --> F4
+
+  subgraph Future[后续演进方向]
+    F1[智能化\n空间推荐 热度预测 异常检测]
+    F2[高并发优化\n限流 削峰 多级缓存 分布式协同]
+    F3[运营可视化\n数据看板 告警联动 指标治理]
+    F4[生态集成\n统一认证 教务 门禁 物联网]
+  end
+
+  F1 --> G[目标：高质量可持续运营]
+  F2 --> G
+  F3 --> G
+  F4 --> G
+
+  classDef node fill:#FFFFFF,stroke:#111111,stroke-width:1px,color:#111111;
+  classDef group fill:#FFFFFF,stroke:#666666,stroke-width:1px,stroke-dasharray: 4 3,color:#111111;
+  class N1,N2,N3,N4,F1,F2,F3,F4,G node;
+  class Now,Future group;
+

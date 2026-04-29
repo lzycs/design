@@ -1,0 +1,488 @@
+第3章 需求分析与总体设计
+
+本章在任务书与开题报告的目标约束下，结合系统当前已实现功能，完成角色与业务场景梳理、功能与非功能需求归纳，并给出系统总体架构、模块划分与数据库总体设计，为第4章的详细设计与实现提供依据。
+
+3.1 业务需求分析
+
+3.1.1 角色划分与职责
+
+系统面向校园学习空间全流程服务，按照“前台服务 + 后台治理”的思路划分多角色协同：
+
+（1）学生用户（普通用户）  
+主要任务：浏览教学楼/教室信息、查询占用与可用时段、发起预约并完成签到核销、提交教室评价与报修、参与协作小组与聊天、维护学习计划、参与资源市场交易、使用校园导航到达目标点位等。
+
+（2）教师用户（扩展角色，可与学生同属前台用户体系）  
+主要任务：除学生能力外，更偏向于协作学习组织与固定空间使用需求（实际功能以系统实现为准）。在论文描述中可作为“前台用户的一类角色”，用于说明平台支持多类型用户。
+
+（3）管理员（后台治理角色）  
+主要任务：后台登录与菜单访问、教学楼/教室/课程基础数据维护、预约规则（周上限、单次时长等）配置、扫码设备管理、平台概览统计（若已实现）等。
+
+（4）评价审核员（内容治理角色）  
+主要任务：审核用户评价内容，控制公开展示范围，屏蔽不当言论，保证公共评价可参考性。
+
+（5）资源市场审核员（内容治理角色）  
+主要任务：对资源市场发布内容进行审核（通过/拒绝），保障平台内容合规。
+
+（6）维修/运维人员（工单处理角色）  
+主要任务：查看报修工单，推进工单状态（待处理/处理中/已完成），形成设备治理闭环。
+
+表3.1 角色-权限矩阵表
+角色 | 主要权限 | 典型操作
+学生用户 | 学习空间查询、预约、二维码查看、扫码核销、评价、报修、协作、学习计划、资源市场、校园导航 | 查询教室占用、提交预约、核销签到、提交评价/报修、加入小组、创建计划、发起交易
+教师用户 | 与学生端类似的前台使用权限（可按系统配置扩展） | 查询空间、预约研讨室、参与协作讨论、发布学习资源
+管理员 | 后台登录、菜单访问、基础数据管理、预约规则配置、扫码设备管理、概览统计 | 维护教室/课程/教学楼、调整预约上限、管理扫码设备
+评价审核员 | 评价审核权限 | 审核评价通过/驳回、维护评价内容质量
+资源审核员 | 资源市场审核权限 | 审核资源发布内容、记录审核意见
+维修人员 | 报修工单处理权限 | 查看工单、更新处理状态、填写处理备注
+扫码设备端 | 核销执行权限（受授权设备限制） | 扫码提交核销、回传设备标识
+
+注：各角色权限由系统鉴权与 RBAC 机制共同约束；管理端菜单按权限动态返回。
+
+3.1.2 典型业务场景与用户目标
+
+为确保平台功能贴近校园真实使用，本研究将业务归纳为以下典型场景：
+
+（1）临时自习：学生在空闲时间快速查找可用教室/座位并预约，到场签到后使用。  
+（2）小组讨论：协作小组需要在固定时间集中学习，要求空间可预约且支持多人协作，并可在计划中关联研讨室预约。  
+（3）到场导航：用户预约成功后需要快速到达目标地点，希望系统提供路径规划或直线导航降级方案。  
+（4）使用后反馈：用户使用教室后对环境、插座、噪音等进行评价；若发现设备故障则提交报修并跟踪处理进度。  
+（5）运营治理：管理员/审核/维修人员在后台对评价、报修、资源发布等进行治理，保障平台秩序并提升服务质量。
+
+3.1.3 核心业务流程（细化）
+
+（1）学习空间使用闭环  
+查询空间信息 → 查询时段占用 → 选择连续时段 → 提交预约（规则/冲突校验） → 生成二维码 → 到场扫码核销 → 使用完成 → 评价/报修 → 后台治理。
+
+（2）内容治理闭环  
+用户提交评价/资源 → 后台审核 → 通过后公开展示/交易可见；拒绝则不公开但可留痕追溯。
+
+（3）设施治理闭环  
+用户提交报修（图文） → 后台接单 → 状态推进 → 完成闭环 → 数据沉淀（类型、频次、处理时长）。
+
+图3.1 学习空间服务闭环流程图（建议绘制）
+绘制要点：将“预约-核销-反馈-治理”放入同一闭环，并标注关键节点的责任角色（用户端/管理端）。
+
+3.2 功能需求分析
+
+3.2.1 用户端功能需求（按模块细化）
+
+（1）首页与基础浏览模块  
+功能点：  
+1）提供平台主要服务入口；  
+2）教学楼列表与详情展示；  
+3）按教学楼查看教室列表与教室详情；  
+4）楼宇导航与导航详情展示；  
+5）教学楼课表/排课信息展示。  
+需求目标：降低用户信息获取成本，支持“先查再约”的决策路径。
+
+（2）学习空间预约模块（教室/图书馆座位）  
+功能点：  
+1）预约中心按日期切换，支持资源分类（教室/座位等）；  
+2）教室详情展示时段占用情况与可预约时间段；  
+3）支持连续时段预约；  
+4）预约规则读取并限制：每周预约次数上限、单次预约最长时长；  
+5）个人预约记录查询、状态展示与跳转；  
+6）预约二维码生成与展示；  
+7）预约签到入口与核销状态查询；  
+8）从“我的预约（待签到）”一键跳转校园导航并带入目标地点。  
+需求目标：形成“预约—到场确认—使用”的闭环，提高空间周转效率。
+
+（3）评价与反馈模块  
+功能点：  
+1）待评价记录查询；  
+2）教室评价提交（星级/文字等）；  
+3）个人评价记录查看与删除；  
+4）教室详情页展示审核通过的评价；  
+5）查看全部评价页面；  
+6）用户提交报修（支持图片）；  
+7）个人报修记录查看。  
+需求目标：构建“使用后反馈”链路，提升信息透明度与服务质量。
+
+（4）协作组队与沟通模块  
+功能点：  
+1）协作广场浏览活跃小组；  
+2）查看小组详情与成员列表；  
+3）发起协作小组、加入/退出、删除自己创建的小组；  
+4）加入申请提交与组长审核（通过/拒绝）；  
+5）申请结果查询与待处理申请查询；  
+6）协作红点角标提醒；  
+7）小组聊天；  
+8）消息中心查看协作相关消息；  
+9）进入研讨室协作页面。  
+需求目标：支持小组学习组织与沟通协作，将“空间”与“人”连接起来。
+
+（5）学习计划模块  
+功能点：  
+1）共享学习计划页展示；  
+2）按协作小组查询学习计划；  
+3）按预约查询关联学习计划；  
+4）创建“学习计划 + 教室预约”联动记录；  
+5）更新学习计划；  
+6）计划中关联研讨室、日期、时间段与关键时间节点。  
+需求目标：强化协作学习的计划性，将“目标—时间—空间”贯通。
+
+（6）课程表与我的课程模块  
+功能点：  
+1）按教学楼查看课表（按日/周/月）；  
+2）教室课表查询与时段占用状态查询；  
+3）按楼层/关键字/时间段筛选日课表；  
+4）我的课程按日/周查看；  
+5）课程星标、备注、课前提醒时间配置。  
+需求目标：将课程占用作为空间状态的重要数据源，避免预约与教学冲突。
+
+（7）资源市场与校园学分模块  
+功能点：  
+1）资源市场广场浏览与筛选；  
+2）发布学习资源/二手资源（标题、描述、类别、价格、图片、推荐交易地点）；  
+3）发起交易意向并填写留言与线下交接地点；  
+4）交易双方确认完成；  
+5）个人发布记录与交易记录；  
+6）个人资源管理维护；  
+7）查询个人校园学分信息（若已实现）。  
+需求目标：扩展平台服务边界，增强用户活跃度与平台价值。
+
+（8）校园导航模块  
+功能点：  
+1）校园地图浏览（教学楼+公共场馆点位）；  
+2）按名称/编号/地址搜索目标点位；  
+3）定位“我的位置”并展示与目标距离；  
+4）一键规划步行路线（不可用时降级直线导航）；  
+5）预约场景携带目标名称自动选中并尝试规划路线。  
+需求目标：解决“约到但找不到”的最后一公里问题。
+
+3.2.2 管理端功能需求（按治理流程细化）
+
+（1）后台认证与菜单权限  
+支持管理员登录；根据权限返回后台菜单；通过菜单与接口双重限制避免越权。
+
+（2）报修工单管理  
+支持工单列表查询、状态更新、处理过程记录与筛选；保障设施治理闭环可追踪。
+
+（3）评价审核  
+支持评价列表、通过/拒绝操作；通过后允许在用户端公开展示，拒绝则不公开。
+
+（4）资源市场审核  
+支持资源发布内容审核（通过/拒绝）；通过后对外可见并参与交易流程。
+
+（5）基础数据管理  
+支持教室管理、课程管理、教学楼管理；支持导入/维护（按系统实现描述）。
+
+（6）预约限制配置  
+支持每周预约次数上限、单次最长时长等规则配置；当库表无配置时使用后端默认值兜底。
+
+（7）扫码设备管理  
+支持生成设备配对 token、设备端扫码授权绑定 UID、设备列表查看、启用/停用、删除；支撑预约扫码核销场景。
+
+3.2.3 关键用例列表（建议在论文中给“用例图说明”）
+
+可在论文中绘制用例图（无需过细），并在本节配套列出主要用例：
+UC-01 用户登录/退出  
+UC-02 浏览教学楼与教室列表  
+UC-03 查询教室时段占用与课表  
+UC-04 发起教室/座位预约（含规则校验）  
+UC-05 生成预约二维码/查看二维码状态  
+UC-06 扫码核销预约（设备端/用户端入口）  
+UC-07 提交教室评价、查看公开评价、删除个人评价  
+UC-08 提交报修与查看工单进度  
+UC-09 创建协作小组、申请加入、审核申请、聊天沟通  
+UC-10 创建/更新学习计划并与预约联动  
+UC-11 资源发布、审核、交易意向与交易完成  
+UC-12 管理端维护基础数据与预约规则
+
+图3.2 系统用例图（建议绘制）
+绘制要点：Actor 至少包含“用户（学生/教师）”“管理员”“审核员”“维修人员”“扫码设备”；用例聚合为预约/核销/反馈/协作/计划/市场/管理等大类。
+
+3.3 非功能需求分析
+
+3.3.1 可用性与体验需求
+
+（1）移动端友好：页面布局适配手机端；关键操作尽量在 3 步内完成（例如预约、报修）。  
+（2）交互一致性：列表筛选、空态、错误提示、加载状态保持一致。  
+（3）可理解性：预约失败必须返回可解释原因（超限/冲突/不可用）。
+
+3.3.2 实时性需求
+
+（1）预约状态与核销结果需要快速反馈（避免用户重复操作）；  
+（2）协作消息与红点提醒应及时更新；  
+（3）关键状态变化可通过 WebSocket 推送（或轮询兜底，按实现描述）。
+
+3.3.3 性能需求（建议给出可写进论文的指标口径）
+
+（1）常用查询接口：在一般网络条件下应保持较低延迟（论文可用平均响应时间、P95 说明）。  
+（2）高峰预约场景：并发预约请求增多时，系统应保证规则校验正确、数据一致，并保持可接受的错误率与响应时间。  
+（3）缓存策略：对热点数据（教室列表、占用信息、二维码状态）采用 Redis 缓存降低数据库压力。
+
+3.3.4 安全性需求
+
+（1）鉴权：用户端与管理端 token 隔离；接口需校验登录态与权限。  
+（2）输入校验：对关键参数（时间段、资源ID、图片上传等）进行合法性校验。  
+（3）数据保护：密码等敏感信息需安全存储（按实现说明），管理端操作具备可追踪性（可扩展审计日志）。
+
+3.3.5 可维护性与可扩展性需求
+
+（1）前后端分离与接口规范：统一返回结构 `Result<T>`，便于前端统一处理；  
+（2）模块化：预约、反馈、协作、计划、市场、管理端等模块相对独立；  
+（3）配置化：预约规则通过配置表管理，支持无配置兜底默认值。
+
+3.4 系统总体设计
+
+3.4.1 总体架构设计
+
+系统采用前后端分离架构：前端负责页面展示与交互；后端负责业务编排、规则校验、状态计算、数据持久化与消息推送；MySQL 作为主数据存储；Redis 作为缓存与临时状态存储；WebSocket 作为实时消息通道。
+
+图3.3 系统总体架构图（建议绘制）
+绘制要点：前端（用户端/管理端）→ REST API → 后端；后端连接 MySQL/Redis；WebSocket 从后端到前端；文件上传链路（报修图片）。
+
+3.4.2 功能模块划分
+
+为保证开发与维护效率，系统按业务域划分模块：
+（1）空间与课表模块：教学楼、教室、课表查询、占用状态展示；  
+（2）预约与核销模块：预约创建、规则校验、二维码生成、扫码核销、状态查询；  
+（3）反馈与治理模块：评价提交/展示/审核、报修提交/工单处理；  
+（4）协作与消息模块：组队、申请审核、消息中心、聊天、协作页面；  
+（5）学习计划模块：计划创建/更新、与小组/预约联动；  
+（6）资源市场模块：资源发布/审核/交易；  
+（7）校园导航模块：点位搜索、定位与路线规划；  
+（8）后台管理模块：基础数据、规则配置、扫码设备管理等。
+
+3.4.3 数据流与接口风格设计
+
+（1）统一返回结构：后端对外统一返回 `Result<T>`，包含 code、message 与 data，便于前端统一处理成功/失败。  
+（2）接口分域：按业务域组织接口（如预约、评价、报修、协作等），降低耦合。  
+（3）状态驱动：重要状态在后端集中计算与校验（例如预约冲突与超限），前端以展示与交互为主，避免前端自行拼装造成不一致。
+
+3.4.4 关键状态模型（建议在论文中用表格表达）
+
+表3.2 预约状态模型表
+状态值 | 状态名称 | 业务含义 | 允许操作 | 典型触发条件
+1 | 待签到 | 预约已创建，等待到场核销 | 生成二维码、扫码核销、取消预约 | 用户提交预约成功
+2 | 已签到 | 已完成到场确认，处于使用中或已核销 | 查看详情 | 设备端或用户端核销成功
+3 | 已完成 | 预约时段结束，流程正常完成 | 查看详情、评价（通过反馈流程） | 达到结束时间或业务任务完成
+4 | 已取消 | 预约被用户或管理端取消 | 查看详情 | 用户主动取消或管理干预
+5 | 已违约 | 预约未按规则完成签到/使用 | 查看详情 | 超时未签到或命中违约判定规则
+
+注：系统实际状态字段以 `reservation.status` 为准；状态流转受预约规则、二维码有效期与核销结果共同影响。
+
+3.5 数据库总体设计
+
+3.5.1 主要实体识别
+
+结合系统功能模块，数据库核心实体包括：
+用户（User）、角色/权限（Role/Permission，可选）、教学楼（Building）、教室（Classroom）、图书馆与座位（Library/Seat）、课程（Course）、课程表/排课（CourseSchedule）、时间槽（TimeSlot）、预约（Reservation）、核销/扫码记录（Scan/Verification，可选）、评价（Review）、评价审核（ReviewAudit，可选/或字段承载）、报修工单（RepairTicket）、工单处理记录（RepairLog，可选）、协作小组（Team）、小组成员（TeamMember）、入组申请（TeamJoinRequest）、小组消息/聊天（TeamMessage/Chat）、学习计划（StudyPlan）、计划节点（PlanMilestone，可选）、资源条目（MarketItem）、交易意向/交易记录（Trade/Deal）、扫码设备（ScanDevice）、扫码授权（ScanDeviceAuth）。
+
+3.5.2 E-R 关系说明（文字版，可配图）
+
+（1）用户—预约：一名用户可创建多条预约记录（1:N）。  
+（2）教室/座位—预约：一个空间资源在不同时间槽可对应多条预约（1:N）。  
+（3）预约—时间槽：一条预约可包含多个连续时间槽（1:N 或 N:M，按实现选择）。  
+（4）用户—评价：用户可对空间提交多条评价（1:N），公开展示受审核状态影响。  
+（5）用户—报修工单：用户可提交多条报修（1:N），工单状态推进形成闭环。  
+（6）协作小组—成员：小组与用户为多对多关系，可通过成员表维护（N:M）。  
+（7）协作小组—学习计划：一个小组可对应多条计划（1:N）。  
+（8）预约—学习计划：计划可关联预约，体现“计划-空间”联动（1:1 或 1:N，按实现）。  
+（9）资源条目—交易记录：一个资源条目可产生多条交易意向/记录（1:N），交易双方与用户关联。
+
+图3.4 核心 E-R 图（建议绘制）
+绘制要点：以“用户、空间资源（教室/座位）、预约、评价、报修、小组、学习计划、资源市场、扫码设备”为核心实体，标注主外键关系与基数。
+
+3.5.3 关键表结构设计（与真实库表对齐）
+
+说明：本节表结构来自项目初始化脚本 `backend/src/main/resources/sql/init.sql`，用于保证论文描述与实际系统一致。以下仅列出核心字段与关键约束（完整字段以数据库为准）。
+
+（1）用户表 `user`（用户与管理端登录的统一账号来源）
+- `id`：BIGINT，PK，自增
+- `username`：VARCHAR(100)，唯一
+- `password`：VARCHAR(255)
+- `real_name`：VARCHAR(100)
+- `student_id`：VARCHAR(50)，唯一（可为空）
+- `role`：TINYINT（1-学生，2-教师，3-最大权限管理员，4-维修人员，5-审核评论员）
+- `status`：TINYINT（0-禁用，1-正常）
+- `weekly_reservation_count`：INT（本周预约次数）
+- `violation_count`：INT（违约次数）
+- `create_time` / `update_time` / `deleted`
+- 索引：`idx_username`、`idx_student_id`
+
+（2）教学楼表 `building`
+- `id`：BIGINT，PK
+- `name`：VARCHAR(100)，唯一（`uk_building_name`）
+- `building_number`：VARCHAR(50)
+- `address`、`floor_count`、`description`
+- `latitude` / `longitude`（用于导航与距离计算）
+- `status`（0-停用，1-启用）
+- `create_time` / `update_time` / `deleted`
+
+（3）图书馆表 `library` 与座位表 `library_seat`
+- `library`
+  - `id`：BIGINT，PK；`name` 唯一（`uk_library_name`）
+  - `address`、`floor_count`、`opening_hours`、`latitude/longitude`、`status`、`create_time/update_time/deleted`
+- `library_seat`
+  - `id`：BIGINT，PK；`library_id`：FK → `library.id`
+  - `seat_label`、`floor`、`row_num`、`col_num`
+  - `seat_type`：TINYINT（1普通，2带插座，3静音区，4小组研讨座）
+  - `status`：TINYINT（0停用，1可预约，2维修中）
+  - `real_time_status`：TINYINT（0空闲，1使用中，2已预约）
+  - `equipment`：TEXT（JSON）
+  - `environment_score`、`total_reviews`
+  - 约束：`uk_library_seat (library_id,floor,row_num,col_num)`；索引：`idx_library_id`、`idx_status`、`idx_seat_type`
+
+（4）教室表 `classroom`（仅属于教学楼）
+- `id`：BIGINT，PK；`building_id`：FK → `building.id`
+- `name`、`room_number`、`floor`、`type`（1普通教室，2研讨室/会议室）、`capacity`
+- `equipment`：TEXT（JSON）
+- `checkin_radius`：INT（签到半径，米）
+- `status`：TINYINT（0停用，1正常，2维修中）
+- `real_time_status`：TINYINT（0空闲，1使用中，2已预约）
+- `environment_score`、`total_reviews`
+- `latitude/longitude`（用于导航与签到定位）
+- `create_time` / `update_time` / `deleted`
+- 约束/索引：`uk_classroom_room (building_id,room_number)`，`idx_building_id`，`idx_status`
+
+（5）标准时间段表 `time_slot`
+- `id`：BIGINT，PK
+- `label`（如 8:00-10:00）、`start_time`、`end_time`、`sort_order`
+- `create_time` / `update_time`
+
+（6）课程表 `course` 与“我的课程”关系表
+- `course`
+  - `id`：BIGINT，PK；`classroom_id`：FK → `classroom.id`
+  - `course_name`、`teacher_name`
+  - `week_day`（1-7）、`start_time`、`end_time`、`start_week`、`end_week`
+  - `create_time` / `update_time` / `deleted`
+  - 索引：`idx_classroom_id`
+- `user_course_enrollment`（我的课程关系）
+  - `user_id`：FK → `user.id`；`course_id`：FK → `course.id`
+  - `role_type`（1学生2教师）、`is_primary_teacher`、`source_type`
+  - 唯一键：`uk_uce_user_course_role (user_id,course_id,role_type,deleted)`
+- `user_course_note`（课程个性化）
+  - `is_starred`、`note`、`remind_before_minutes`
+  - 唯一键：`uk_ucn_user_course (user_id,course_id,deleted)`
+
+（7）预约表 `reservation`（核心业务表：教室/座位统一建模）
+- `id`：BIGINT，PK；`user_id`：FK → `user.id`
+- `resource_type`：TINYINT（1-教室，2-图书馆座位）
+- `classroom_id`：FK → `classroom.id`（当 resource_type=1）
+- `library_seat_id`：FK → `library_seat.id`（当 resource_type=2）
+- `reservation_date`：DATE；`start_time`/`end_time`：TIME；`duration`：INT（分钟）
+- `purpose`：TEXT
+- `status`：TINYINT（1-待签到，2-已签到，3-已完成，4-已取消，5-已违约）
+- `qrcode`：VARCHAR(255)
+- `checkin_time`、`checkin_latitude`、`checkin_longitude`
+- `qrcode_expire_time`（兼容字段）、`qrcode_scan_status`、`qrcode_scan_time`、`qrcode_scan_device_uid`（兼容字段，用于核销链路记录）
+- `create_time` / `update_time` / `deleted`
+- 索引：`idx_user_id`、`idx_resource (resource_type,classroom_id,library_seat_id)`、`idx_reservation_date`、`idx_status`
+
+（8）预约限制配置 `reservation_limit_config`（单例配置）
+- `id`：TINYINT，PK，固定 1
+- `max_per_week`：INT
+- `max_duration_minutes`：INT
+- `update_time`
+
+（9）评价相关表 `review` 与 `classroom_feedback`
+- `review`（通用评价表：教室/座位）
+  - `id`：BIGINT，PK；`user_id`：FK → `user.id`
+  - `resource_type`（1教室2座位），`classroom_id`/`library_seat_id`，`reservation_id`：FK → `reservation.id`
+  - `score`（1-5），`content`，`tags`（JSON 字符串）
+  - `status`：TINYINT（0待审核，1已展示，2已屏蔽）
+  - `create_time/update_time/deleted`；索引：`idx_user_id`、`idx_resource`、`idx_reservation_id`
+- `classroom_feedback`（用于“反馈页”的业务表）
+  - `env_score`、`equip_score`（允许为空：待评价）
+  - `status`：TINYINT（1待评价，2待审核，3审核通过，4审核驳回）
+  - 唯一键：`uk_user_reservation (user_id,reservation_id)`
+
+（10）报修表 `repair`（工单表：教室/座位统一建模）
+- `id`：BIGINT，PK；`user_id`：FK → `user.id`
+- `resource_type`（1教室2座位），`classroom_id`/`library_seat_id`
+- `title`、`description`
+- `images`：MEDIUMTEXT（JSON 数组/base64）
+- `type`：TINYINT（1照明2空调3桌椅4多媒体5网络6其他）
+- `priority`：TINYINT（1紧急2普通3低）
+- `status`：TINYINT（1待处理2处理中3已修复4已关闭）
+- `handler_id`：FK → `user.id`；`handle_time`、`handle_remark`
+- `create_time/update_time/deleted`；索引：`idx_user_id`、`idx_resource`、`idx_status`
+
+（11）协作与聊天表（以“组队需求”为核心）
+- `team_request`（组队需求表）
+  - `id`：PK；`user_id`：发布人（FK → `user.id`）
+  - `title`、`description`、`tags`（JSON 字符串）
+  - `expected_count`、`current_count`
+  - `start_time`、`end_time`
+  - `status`（0已关闭1招募中2已满员）
+- `team_member`（成员表）
+  - `team_request_id`（FK → `team_request.id`）、`user_id`（FK → `user.id`）
+  - `role`（1创建者2成员）
+  - 唯一键：`uk_team_user (team_request_id,user_id)`
+- `team_join_application`（加入申请）
+  - `team_request_id`、`applicant_id`、`reason`
+  - `status`（0待审核1已通过2已拒绝）
+  - 兼容字段：`reviewer_id`、`review_time`、`reject_reason`
+- `team_message`（聊天消息）
+  - `team_request_id`、`sender_id`、`type`（1文本2文件）、`content`
+  - 兼容字段：`client_msg_id`（幂等）、`status`（1正常2撤回3删除）、`recalled`
+  - 索引：`idx_team_time_id (team_request_id,create_time,id)`；唯一键：`uk_team_sender_client_msg`
+- `team_message_read`（已读游标）
+  - `team_request_id`、`user_id`、`last_read_message_id`
+  - 唯一键：`uk_team_user (team_request_id,user_id)`
+
+（12）学习计划 `study_plan`
+- `id`：BIGINT，PK；`user_id`：FK → `user.id`
+- `team_request_id`：FK → `team_request.id`（可为空）
+- `reservation_id`：FK → `reservation.id`（可为空，用于“计划+预约联动”）
+- `title`、`description`
+- `plan_date`、`start_time`、`end_time`
+- `key_time_nodes`：TEXT（关键时间节点）
+- `status`（0取消1进行中2完成）
+
+（13）通知消息 `notification`
+- `user_id`：接收者（FK → `user.id`）
+- `type`（1系统2预约提醒3报修通知4组队消息）
+- `title`、`content`、`related_id`
+- `is_read`、`read_time`
+
+（14）资源市场表 `resource_market_item` 与 `resource_market_trade`
+- `resource_market_item`
+  - `user_id`（发布者）、`title/description/category`
+  - `resource_type`（1实物2文档3技能服务）、`price`、`is_free`
+  - `origin_type`、`source_reference`
+  - `course_id`（FK）、`team_request_id`（FK）
+  - `tags`、`images`、`recommended_place`
+  - `status`（0待审核1上架2驳回3下架4流转中5完成）
+  - `audit_by`、`audit_remark`、`audit_time`
+- `resource_market_trade`
+  - `item_id`（FK）、`publisher_id`（FK）、`receiver_id`（FK）
+  - `status`（1待面交确认2完成3取消）
+  - `meeting_place`、`meeting_time`
+  - `confirm_publisher`、`confirm_receiver`、`confirm_time`
+
+（15）扫码设备授权
+- `scan_device`：`device_uid` 唯一，`enabled` 控制启停
+- `scan_device_pair_token`：一次性 `token`，带 `expired_time`、`used_status`、`redeemed_device_uid`
+
+（16）管理后台 RBAC 表（用于菜单与权限过滤）
+- `admin_role`、`admin_permission`、`admin_role_permission`、`admin_menu`
+- `admin_operation_log`：记录管理员操作行为（可用于审计）
+
+3.5.4 关键约束、索引与一致性设计（与真实表对齐）
+
+（1）统一资源建模（教室/座位）  
+`reservation`、`review`、`repair` 均采用 `resource_type + classroom_id/library_seat_id` 的模式统一建模，减少表数量并支持前端按“资源类型”统一展示。
+
+（2）唯一约束防止脏数据  
+例如 `classroom` 的 `uk_classroom_room (building_id,room_number)` 防止同楼同号重复；`library_seat` 的 `uk_library_seat (library_id,floor,row_num,col_num)` 保证座位坐标唯一；`team_member` 的 `uk_team_user` 防止重复入组。
+
+（3）高频查询索引  
+`reservation` 的 `idx_resource` 与 `idx_reservation_date` 支撑“按资源+日期查时段占用”；`review/repair` 的 `idx_resource` 支撑“按资源查评价/工单”；`team_message` 的 `idx_team_time_id` 支撑聊天分页。
+
+（4）状态字段的枚举化与可追溯  
+核心流程（预约、审核、工单）均采用 TINYINT 状态字段，并保留 `create_time/update_time` 与 `deleted` 逻辑删除字段，便于追溯与统计。
+
+（5）一致性与幂等（设计要点）  
+聊天表通过 `client_msg_id` + 唯一键实现幂等；预约核销链路通过记录 `qrcode_scan_time/device_uid` 等字段提升可追溯性。对于“创建预约—生成二维码—核销更新状态”等关键更新，应采用事务与必要的重复提交防护策略，避免状态错乱。
+
+3.6 本章小结
+
+本章围绕“基于实时状态的校园学习空间综合服务平台”建设目标，系统完成了需求分析与总体设计工作。首先，通过角色划分与典型场景梳理，明确了用户端服务与管理端治理的协同关系；其次，围绕预约核销、反馈治理、协作学习、资源市场与后台管理等核心业务，形成了较完整的功能需求集合，并从可用性、实时性、性能、安全性、可维护性与可扩展性等维度给出了非功能约束。
+
+在总体设计层面，本章给出了前后端分离架构、模块化分域方案、统一接口风格与关键状态模型，确保系统在工程实现中具备清晰边界与一致语义。在数据设计层面，通过核心实体识别、E-R 关系定义、关键表结构与索引约束说明，构建了能够支撑多业务闭环的数据基础，并通过统一资源建模与状态字段设计为后续扩展预留空间。
+
+综上，本章实现了从“业务问题”到“系统方案”的结构化转化，为第4章模块级详细设计、接口实现与数据库落地提供了明确依据，同时也为第5章测试验证中的指标与场景设计奠定了需求基线。
+

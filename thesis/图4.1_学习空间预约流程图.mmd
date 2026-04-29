@@ -1,0 +1,22 @@
+flowchart TD
+  %% 图4.1 学习空间预约流程图（黑白版）
+
+  S([开始]) --> Sel[选择资源类型 教室/图书馆座位]
+  Sel --> Pick[选择楼宇/教室/座位 与日期]
+  Pick --> Slots[查询标准时间段占用 课程+预约融合]
+  Slots --> Choose[选择时间段（可连续）]
+  Choose --> Check{后端校验}
+  Check -->|通过| Create[创建预约 写入预约信息]
+  Check -->|不通过| Fail[返回失败原因 超限/冲突/不可用]
+  Create --> List[返回预约信息 刷新“我的预约”]
+  Fail --> Choose
+  List --> E([结束])
+
+  %% 校验细化
+  Check --- Rule[规则校验 每周最大预约次数/单次最大时长]
+  Check --- Conflict[冲突校验 课程/已预约]
+
+  %% 黑白打印风格
+  classDef node fill:#FFFFFF,stroke:#111111,stroke-width:1px,color:#111111;
+  classDef group fill:#FFFFFF,stroke:#666666,stroke-width:1px,stroke-dasharray: 4 3,color:#111111;
+  class S,Sel,Pick,Slots,Choose,Check,Create,Fail,List,E,Rule,Conflict node;

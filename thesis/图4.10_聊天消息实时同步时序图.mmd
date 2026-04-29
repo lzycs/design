@@ -1,0 +1,22 @@
+sequenceDiagram
+  %% 图4.10 聊天消息实时同步时序图（黑白版）
+  autonumber
+  participant A as 用户A
+  participant API as 团队聊天控制器
+  participant DB as 消息存储数据库
+  participant WS as 团队聊天WebSocket中枢
+  participant B as 用户B
+
+  A->>API: 发送聊天消息
+  API->>DB: 持久化消息（包含客户端消息标识）
+  DB-->>API: 返回生成的消息标识
+  API->>WS: 向群组广播新消息
+  WS-->>A: 推送新消息通知
+  WS-->>B: 推送新消息通知
+
+  B->>API: 标记消息为已读
+  API->>DB: 更新消息已读状态
+  DB-->>API: 返回操作成功结果
+  API->>WS: 广播消息已读状态更新
+  WS-->>A: 更新已读游标
+  WS-->>B: 更新已读游标

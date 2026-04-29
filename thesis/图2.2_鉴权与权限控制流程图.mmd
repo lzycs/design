@@ -1,0 +1,27 @@
+%%{init: {"theme":"base","themeVariables":{"background":"#ffffff","primaryColor":"#ffffff","primaryTextColor":"#111111","primaryBorderColor":"#111111","lineColor":"#111111","secondaryColor":"#ffffff","tertiaryColor":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#666666","edgeLabelBackground":"#ffffff"}}}%%
+flowchart LR
+  %% 图2.2 鉴权与权限控制流程图（紧凑版）
+
+  S([开始]) --> L{登录入口}
+  L -->|用户端| U[登录并获取用户Token]
+  L -->|管理端| A[登录并获取管理Token]
+
+  U --> I[请求拦截器注入Token]
+  A --> I
+
+  I --> V{Token有效?}
+  V -->|否| E401[401 未登录/过期]
+  V -->|是| P{权限满足?}
+
+  P -->|否| E403[403 无权限]
+  P -->|是| B[执行业务逻辑]
+  B --> R[统一返回 Result<T>]
+  R --> E([结束])
+
+  classDef ok fill:#FFFFFF,stroke:#111111,stroke-width:1px,color:#111111;
+  classDef warn fill:#FFFFFF,stroke:#666666,stroke-width:1px,stroke-dasharray: 4 3,color:#111111;
+  classDef err fill:#FFFFFF,stroke:#111111,stroke-width:2px,color:#111111;
+  class B,R ok;
+  class V,P warn;
+  class E401,E403 err;
+

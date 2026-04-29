@@ -1,0 +1,20 @@
+flowchart TD
+  %% 图4.11 资源市场审核与交易流程图（黑白版）
+
+  S([开始]) --> Pub[用户发布资源]
+  Pub --> Pending[状态: 待审核]
+  Pending --> Audit{后台审核}
+  Audit -->|通过| OnShelf[状态: 已上架]
+  Audit -->|驳回| Reject[状态: 已驳回]
+  OnShelf --> Intent[买方发起交易意向]
+  Intent --> InTrade[状态: 流转中]
+  InTrade --> Confirm{双方确认面交}
+  Confirm -->|是| Done[状态: 已完成]
+  Confirm -->|否| Cancel[状态: 已取消或继续流转]
+  Reject --> E([结束])
+  Done --> E
+  Cancel --> E
+
+  classDef node fill:#FFFFFF,stroke:#111111,stroke-width:1px,color:#111111;
+  class S,Pub,Pending,Audit,OnShelf,Reject,Intent,InTrade,Confirm,Done,Cancel,E node;
+
