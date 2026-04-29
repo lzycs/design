@@ -402,16 +402,12 @@ onMounted(() => {
 <template>
   <div class="collaboration">
     <div class="phone-container">
-      <!-- 顶栏：与下方内容共用同一水平内边距，标题真正居中 -->
-      <header class="page-header">
-        <button type="button" class="page-header__back" @click="router.back()" aria-label="返回上一页">
-          <span>‹</span>
-        </button>
-        <h1 class="page-header__title">协作广场</h1>
-        <button type="button" class="page-header__action" @click="openCreate">
-          发起小组
-        </button>
-      </header>
+      <van-nav-bar
+        class="collab-nav-bar"
+        title="协作广场"
+        right-text="发起小组"
+        @click-right="openCreate"
+      />
 
       <!-- 分类标签 -->
       <div class="category-bar">
@@ -712,65 +708,18 @@ onMounted(() => {
   background-color: var(--ls-bg);
 }
 
-/* 顶栏：三列网格，左列留空、标题居中、操作贴右，与下方共用 inset */
-.page-header {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: center;
-  column-gap: 8px;
-  padding: 12px var(--collab-inset-right) 12px var(--collab-inset-left);
-  background-color: var(--ls-surface);
-  border-bottom: 1px solid var(--ls-divider);
-  position: sticky;
-  top: 0;
-  z-index: 30;
-  box-sizing: border-box;
+.collab-nav-bar {
+  margin: 0 var(--collab-inset-right) 0 var(--collab-inset-left);
 }
 
-.page-header__title {
-  grid-column: 2;
-  justify-self: center;
-  margin: 0;
-  max-width: 100%;
+.collab-nav-bar :deep(.van-nav-bar__title) {
   font-size: 17px;
   font-weight: 600;
-  color: var(--ls-text-strong);
-  line-height: 1.3;
-  text-align: center;
 }
 
-.page-header__back {
-  grid-column: 1;
-  justify-self: start;
-  width: 28px;
-  height: 28px;
-  border: none;
-  border-radius: var(--ls-radius-pill);
-  background: var(--ls-surface-muted);
-  color: var(--ls-text-muted);
-  font-size: 22px;
-  line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.page-header__action {
-  grid-column: 3;
-  justify-self: end;
-  margin: 0;
-  padding: 4px 0;
-  border: none;
-  background: none;
+.collab-nav-bar :deep(.van-nav-bar__text) {
   font-size: 14px;
   font-weight: 500;
-  color: var(--ls-primary);
-  line-height: 1.3;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  white-space: nowrap;
 }
 
 .category-bar {
@@ -782,7 +731,7 @@ onMounted(() => {
   white-space: nowrap;
   border-bottom: 1px solid var(--ls-divider);
   position: sticky;
-  top: 52px;
+  top: 46px;
   z-index: 20;
   box-sizing: border-box;
   scrollbar-width: none;
@@ -1181,35 +1130,8 @@ onMounted(() => {
     box-shadow: 0 8px 28px rgba(15, 23, 42, 0.06);
   }
 
-  .page-header {
-    padding-top: 16px;
-    padding-bottom: 16px;
-    border-bottom-color: #e7ebf3;
-  }
-
   .category-bar {
-    top: 66px;
-  }
-
-  .page-header__title {
-    font-size: 20px;
-    letter-spacing: 0.02em;
-  }
-
-  .page-header__back {
-    width: 34px;
-    height: 34px;
-    border-radius: 17px;
-    font-size: 26px;
-    transition: background-color 0.2s ease, color 0.2s ease;
-  }
-
-  .page-header__action {
-    padding: 7px 14px;
-    border: 1px solid #d6e5fa;
-    border-radius: 999px;
-    background: linear-gradient(180deg, #ffffff 0%, #f3f8ff 100%);
-    transition: all 0.2s ease;
+    top: 46px;
   }
 
   .category-bar {
@@ -1328,17 +1250,6 @@ onMounted(() => {
 }
 
 @media (min-width: 1024px) and (hover: hover) {
-  .page-header__back:hover {
-    background: #e9f2ff;
-    color: #2f6fb8;
-  }
-
-  .page-header__action:hover {
-    color: #2f6fb8;
-    border-color: #bfd7f8;
-    box-shadow: 0 2px 10px rgba(59, 130, 246, 0.14);
-  }
-
   .category-item:hover {
     color: #4a90e2;
     border-color: #d5e6fb;
