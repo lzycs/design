@@ -59,22 +59,22 @@ onMounted(loadOverview)
 
       <!-- 快捷操作 -->
       <div class="admin-card">
-        <div style="font-size: 16px; font-weight: 600; margin-bottom: 12px; color: #1a1a1a">快捷操作</div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px">
-          <button class="action-btn primary-btn" style="padding: 12px 0" @click="router.push('/admin/buildings')">新增教学楼</button>
-          <button class="action-btn primary-btn" style="padding: 12px 0" @click="router.push('/admin/classrooms')">新增教室</button>
-          <button class="action-btn primary-btn" style="padding: 12px 0" @click="router.push('/admin/courses')">导入课程表</button>
-          <button class="action-btn primary-btn" style="padding: 12px 0" @click="router.push('/admin/reviews')">审核评价</button>
-          <button class="action-btn primary-btn" style="padding: 12px 0" @click="router.push('/admin/market-audit')">审核集市资源</button>
-          <button class="action-btn primary-btn" style="padding: 12px 0" @click="router.push('/admin/reservation-limits')">预约上限</button>
-          <button class="action-btn primary-btn" style="padding: 12px 0" @click="router.push('/admin/scan-devices')">设备授权</button>
+        <div class="section-title">快捷操作</div>
+        <div class="quick-grid">
+          <button class="action-btn primary-btn quick-btn" @click="router.push('/admin/buildings')">新增教学楼</button>
+          <button class="action-btn primary-btn quick-btn" @click="router.push('/admin/classrooms')">新增教室</button>
+          <button class="action-btn primary-btn quick-btn" @click="router.push('/admin/courses')">导入课程表</button>
+          <button class="action-btn primary-btn quick-btn" @click="router.push('/admin/reviews')">审核评价</button>
+          <button class="action-btn primary-btn quick-btn" @click="router.push('/admin/market-audit')">审核集市资源</button>
+          <button class="action-btn primary-btn quick-btn" @click="router.push('/admin/reservation-limits')">预约上限</button>
+          <button class="action-btn primary-btn quick-btn" @click="router.push('/admin/scan-devices')">设备授权</button>
         </div>
       </div>
 
       <!-- 最近工单入口 -->
-      <div style="display: flex; justify-content: space-between; align-items: center; margin: 4px 0 8px">
-        <div style="font-size: 16px; font-weight: 600; color: #1a1a1a">待处理工单</div>
-        <div style="font-size: 12px; color: #4a90e2; cursor: pointer" @click="router.push('/admin/repairs')">查看全部</div>
+      <div class="section-head">
+        <div class="section-title">待处理工单</div>
+        <div class="section-link" @click="router.push('/admin/repairs')">查看全部</div>
       </div>
       <div class="admin-card">
         <div v-if="overview.pendingRepairCount > 0" class="list-card" style="border-bottom: none">
@@ -94,9 +94,9 @@ onMounted(loadOverview)
       </div>
 
       <!-- 待审核评价入口 -->
-      <div style="display: flex; justify-content: space-between; align-items: center; margin: 4px 0 8px">
-        <div style="font-size: 16px; font-weight: 600; color: #1a1a1a">待审核评价</div>
-        <div style="font-size: 12px; color: #4a90e2; cursor: pointer" @click="router.push('/admin/reviews')">查看全部</div>
+      <div class="section-head">
+        <div class="section-title">待审核评价</div>
+        <div class="section-link" @click="router.push('/admin/reviews')">查看全部</div>
       </div>
       <div class="admin-card">
         <div v-if="overview.pendingReviewCount > 0" class="list-card" style="border-bottom: none">
@@ -127,5 +127,40 @@ onMounted(loadOverview)
   cursor: pointer;
   padding: 4px 0;
   white-space: nowrap;
+}
+
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 4px 0 8px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ls-text-strong);
+}
+
+.section-link {
+  font-size: 12px;
+  color: var(--ls-primary);
+  cursor: pointer;
+}
+
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.quick-btn {
+  padding: 12px 0;
+}
+
+@media (min-width: 1024px) {
+  .quick-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 </style>

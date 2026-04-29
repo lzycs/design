@@ -71,6 +71,17 @@ body {
   }
 }
 
+/* 管理端在桌面端使用宽屏工作区，不受移动壳限制 */
+@media (min-width: 1024px) {
+  html.is-admin-route #app {
+    width: min(1440px, calc(100vw - 40px));
+    max-width: none;
+    border-left: 1px solid var(--ls-divider);
+    border-right: 1px solid var(--ls-divider);
+    box-shadow: 0 14px 40px rgba(15, 23, 42, 0.1);
+  }
+}
+
 /* 全局隐藏滚动条（保留滚动能力） */
 html,
 body,

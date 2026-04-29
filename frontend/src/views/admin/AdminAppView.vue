@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type { Component } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getAdminMenus, type AdminMenu } from '@/api/admin'
@@ -36,6 +36,11 @@ const tabMenus = [
 
 const menus = ref<AdminMenu[]>(defaultMenus)
 const activePath = ref<string>(route.path || '/admin')
+const isDesktop = ref(false)
+
+const updateLayoutMode = () => {
+  isDesktop.value = window.innerWidth >= 1024
+}
 
 const loadMenus = async () => {
   const token = localStorage.getItem('adminToken')
@@ -58,7 +63,13 @@ const loadMenus = async () => {
 }
 
 onMounted(async () => {
+  updateLayoutMode()
+  window.addEventListener('resize', updateLayoutMode)
   await loadMenus()
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateLayoutMode)
 })
 
 watch(
@@ -84,14 +95,20 @@ const currentView = computed(() => {
   return viewMap[activePath.value] || AdminHomeView
 })
 
+const currentTitle = computed(() => {
+  return menus.value.find(item => item.path === activePath.value)?.title || '管理后台'
+})
+
 // 底部 tab 只展示前5项（首页/维修/评价/教室/课程），楼栋管理通过教室管理内跳转
 const visibleTabs = computed(() => {
   const paths = ['/admin', '/admin/repairs', '/admin/reviews', '/admin/classrooms', '/admin/courses']
-  return tabMenus.filter(t => {
+  const filtered = tabMenus.filter(t => {
     // 如果后端菜单有数据，只展示有权限的 tab
     const hasPerm = menus.value.some(m => m.path === t.path)
     return paths.includes(t.path) && hasPerm
   })
+  // 兜底：避免接口返回路径与 tab 不一致时底部导航完全不显示
+  return filtered.length > 0 ? filtered : tabMenus.filter(t => paths.includes(t.path))
 })
 
 const logout = async () => {
@@ -101,14 +118,40 @@ const logout = async () => {
 </script>
 
 <template>
-  <div class="mobile-admin-container">
-    <!-- 内容区域 -->
-    <div class="admin-main">
-      <component :is="currentView" :key="activePath" />
+  <div class="admin-shell">
+    <aside v-if="isDesktop" class="admin-sidebar">
+      <div class="admin-brand">
+        <div class="brand-dot"></div>
+        <div>
+          <div class="brand-title">LearningSpace</div>
+          <div class="brand-sub">管理端</div>
+        </div>
+      </div>
+      <div class="admin-menu-list">
+        <button
+          v-for="menu in menus"
+          :key="menu.path"
+          type="button"
+          class="admin-menu-item"
+          :class="{ active: activePath === menu.path }"
+          @click="router.push(menu.path)"
+        >
+          {{ menu.title }}
+        </button>
+      </div>
+      <button type="button" class="admin-logout-btn" @click="logout">退出登录</button>
+    </aside>
+
+    <div class="admin-content-shell">
+      <div v-if="isDesktop" class="admin-topbar">
+        <div class="topbar-title">{{ currentTitle }}</div>
+      </div>
+      <div class="admin-main">
+        <component :is="currentView" :key="activePath" />
+      </div>
     </div>
 
-    <!-- 底部 Tab 导航 -->
-    <div class="admin-tab-bar">
+    <div v-if="!isDesktop" class="admin-tab-bar">
       <div
         v-for="tab in visibleTabs"
         :key="tab.path"
@@ -124,21 +167,37 @@ const logout = async () => {
 </template>
 
 <style>
-.mobile-admin-container {
+.admin-shell {
   width: 100%;
-  height: 100vh;
-  background-color: #ffffff;
+  height: 100dvh;
+  min-height: 100vh;
+  background: var(--ls-bg);
   overflow: hidden;
   position: relative;
   display: flex;
   flex-direction: column;
 }
 
+.admin-sidebar {
+  display: none;
+}
+
+.admin-content-shell {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-topbar {
+  display: none;
+}
+
 .admin-main {
   flex: 1;
   overflow-y: auto;
-  background-color: #f5f7fa;
-  padding-bottom: 0;
+  background: var(--ls-bg);
+  padding-bottom: 56px;
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
@@ -147,13 +206,15 @@ const logout = async () => {
   display: none;
 }
 
-/* 底部 Tab 导航 */
 .admin-tab-bar {
-  flex-shrink: 0;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
   width: 100%;
   height: 56px;
-  background-color: #ffffff;
-  border-top: 1px solid #f0f0f0;
+  background: var(--ls-surface);
+  border-top: 1px solid var(--ls-divider);
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -165,7 +226,7 @@ const logout = async () => {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  color: #909399;
+  color: var(--ls-text-faint);
   flex: 1;
   cursor: pointer;
   padding: 4px 0;
@@ -173,7 +234,7 @@ const logout = async () => {
 }
 
 .admin-tab-item.active {
-  color: #4a90e2;
+  color: var(--ls-primary);
 }
 
 .tab-van-icon {
@@ -193,7 +254,7 @@ const logout = async () => {
   display: flex;
   align-items: center;
   padding: 16px 20px;
-  background-color: #4a90e2;
+  background: linear-gradient(135deg, #4a90e2 0%, #5b9cff 100%);
   color: #ffffff;
   position: sticky;
   top: 0;
@@ -209,7 +270,7 @@ const logout = async () => {
 
 .search-bar {
   padding: 12px 20px;
-  background-color: #ffffff;
+  background: var(--ls-surface);
   display: flex;
   gap: 8px;
   align-items: center;
@@ -218,7 +279,7 @@ const logout = async () => {
 .search-input {
   flex: 1;
   padding: 10px 16px;
-  border: 1px solid #e5e6eb;
+  border: 1px solid var(--ls-border);
   border-radius: 24px;
   font-size: 14px;
   outline: none;
@@ -228,7 +289,7 @@ const logout = async () => {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: #4a90e2;
+  background-color: var(--ls-primary);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -240,20 +301,20 @@ const logout = async () => {
 
 .filter-bar {
   padding: 8px 20px;
-  background-color: #ffffff;
+  background: var(--ls-surface);
   display: flex;
   gap: 8px;
   overflow-x: auto;
   white-space: nowrap;
-  border-bottom: 1px solid #f5f7fa;
+  border-bottom: 1px solid var(--ls-divider);
 }
 
 .filter-item {
   padding: 6px 12px;
   border-radius: 16px;
   font-size: 12px;
-  background-color: #f5f7fa;
-  color: #666;
+  background: var(--ls-surface-muted);
+  color: var(--ls-text-muted);
   border: none;
   cursor: pointer;
   white-space: nowrap;
@@ -261,18 +322,22 @@ const logout = async () => {
 }
 
 .filter-item.active {
-  background-color: #4a90e2;
+  background: var(--ls-primary);
   color: #ffffff;
 }
 
 .content-area {
   padding: 12px 20px;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 .admin-card {
-  background-color: #ffffff;
+  background: var(--ls-surface);
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--ls-shadow-card);
+  border: 1px solid var(--ls-divider);
   padding: 16px;
   margin-bottom: 12px;
 }
@@ -291,19 +356,19 @@ const logout = async () => {
 .stat-value {
   font-size: 20px;
   font-weight: 600;
-  color: #4a90e2;
+  color: var(--ls-primary);
   margin-bottom: 4px;
 }
 
 .stat-label {
   font-size: 12px;
-  color: #909399;
+  color: var(--ls-text-faint);
 }
 
 .list-card {
   display: flex;
   padding: 12px;
-  border-bottom: 1px solid #f5f7fa;
+  border-bottom: 1px solid var(--ls-divider);
 }
 
 .list-card:last-child {
@@ -314,7 +379,7 @@ const logout = async () => {
   width: 40px;
   height: 40px;
   border-radius: 8px;
-  background-color: #f0f7ff;
+  background: color-mix(in srgb, var(--ls-primary) 10%, transparent);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -339,7 +404,7 @@ const logout = async () => {
 .list-title {
   font-size: 14px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--ls-text-strong);
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -381,7 +446,7 @@ const logout = async () => {
 
 .list-meta {
   font-size: 12px;
-  color: #909399;
+  color: var(--ls-text-faint);
   margin-bottom: 4px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -390,7 +455,7 @@ const logout = async () => {
 
 .list-desc {
   font-size: 12px;
-  color: #666;
+  color: var(--ls-text-muted);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -414,7 +479,7 @@ const logout = async () => {
 }
 
 .primary-btn {
-  background-color: #4a90e2;
+  background-color: var(--ls-primary);
   color: #ffffff;
 }
 
@@ -435,7 +500,7 @@ const logout = async () => {
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background-color: #4a90e2;
+  background-color: var(--ls-primary);
   color: #ffffff;
   display: flex;
   justify-content: center;
@@ -454,7 +519,7 @@ const logout = async () => {
 
 .form-label {
   font-size: 14px;
-  color: #333;
+  color: var(--ls-text-strong);
   margin-bottom: 8px;
   display: block;
   font-weight: 500;
@@ -463,7 +528,7 @@ const logout = async () => {
 .form-input {
   width: 100%;
   padding: 12px 16px;
-  border: 1px solid #e5e6eb;
+  border: 1px solid var(--ls-border);
   border-radius: 8px;
   font-size: 14px;
   color: #1a1a1a;
@@ -472,13 +537,13 @@ const logout = async () => {
 }
 
 .form-input:focus {
-  border-color: #4a90e2;
+  border-color: var(--ls-primary);
 }
 
 .form-select {
   width: 100%;
   padding: 12px 16px;
-  border: 1px solid #e5e6eb;
+  border: 1px solid var(--ls-border);
   border-radius: 8px;
   font-size: 14px;
   color: #1a1a1a;
@@ -491,7 +556,7 @@ const logout = async () => {
   width: 100%;
   padding: 12px;
   border-radius: 8px;
-  background-color: #4a90e2;
+  background-color: var(--ls-primary);
   color: #ffffff;
   border: none;
   font-size: 16px;
@@ -511,20 +576,137 @@ const logout = async () => {
 
 .empty-icon {
   font-size: 64px;
-  color: #e5e6eb;
+  color: var(--ls-divider);
   margin-bottom: 16px;
 }
 
 .empty-title {
   font-size: 18px;
-  color: #1a1a1a;
+  color: var(--ls-text-strong);
   font-weight: 600;
   margin-bottom: 8px;
 }
 
 .empty-desc {
   font-size: 14px;
-  color: #909399;
+  color: var(--ls-text-faint);
   margin-bottom: 24px;
+}
+
+@media (min-width: 1024px) {
+  .admin-shell {
+    flex-direction: row;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .admin-sidebar {
+    display: flex;
+    flex-direction: column;
+    width: 232px;
+    flex: 0 0 232px;
+    background: var(--ls-surface);
+    border: 1px solid var(--ls-divider);
+    border-radius: var(--ls-radius-card);
+    box-shadow: var(--ls-shadow-card);
+    padding: 16px 12px;
+    gap: 12px;
+  }
+
+  .admin-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 8px 14px;
+    border-bottom: 1px solid var(--ls-divider);
+  }
+
+  .brand-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--ls-primary);
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--ls-primary) 14%, transparent);
+  }
+
+  .brand-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ls-text-strong);
+  }
+
+  .brand-sub {
+    font-size: 12px;
+    color: var(--ls-text-faint);
+  }
+
+  .admin-menu-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    overflow-y: auto;
+  }
+
+  .admin-menu-item {
+    border: none;
+    background: transparent;
+    text-align: left;
+    padding: 10px 12px;
+    border-radius: 10px;
+    color: var(--ls-text-muted);
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .admin-menu-item:hover {
+    background: var(--ls-surface-muted);
+    color: var(--ls-text-strong);
+  }
+
+  .admin-menu-item.active {
+    background: color-mix(in srgb, var(--ls-primary) 12%, transparent);
+    color: var(--ls-primary);
+    font-weight: 600;
+  }
+
+  .admin-logout-btn {
+    margin-top: auto;
+    border: 1px solid var(--ls-divider);
+    background: var(--ls-surface);
+    color: var(--ls-danger);
+    border-radius: 10px;
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+
+  .admin-topbar {
+    display: flex;
+    align-items: center;
+    height: 64px;
+    margin-bottom: 12px;
+    padding: 0 18px;
+    border-radius: var(--ls-radius-card);
+    background: var(--ls-surface);
+    border: 1px solid var(--ls-divider);
+    box-shadow: var(--ls-shadow-card);
+  }
+
+  .topbar-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--ls-text-strong);
+  }
+
+  .admin-tab-bar {
+    display: none;
+  }
+
+  .admin-main .page-header {
+    display: none;
+  }
+
+  .admin-main {
+    padding-bottom: 0;
+  }
 }
 </style>

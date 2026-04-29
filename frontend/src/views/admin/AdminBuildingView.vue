@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { showToast } from 'vant'
 import {
   createAdminBuilding,
@@ -10,6 +11,7 @@ import {
 } from '@/api/admin'
 
 const keyword = ref('')
+const router = useRouter()
 
 const buildings = ref<AdminBuildingVO[]>([])
 const showForm = ref(false)
@@ -118,7 +120,9 @@ onMounted(loadBuildings)
 <template>
   <div class="admin-page active">
     <div class="page-header">
-      <div style="width: 24px"></div>
+      <div style="width: 24px; display: flex; align-items: center">
+        <van-icon name="arrow-left" style="font-size: 20px; cursor: pointer" @click="router.push('/admin')" />
+      </div>
       <div class="page-header-title">教学楼信息管理</div>
       <div style="width: 24px"></div>
     </div>

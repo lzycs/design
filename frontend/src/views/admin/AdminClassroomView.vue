@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { showToast } from 'vant'
 import {
   createAdminClassroom,
@@ -12,6 +13,7 @@ import { getBuildingList, type Result as ApiResult, type Building } from '@/api/
 
 const classrooms = ref<AdminClassroomVO[]>([])
 const buildings = ref<Building[]>([])
+const router = useRouter()
 
 const showForm = ref(false)
 const editingId = ref<number | null>(null)
@@ -178,7 +180,9 @@ onMounted(async () => {
 <template>
   <div class="admin-page active">
     <div class="page-header">
-      <div style="width: 24px"></div>
+      <div style="width: 24px; display: flex; align-items: center">
+        <van-icon name="arrow-left" style="font-size: 20px; cursor: pointer" @click="router.push('/admin')" />
+      </div>
       <div class="page-header-title">教室信息管理</div>
       <div style="width: 24px"></div>
     </div>

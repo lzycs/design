@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouterView, useRoute } from 'vue-router'
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onBeforeUnmount } from 'vue'
 
 const route = useRoute()
 const active = ref(0)
@@ -30,6 +30,18 @@ watch(
   },
   { immediate: true, deep: true }
 )
+
+watch(
+  () => route.path,
+  path => {
+    document.documentElement.classList.toggle('is-admin-route', path.startsWith('/admin'))
+  },
+  { immediate: true },
+)
+
+onBeforeUnmount(() => {
+  document.documentElement.classList.remove('is-admin-route')
+})
 </script>
 
 <template>

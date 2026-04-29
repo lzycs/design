@@ -74,7 +74,7 @@ onMounted(load)
   <div>
     <div class="page-header">
       <div class="header-side">
-        <van-icon name="arrow-left" class="back-icon" @click="router.back()" />
+        <van-icon name="arrow-left" class="back-icon" @click="router.push('/admin')" />
       </div>
       <div class="page-header-title">预约上限</div>
       <div style="width: 24px"></div>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import QRCode from 'qrcode'
 import { showConfirmDialog, showToast } from 'vant'
 import { buildPublicUrl, getPublicWebOrigin, isLikelyLocalhostOrigin } from '@/utils/publicUrl'
@@ -17,6 +18,7 @@ const loadingToken = ref(false)
 const devices = ref<AdminScanDevice[]>([])
 const loadingDevices = ref(false)
 let autoRefreshTimer: number | null = null
+const router = useRouter()
 
 const qrCanvas = ref<HTMLCanvasElement | null>(null)
 
@@ -146,7 +148,9 @@ onBeforeUnmount(() => {
 <template>
   <div>
     <div class="page-header">
-      <div style="width: 24px"></div>
+      <div style="width: 24px; display: flex; align-items: center">
+        <van-icon name="arrow-left" style="font-size: 20px; cursor: pointer" @click="router.push('/admin')" />
+      </div>
       <div class="page-header-title">设备授权</div>
       <div style="width: 24px"></div>
     </div>
